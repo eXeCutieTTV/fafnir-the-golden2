@@ -22,8 +22,6 @@ function getLocalHtml(src) {
       anchor.remove();
     });
 }
-
-
 globalThis.getLocalHtml = getLocalHtml;
 
 //load default css vv
@@ -42,5 +40,4 @@ function loadCSS(href) {
   document.head.appendChild(link);
 }
 for (const style of defaultStyle) loadCSS(style);
-
 //load default css ^^
