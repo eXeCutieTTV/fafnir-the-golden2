@@ -95,3 +95,7 @@ helperFunctions.addNested({
     lower: (str) => str.toLowerCase()
   }
 });
+
+export const helperRegex = new Regex();
+helperRegex.add("isVowel", /^[iīeēæyuūoōaāúûóôáâIĪEĒÆYUŪOŌAĀÚÛÓÔÁÂ]$/);
+helperRegex.add("isConsonant", /^[tkqq̇'cfdszgχhlrɾmnŋTKQQ̇'CFDSZGΧHLRɾMNŊ]$/);
