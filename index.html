@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fafnir the Golden</title>
+  <link rel="icon" href='assets\icon\favicon.ico'><!--icon by 'rhy' on discord-->
+  <link rel="stylesheet" href="index.css"> <!--index.css link-->
+  <link rel="stylesheet" href="css/colors.css"> <!--default colors-->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/mixed.css">
+  <link rel="stylesheet" href="css/tables.css"> <!--default tables-->
+  <link rel="stylesheet" href="css/text.css"> <!--links etc-->
+</head>
+<script src='index.js'></script>
+
+<body>
+  <div id="page0" class="page active">
+    <h2>Welcome</h2>
+
+    <div style="place-items: center;">
+      <!--ascii dragon made by chatgpt-->
+      <pre style="padding:0px; margin:0px;">
+                   ___====-_  _-====___
+             _--^^^#####//      \\#####^^^--_
+          _-^##########// (    ) \\##########^-_
+         -############//  |\^^/|  \\############-
+       _/############//   (@::@)   \\############\_
+      /#############((     \\//     ))#############\
+     -###############\\    (oo)    //###############-
+    -#################\\  / `` \  //#################-
+   -###################\\/ .--. \//###################-
+  _#/|##################( /    \ )##################|\#_
+ _#/ |##########/\######|/      \|######/\##########| \#_
+_#/  |#########/  \#####/        \#####/  \#########|  \#_
+</pre><!--Dragon the dragon^^-->
+    </div>
+
+    <script>getLocalHtml('pages/index/html/welcometext.html')</script> <!--WelcomeText-->
+
+    <br>
+    <p>This is a fan-project, and if you have anything you would like to see added to this website, if you see
+      anything is out of date, if you see any mistakes in any way, or if you just want to say hi - then don't
+      hesisitate to reach out to me on Discord.</p>
+    <p>If you would like to access other official or fanmade tools, then look below</p>
+    <br>
+
+    <script>getLocalHtml('pages/index/html/welcometable.html')</script> <!--WelcomeTable-->
+
+    <script>getLocalHtml('pages/tabbar/html.html')</script>
+  </div>
+</body>
+
+<!--vv APIs - Lirox vv-->
+<script src="https://draconicconlang.github.io/APIs/dialects/DialectLoader.js"></script>
+
+<script>
+  DIALECTS.load("dr_dr").then(DR => {
+    Object.assign(globalThis, DR);
+  });
+</script>
+<!--^^ APIs - Lirox ^^-->
+
+</html>

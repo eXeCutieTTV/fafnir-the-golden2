@@ -1,0 +1,32 @@
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 2px;
+    color: var(--text);
+}
+
+th {
+    padding: 8px;
+    text-align: center;
+    /* horizontal center */
+    vertical-align: middle;
+    /* vertical center */
+    border: 0px solid var(--border);
+    background-color: var(--table2);
+    color: var(--text);
+}
+
+td {
+    padding: 8px;
+    text-align: center;
+    /* horizontal center */
+    vertical-align: middle;
+    /* vertical center */
+    border: 0px solid var(--border);
+    background-color: var(--table1);
+    color: var(--text);
+}
+
+td:hover {
+    background-color: var(--table0);
+}
