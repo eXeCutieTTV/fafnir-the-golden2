@@ -7,9 +7,29 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function ensureDictionary() {
+  if (globalThis.DICTIONARY && DICTIONARY.ALL_WORDS && DICTIONARY.ALL_WORDS.MAP) {
+    return DICTIONARY;
+  }
+
+  if (globalThis.dictionaryReady) {
+    await globalThis.dictionaryReady;
+    return globalThis.DICTIONARY;
+  }
+
+  const mod = await import("https://draconicconlang.github.io/APIs/dialects/DialectLoader.js");
+  const DR = await mod.DIALECTS.load("dr_dr");
+  if (!DR) throw new Error("DIALECTS.load returned empty result");
+
+  globalThis.DICTIONARY = DR.DICTIONARY;
+  globalThis.IDS = DR.IDS;
+  return globalThis.DICTIONARY;
+}
+
 async function waitForDictionary(timeoutMs = 15000) {
   const start = Date.now();
-  while (!(globalThis.DICTIONARY && DICTIONARY.ALL_WORDS && DICTIONARY.ALL_WORDS.MAP)) {
+  while (true) {
+    if (globalThis.DICTIONARY && DICTIONARY.ALL_WORDS && DICTIONARY.ALL_WORDS.MAP) return;
     if (Date.now() - start > timeoutMs) {
       throw new Error('DICTIONARY did not load in time');
     }
@@ -80,6 +100,7 @@ function updateHighlight(items) {
 async function initSuggestions() {
   if (!ul || !searchFLD) return;
 
+  await ensureDictionary();
   await waitForDictionary();
   examples = Object.keys(DICTIONARY.ALL_WORDS.MAP);
   console.log('amount of words imported into autocorrect:', examples.length);
