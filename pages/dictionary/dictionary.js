@@ -41,15 +41,15 @@ globalThis.search = function search(word = false) {
     searchFLD.blur();
     // for type2
     const type2AffixesMap = {
+      adjSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.ADJECTIVES.SUFFIXES.MATCHES, false) || [],
+      auxPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
+      detSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.DETERMINERS.SUFFIXES.MATCHES, false) || [],
+      nounSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.NOUNS.SUFFIXES.MATCHES, false) || [],
+      partPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, true) || [],
+      partSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, false) || [],
+      ppPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PREPOSITIONS.MAP, true) || [],
       verbPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
-      //ppPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PREPOSITIONS.MAP, true) || [],
-      verbSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.SUFFIXES.MATCHES, false) || [],
-      //nounSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.NOUNS.SUFFIXES.MATCHES, false) || [],
-      //adjSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.ADJECTIVES.SUFFIXES.MATCHES, false) || [],
-      //pPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, true) || [],
-      //pSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, false) || [],
-      //auxPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
-      //detSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.DETERMINERS.SUFFIXES.MATCHES, false) || []
+      verbSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.SUFFIXES.MATCHES, false) || []
     }
     console.log(type2AffixesMap);
   } //make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
@@ -85,4 +85,16 @@ searchBTN.addEventListener('click', () => {
 for (const a of Object.values(DICTIONARY.VERBS.MAP)) oop.helperFunctions.run('fix', a.word)
 for (const a of Object.values(DICTIONARY.ADJECTIVES.MAP)) oop.helperFunctions.run('fix', a.word, 'adj')
 for (const a of Object.values(DICTIONARY.ADVERBS.MAP)) oop.helperFunctions.run('fix', a.word, 'adv')
+*/
+
+/*
+test = {
+    verbPre: AFFIXES.PREFIXES.match("xenæf", DICTIONARY.VERBS.PREFIXES.MATCHES, true),
+    verbSuf: AFFIXES.SUFFIXES.match("æfon", DICTIONARY.VERBS.SUFFIXES.MATCHES, true),
+    adj: AFFIXES.SUFFIXES.match("æklôħon", DICTIONARY.ADJECTIVES.SUFFIXES.MATCHES, true),
+    noun: AFFIXES.SUFFIXES.match("æklūn", DICTIONARY.NOUNS.SUFFIXES.MATCHES, true),
+    partPre: AFFIXES.PREFIXES.match("iæklū", DICTIONARY.PARTICLES.MAP, true),
+    partSuf: AFFIXES.SUFFIXES.match("æklôħnyl", DICTIONARY.PARTICLES.MAP, true),
+    pp: AFFIXES.PREFIXES.match("æze'æklū", DICTIONARY.PREPOSITIONS.MAP, true)
+}
 */

@@ -1,6 +1,6 @@
 export const matchtype2 = {
   affixChecker: (word, map, isPrefix = false) => {
-    //console.log(word, map, isPrefix);
+    const results = [];
     function appliedOrUnapplied(applied, unapplied) {
       return isPrefix
         ? applied && unapplied
@@ -26,37 +26,69 @@ export const matchtype2 = {
               ? unapplied
               : null;
     }
-    const affixMatch = isPrefix ? AFFIXES.PREFIXES.match(word, map, true)[0]/*need [0] untill lirrox fixes it on his end*/ || 'no-matches' : AFFIXES.SUFFIXES.match(word, map, false) || 'no-matches';
-    console.log('affixMatch |', affixMatch);
-    if (affixMatch === 'no-matches') return;
-    switch (affixMatch.type) {
-      case 'v':
-        console.log('verb affix match |', affixMatch);
-
+    const tempMap = {
+      affixMatches: isPrefix
+        ? AFFIXES.PREFIXES.match(word, map, true) === null
+          ? 'no-matches'
+          : AFFIXES.PREFIXES.match(word, map, true)
+        : AFFIXES.SUFFIXES.match(word, map, true) === null
+          ? 'no-matches'
+          : AFFIXES.SUFFIXES.match(word, map, true),
+      affix: ''
     }
+
+    if (tempMap.affixMatches === 'no-matches') return;
+    for (const affixMatch of tempMap.affixMatches) {
+      console.log('affixMatch |', affixMatch);
+
+      switch (affixMatch.type) {
+        case IDS.WORDS.ADJ:
+        case IDS.WORDS.AUX:
+        case IDS.WORDS.DET:
+        case IDS.WORDS.N:
+        case IDS.WORDS.V:
+          tempMap.affix = appliedOrUnapplied(affixMatch.variants[0], affixMatch.variants[1]);
+
+          results.push({
+            affix: tempMap.affix,
+            tempStem: isPrefix
+              ? word.slice(tempMap.affix.length)
+              : word.slice(0, -tempMap.affix.length),
+            type: affixMatch.type,
+            paths: affixMatch.paths
+          });
+          break;
+        case IDS.WORDS.PART:
+        case IDS.WORDS.PP:
+          tempMap.affix = affixMatch.text;
+
+          results.push({
+            affix: tempMap.affix,
+            tempStem: isPrefix
+              ? word.slice(tempMap.affix.length)
+              : word.slice(0, -tempMap.affix.length),
+            type: affixMatch.type,
+            paths: 'no-paths-for-this-type'
+          });
+          break;
+        default:
+          console.warn('unhandled affix match type |', affixMatch.type);
+          break;
+      }
+    }
+    return results;
+  },
+  declensionFinder: () => {
+
+    if (affixMatch.type === IDS.OTHER.ML) {
+      for (const entry of affixMatch.variants) {
+        affixFinder(word, entry, isPrefix)
+      }
+    } else affixFinder(word, affixMatch, isPrefix);
   }
 }
+
 export const text = {
-  sliceKeywordNegative: (str, x) => {
-    const slice1 = str.slice(0, -x);
-    const slice2 = str.slice(-x);
-    return { slice1, slice2 };
-
-    // Example usage:
-    //const { slice1, slice2 } = sliceKeyword("ækluu", 2);
-    //console.log(slice1); // Output: ækl
-    //console.log(slice2); // Output: uu
-  },
-  sliceKeywordPositive: (str, x) => {
-    const slice1 = str.slice(0, x);
-    const slice2 = str.slice(x);
-    return { slice1, slice2 };
-
-    // Example usage:
-    //const { slice1, slice2 } = sliceKeyword("ækluu", 2);
-    //console.log(slice1); // Output: ækl
-    //console.log(slice2); // Output: uu
-  }
 }
 export const regex = {
   isVowel: /^[iīeēæyuūoōaāúûóôáâIĪEĒÆYUŪOŌAĀÚÛÓÔÁÂ]$/,
