@@ -72,8 +72,10 @@ globalThis.search = function search(word = false) {
     //a.href = '/pages/dictionary/results/matchtype-1.html';
     //a.click();
     //alert('hi')
-  } else if (type2AffixesMap.verbPrefix) {
-    console.log('hi')
+  } else if (//type 2
+    Object.values(type2AffixesMap).some(matches => matches.length > 0)
+  ) {
+    console.log('-----type2-----');
   }
 }
 
