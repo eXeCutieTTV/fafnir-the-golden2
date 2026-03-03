@@ -14,7 +14,7 @@ function tests() {
   console.log(oop.helperFunctions.run("math.add", 2, 3))
   console.log(oop.helperRegex.view("isVowel"))
   console.log(DIALECTS)
-} tests();
+} //tests();
 
 let searchBTN = document.getElementById('search_button');
 let searchFLD = document.getElementById('search_field');
@@ -41,15 +41,15 @@ globalThis.search = function search(word = false) {
     searchFLD.blur();
     // for type2
     const type2AffixesMap = {
-      verbPrefix: oop.helperFunctions.run('matchtype2.affixChecker', initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
-      ppPrefix: oop.helperFunctions.run('matchtype2.affixChecker', initObj.keyword, DICTIONARY.PREPOSITIONS.MAP, true) || [],
-      verbSuffix: oop.helperFunctions.run('matchtype2.affixChecker', initObj.keyword, DICTIONARY.VERBS.SUFFIXES.MATCHES, false) || [],
-      nounSuffix: oop.helperFunctions.run('matchtype2.affixChecker', initObj.keyword, DICTIONARY.NOUNS.SUFFIXES.MATCHES, false) || [],
-      adjSuffix: oop.helperFunctions.run('matchtype2.affixChecker', initObj.keyword, DICTIONARY.ADJECTIVES.SUFFIXES.MATCHES, false) || [],
-      pPrefix: oop.helperFunctions.run('matchtype2.affixChecker', initObj.keyword, DICTIONARY.PARTICLES.MAP, true) || [],
-      pSuffix: oop.helperFunctions.run('matchtype2.affixChecker', initObj.keyword, DICTIONARY.PARTICLES.MAP, false) || [],
-      auxPrefix: oop.helperFunctions.run('matchtype2.affixChecker', initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
-      detSuffix: oop.helperFunctions.run('matchtype2.affixChecker', initObj.keyword, DICTIONARY.DETERMINERS.SUFFIXES.MATCHES, false) || []
+      verbPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
+      ppPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PREPOSITIONS.MAP, true) || [],
+      verbSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.SUFFIXES.MATCHES, false) || [],
+      nounSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.NOUNS.SUFFIXES.MATCHES, false) || [],
+      adjSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.ADJECTIVES.SUFFIXES.MATCHES, false) || [],
+      pPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, true) || [],
+      pSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, false) || [],
+      auxPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
+      detSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.DETERMINERS.SUFFIXES.MATCHES, false) || []
     }
     console.log(type2AffixesMap);
   } //make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
