@@ -76,13 +76,20 @@ globalThis.search = function search(word = false) {
     Object.values(type2AffixesMap).some(matches => matches.length > 0)
   ) {
     console.log('-----type2-----');
+    const a = oop.matchtype2.declensionFinder(type2AffixesMap.verbPrefix, false);
+    console.log(a);
   }
 }
 
 searchBTN.addEventListener('click', () => {
   search();
 });
-
+searchFLD.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Enter') {
+    ev.preventDefault(); // prevent form submission
+    search();
+  }
+});
 
 
 /*

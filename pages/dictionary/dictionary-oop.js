@@ -78,13 +78,57 @@ export const matchtype2 = {
     }
     return results;
   },
-  declensionFinder: (word, map, isPrefix) => {
+  declensionFinder: (map, isPrefix) => {
+    const results = [];
+    const tempMap = {
 
+    }
+    for (const entry of map) {
+      switch (entry.type) {
+        case IDS.WORDS.V:
+          const newEntry = isPrefix
+            ? matchtype2.affixChecker(entry.tempStem, DICTIONARY.VERBS.PREFIXES.MATCHES, true)
+            : matchtype2.affixChecker(entry.tempStem, DICTIONARY.VERBS.SUFFIXES.MATCHES, false);
+          for (const affix of newEntry) {
+            if (!DICTIONARY.ALL_WORDS.MAP[affix.tempStem]) continue;
+
+            results.push({
+              raws: {
+                'pre-declensionFinder()-entry': entry,
+                'post-declensionFinder()-entry': newEntry
+              },
+              suffix: {
+                suffix: isPrefix
+                  ? entry.affix
+                  : affix.affix,
+                paths: isPrefix
+                  ? entry.paths
+                  : affix.paths
+              },
+              prefix: {
+                prefix: isPrefix
+                  ? affix.affix
+                  : entry.affix,
+                paths: isPrefix
+                  ? affix.paths
+                  : entry.paths
+              },
+              stem: affix.tempStem,
+              type: affix.type
+            });
+          }
+          break;
+      }
+    }
+
+    /*
     if (affixMatch.type === IDS.OTHER.ML) {
       for (const entry of affixMatch.variants) {
         affixFinder(word, entry, isPrefix)
       }
     } else affixFinder(word, affixMatch, isPrefix);
+    */
+    return results;
   }
 }
 
