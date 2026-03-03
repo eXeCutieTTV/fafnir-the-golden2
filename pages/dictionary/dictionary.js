@@ -76,8 +76,12 @@ globalThis.search = function search(word = false) {
     Object.values(type2AffixesMap).some(matches => matches.length > 0)
   ) {
     console.log('-----type2-----');
-    const a = oop.matchtype2.declensionFinder(type2AffixesMap.verbPrefix, false);
-    console.log(a);
+    const test1 = {
+      'verbPrefix-verbSuffix': oop.matchtype2.declensionFinder(type2AffixesMap.verbPrefix, false),
+      'verbSuffix-verbSuffix': oop.matchtype2.declensionFinder(type2AffixesMap.verbSuffix, true),
+      'partSuffix-...': oop.matchtype2.declensionFinder(type2AffixesMap.partSuffix, false)
+    }
+    console.log(test1);
   }
 }
 
