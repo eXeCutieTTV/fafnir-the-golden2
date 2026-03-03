@@ -78,7 +78,7 @@ export const matchtype2 = {
     }
     return results;
   },
-  declensionFinder: () => {
+  declensionFinder: (word, map, isPrefix) => {
 
     if (affixMatch.type === IDS.OTHER.ML) {
       for (const entry of affixMatch.variants) {

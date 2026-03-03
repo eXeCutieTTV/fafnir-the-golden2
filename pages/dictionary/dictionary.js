@@ -39,20 +39,20 @@ globalThis.search = function search(word = false) {
   if (searchFLD && searchFLD.value.trim() !== '') { //clear searchFLD
     searchFLD.value = '';
     searchFLD.blur();
-    // for type2
-    const type2AffixesMap = {
-      adjSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.ADJECTIVES.SUFFIXES.MATCHES, false) || [],
-      auxPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
-      detSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.DETERMINERS.SUFFIXES.MATCHES, false) || [],
-      nounSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.NOUNS.SUFFIXES.MATCHES, false) || [],
-      partPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, true) || [],
-      partSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, false) || [],
-      ppPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PREPOSITIONS.MAP, true) || [],
-      verbPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
-      verbSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.SUFFIXES.MATCHES, false) || []
-    }
-    console.log(type2AffixesMap);
-  } //make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
+  }
+  // for type2
+  const type2AffixesMap = {
+    adjSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.ADJECTIVES.SUFFIXES.MATCHES, false) || [],
+    auxPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
+    detSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.DETERMINERS.SUFFIXES.MATCHES, false) || [],
+    nounSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.NOUNS.SUFFIXES.MATCHES, false) || [],
+    partPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, true) || [],
+    partSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, false) || [],
+    ppPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PREPOSITIONS.MAP, true) || [],
+    verbPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
+    verbSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.SUFFIXES.MATCHES, false) || []
+  }
+  console.log(type2AffixesMap);//make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
   if (DICTIONARY.ALL_WORDS.MAP[initObj.keyword]?.word?.length > 0) { // type 1
     initObj.matchType = 1;
     console.log('-----type1-----');
@@ -72,6 +72,8 @@ globalThis.search = function search(word = false) {
     //a.href = '/pages/dictionary/results/matchtype-1.html';
     //a.click();
     //alert('hi')
+  } else if (type2AffixesMap.verbPrefix) {
+    console.log('hi')
   }
 }
 
