@@ -39,7 +39,7 @@ export const matchtype2 = {
 
     if (tempMap.affixMatches === 'no-matches') return;
     for (const affixMatch of tempMap.affixMatches) {
-      console.log('affixMatch |', affixMatch);
+      //console.log('affixMatch |', affixMatch);
 
       switch (affixMatch.type) {
         case IDS.WORDS.ADJ:
@@ -71,9 +71,7 @@ export const matchtype2 = {
             paths: 'no-paths-for-this-type'
           });
           break;
-        default:
-          console.warn('unhandled affix match type |', affixMatch.type);
-          break;
+        default: console.warn('unhandled affix match type |', affixMatch.type);
       }
     }
     return results;
@@ -87,21 +85,26 @@ export const matchtype2 = {
     for (const entry of map) {
       switch (entry.type) {
         case IDS.WORDS.PART:
-          const tempAffixChecker = {
+          const tempAffixChecker = {//partsuffix(needs to be in case part) 
             adjSuffix: matchtype2.affixChecker(entry.tempStem, DICTIONARY.ADJECTIVES.SUFFIXES.MATCHES, false),
             nounSuffix: matchtype2.affixChecker(entry.tempStem, DICTIONARY.NOUNS.SUFFIXES.MATCHES, false),
-            partPrefix: matchtype2.affixChecker(entry.tempStem, DICTIONARY.PARTICLES.MAP, true)
+            partPrefix: matchtype2.affixChecker(entry.tempStem, DICTIONARY.PARTICLES.MAP, true)//,
+            //ppPrefix: matchtype2.affixChecker(entry.tempStem, DICTIONARY.PREPOSITIONS.MAP, true)
           }
           const tempResults = {
             'partSuffix-nounSuffix-partPrefix': [],
+            'partSuffix-nounSuffix-ppPrefix': [],
             'partSuffix-adjSuffix': [],
             'partSuffix-nounSuffix': [],
-            'partSuffix-partPrefix': []
+            'partSuffix-partPrefix': [],
+            'partSuffix': []//
           }
-
-          if (tempAffixChecker.nounSuffix && tempAffixChecker.partPrefix) {
+          console.log('tempAffixChecker |', tempAffixChecker, entry.tempStem)
+          if (tempAffixChecker.adjSuffix) {
+            partSuffix_adj_and_noun(tempAffixChecker.adjSuffix, 'partSuffix-adjSuffix');
+          }
+          if (tempAffixChecker.nounSuffix) {
             for (const affix of tempAffixChecker.nounSuffix) {
-
               const tempObj = {
                 raws: {
                   'pre-declensionFinder()-entry': entry,
@@ -112,32 +115,78 @@ export const matchtype2 = {
                   paths: affix.paths
                 },
                 particle: entry.affix,
-                tempStem: affix.tempStem,
+                tempStem: affix.tempStem,//why does this have i- applied still?
                 type: affix.type
               };
-              tempMap.newerEntry = matchtype2.affixChecker(tempObj.tempStem, DICTIONARY.PARTICLES.MAP, true);
-              for (const affix2 of Object.values(tempMap.newerEntry)) {
-                console.log(affix2)
-                if (!DICTIONARY.ALL_WORDS.MAP[affix2.tempStem]) continue;
-
-                tempResults['partSuffix-nounSuffix-partPrefix'].push({
+              tempMap.newerEntry = {
+                partPrefix: matchtype2.affixChecker(tempObj.tempStem, DICTIONARY.PARTICLES.MAP, true),
+                ppPrefix: matchtype2.affixChecker(tempObj.tempStem, DICTIONARY.PREPOSITIONS.MAP, true)
+              };
+              console.log('tempMap.newerEntry |', tempMap.newerEntry)
+              if (tempMap.newerEntry.partPrefix) {
+                for (const affix2 of Object.values(tempMap.newerEntry.partPrefix)) {
+                  if (!DICTIONARY.NOUNS.MAP[affix2.tempStem]) continue;
+                  {//just to keep the const out of scope.
+                    const targetDeclension = DICTIONARY.NOUNS.MAP[affix2.tempStem].declension;
+                    if (tempObj.suffix.paths.every(path => path[3] !== targetDeclension)) continue;
+                  }
+                  tempResults['partSuffix-nounSuffix-partPrefix'].push({
+                    raws: {
+                      'pre-declensionFinder()-raws': tempObj.raws,
+                      'post-declensionFinder()-entry': affix2
+                    },
+                    suffix: tempObj.suffix,
+                    particleSuffix: tempObj.particle,
+                    particlePrefix: affix2.affix,
+                    stem: affix2.tempStem,
+                    type: tempObj.type
+                  });
+                }
+              }
+              if (tempMap.newerEntry.ppPrefix) {
+                for (const affix2 of Object.values(tempMap.newerEntry.ppPrefix)) {
+                  if (!DICTIONARY.NOUNS.MAP[affix2.tempStem]) continue;
+                  {//just to keep the const out of scope.
+                    const targetDeclension = DICTIONARY.NOUNS.MAP[affix2.tempStem].declension;
+                    if (tempObj.suffix.paths.every(path => path[3] !== targetDeclension)) continue;
+                  }
+                  tempResults['partSuffix-nounSuffix-ppPrefix'].push({
+                    raws: {
+                      'pre-declensionFinder()-raws': tempObj.raws,
+                      'post-declensionFinder()-entry': affix2
+                    },
+                    suffix: tempObj.suffix,
+                    particleSuffix: tempObj.particle,
+                    prepositionPrefix: affix2.affix,
+                    stem: affix2.tempStem,
+                    type: tempObj.type
+                  });
+                }
+              }
+              if (!(tempMap.newerEntry.partPrefix || tempMap.newerEntry.ppPrefix)) {
+                if (!DICTIONARY.ALL_WORDS.MAP[affix.tempStem]) continue;
+                {
+                  const targetDeclension = DICTIONARY.NOUNS.MAP[affix.tempStem].declension;
+                  if (affix.paths.every(path => path[3] !== targetDeclension)) continue;
+                }
+                tempResults['partSuffix-nounSuffix'].push({
                   raws: {
-                    'pre-declensionFinder()-raws': tempObj.raws,
-                    'post-declensionFinder()-entry': affix2
+                    'pre-declensionFinder()-entry': entry,
+                    'post-declensionFinder()-entry': affix
                   },
-                  suffix: tempObj.suffix,
-                  particleSuffix: tempObj.particle,
-                  particlePreffix: affix2.affix,
-                  stem: affix2.tempStem,
-                  type: tempObj.type
+                  suffix: {
+                    suffix: affix.affix,
+                    paths: affix.paths
+                  },
+                  particle: entry.affix,
+                  stem: affix.tempStem,
+                  type: affix.type
                 });
               }
+              //partSuffix_adj_and_noun(tempAffixChecker.nounSuffix, 'partSuffix-nounSuffix');
             }
-          } else if (tempAffixChecker.adjSuffix) {
-            partSuffix_adj_and_noun(tempAffixChecker.adjSuffix, 'partSuffix-adjSuffix');
-          } else if (tempAffixChecker.nounSuffix) {
-            partSuffix_adj_and_noun(tempAffixChecker.nounSuffix, 'partSuffix-nounSuffix');
-          } else if (tempAffixChecker.partPrefix) {
+          }
+          if (tempAffixChecker.partPrefix) {
             for (const affix of tempAffixChecker.partPrefix) {
               if (!DICTIONARY.ALL_WORDS.MAP[affix.tempStem]) continue;
 
@@ -153,9 +202,24 @@ export const matchtype2 = {
               });
             }
           }
+          if (!tempAffixChecker.adjSuffix && !tempAffixChecker.nounSuffix && !tempAffixChecker.partPrefix && !tempAffixChecker.ppPrefix) {
+            tempResults['partSuffix'].push({
+              raws: {
+                'pre-declensionFinder()-entry': entry
+              },
+              particleSuffix: entry.affix,
+              stem: entry.tempStem,
+              type: entry.type
+            });
+          }
           function partSuffix_adj_and_noun(mapLocal, resultKey) {
             for (const affix of mapLocal) {
               if (!DICTIONARY.ALL_WORDS.MAP[affix.tempStem]) continue;
+              console.log(affix)
+              {
+                const targetDeclension = DICTIONARY.NOUNS.MAP[affix.tempStem].declension;
+                if (affix.paths.every(path => path[3] !== targetDeclension)) continue;
+              }
 
               tempResults[resultKey].push({
                 raws: {
@@ -207,6 +271,44 @@ export const matchtype2 = {
             });
           }
           break;
+        case IDS.WORDS.N:
+          console.log('hi', entry)
+          tempMap.newEntry = matchtype2.affixChecker(entry.tempStem, DICTIONARY.PREPOSITIONS.MAP, true)
+            ? matchtype2.affixChecker(entry.tempStem, DICTIONARY.PREPOSITIONS.MAP, true)
+            : null
+          console.log('tempMap.newEntry |', tempMap.newEntry)
+          const result = {
+            suffix: {
+              suffix: entry.affix,
+              paths: entry.paths
+            },
+            stem: tempMap.newEntry
+              ? tempMap.newEntry.length === 1
+                ? tempMap.newEntry[0].tempStem
+                : tempMap.newEntry.map(e => e.tempStem) //later will just have to check if this is an array - if yes, then x, if no, then y.
+              : entry.tempStem,
+            type: entry.type,
+            raw: tempMap.newEntry === null
+              ? {
+                'pre-declensionFinder()-entry': entry
+              }
+              : {
+                'pre-declensionFinder()-entry': entry,
+                'post-declensionFinder()-entry': tempMap.newEntry
+              },
+            ...(tempMap.newEntry !== null && {
+              pp: tempMap.newEntry.length === 1
+                ? tempMap.newEntry[0].affix
+                : tempMap.newEntry.map(e => e.affix)
+            })
+          }
+          entry.paths.map(path => path[3] === DICTIONARY.NOUNS.MAP[result.stem].declension
+            ? tempMap.results.push(entry) //checks if path declension is 'legal' //only pushes result if legal.
+            : null
+          );
+          break;
+        case IDS.WORDS.PP:
+
         default:
           console.warn('unhandled declensionFinder type |', entry.type);
           break;

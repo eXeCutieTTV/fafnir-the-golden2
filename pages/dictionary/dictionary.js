@@ -52,7 +52,7 @@ globalThis.search = function search(word = false) {
     verbPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
     verbSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.SUFFIXES.MATCHES, false) || []
   }
-  console.log(type2AffixesMap);//make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
+  console.log('type2AffixesMap |', type2AffixesMap);//make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
   if (DICTIONARY.ALL_WORDS.MAP[initObj.keyword]?.word?.length > 0) { // type 1
     initObj.matchType = 1;
     console.log('-----type1-----');
@@ -77,9 +77,10 @@ globalThis.search = function search(word = false) {
   ) {
     console.log('-----type2-----');
     const test1 = {
-      'verbPrefix-verbSuffix': oop.matchtype2.declensionFinder(type2AffixesMap.verbPrefix, false),
+      'verbPrefix-verbSuffix': oop.matchtype2.declensionFinder(type2AffixesMap.verbPrefix, false)/*probably remove one, or ill get double results.*/,
       'verbSuffix-verbSuffix': oop.matchtype2.declensionFinder(type2AffixesMap.verbSuffix, true),
-      'partSuffix-...': oop.matchtype2.declensionFinder(type2AffixesMap.partSuffix, false)
+      'partSuffix-...': oop.matchtype2.declensionFinder(type2AffixesMap.partSuffix, false),
+      'nounSuffix-...': oop.matchtype2.declensionFinder(type2AffixesMap.nounSuffix, true)
     }
     console.log(test1);
   }
