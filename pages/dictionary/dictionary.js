@@ -81,7 +81,8 @@ globalThis.search = function search(word = false) {
       'nounSuffix-...': oop.matchtype2.declensionFinder(type2AffixesMap.nounSuffix, true),
       'ppPrefix-...': oop.matchtype2.declensionFinder(type2AffixesMap.ppPrefix, true),
       'verbSuffix': oop.matchtype2.declensionFinder(type2AffixesMap.verbSuffix, false),
-      'verbPrefix-...': oop.matchtype2.declensionFinder(type2AffixesMap.verbPrefix, true)
+      'verbPrefix-...': oop.matchtype2.declensionFinder(type2AffixesMap.verbPrefix, true),
+      'adjSuffix-...': oop.matchtype2.declensionFinder(type2AffixesMap.adjSuffix, false)
     }
     console.log(test1);
   }

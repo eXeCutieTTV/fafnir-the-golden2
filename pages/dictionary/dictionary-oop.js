@@ -346,6 +346,64 @@ export const matchtype2 = {
             paths: entry.paths
           });
           break;
+        case IDS.WORDS.ADJ:
+          const tempResultsAdj = {
+            'adjSuffix': [],
+            'adjSuffix-partSuffix': []
+          };
+          {
+            const tempAffixChecker = matchtype2.affixChecker(entry.tempStem, DICTIONARY.PARTICLES.MAP, false)
+              ? matchtype2.affixChecker(entry.tempStem, DICTIONARY.PARTICLES.MAP, false)
+              : null;
+
+            if (tempAffixChecker) {
+              for (const affix of tempAffixChecker) {
+                if (!DICTIONARY.ADJECTIVES.MAP[affix.tempStem]) continue;
+                const result = {
+                  raws: {
+                    'pre-declensionFinder()-entry': entry,
+                    'post-declensionFinder()-entry': affix
+                  },
+                  suffix: {
+                    suffix: entry.affix,
+                    paths: entry.paths
+                  },
+                  particle: affix.affix,
+                  stem: affix.tempStem,
+                  type: entry.type
+                }
+                result.suffix.paths.map(path => {
+                  path[3] === DICTIONARY.ADJECTIVES.MAP[affix.tempStem].declension
+                    ? tempResultsAdj['adjSuffix-partSuffix'].push(result) //checks if path declension is 'legal' //only pushes result if legal.
+                    : null
+                });
+              }
+            }
+            else {
+              const result = {
+                raws: {
+                  'pre-declensionFinder()-entry': entry
+                },
+                suffix: {
+                  suffix: entry.affix,
+                  paths: entry.paths
+                },
+                stem: entry.tempStem,
+                type: entry.type
+              }
+              result.suffix.paths.map(path => {
+                path[3] === DICTIONARY.ADJECTIVES.MAP[entry.tempStem].declension
+                  ? tempResultsAdj.adjSuffix.push(result) //checks if path declension is 'legal' //only pushes result if legal.
+                  : null
+              });
+            }
+          }//vv trick such that empty maps arent pushed.
+          let i = 0;
+          for (const key in tempResultsAdj) {
+            if (tempResultsAdj[key].length > 0) i++;
+          }
+          if (i !== 0) tempMap.results.push(tempResultsAdj);
+          break;
         default: console.warn('unhandled declensionFinder type |', entry.type);
       }
     }
