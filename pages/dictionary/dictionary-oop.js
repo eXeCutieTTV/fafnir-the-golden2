@@ -97,11 +97,30 @@ export const matchtype2 = {
             'partSuffix-adjSuffix': [],
             'partSuffix-nounSuffix': [],
             'partSuffix-partPrefix': [],
-            'partSuffix': []//
+            'partSuffix': []
           }
-          console.log('tempAffixChecker |', tempAffixChecker, entry.tempStem)
           if (tempAffixChecker.adjSuffix) {
-            partSuffix_adj_and_noun(tempAffixChecker.adjSuffix, 'partSuffix-adjSuffix');
+            for (const affix of tempAffixChecker.adjSuffix) {
+              if (!DICTIONARY.ALL_WORDS.MAP[affix.tempStem]) continue;
+              {
+                const targetDeclension = DICTIONARY.NOUNS.MAP[affix.tempStem].declension;
+                if (affix.paths.every(path => path[3] !== targetDeclension)) continue;
+              }
+
+              tempResults['partSuffix-adjSuffix'].push({
+                raws: {
+                  'pre-declensionFinder()-entry': entry,
+                  'post-declensionFinder()-entry': affix
+                },
+                suffix: {
+                  suffix: affix.affix,
+                  paths: affix.paths
+                },
+                particle: entry.affix,
+                stem: affix.tempStem,
+                type: affix.type
+              });
+            }
           }
           if (tempAffixChecker.nounSuffix) {
             for (const affix of tempAffixChecker.nounSuffix) {
@@ -115,7 +134,7 @@ export const matchtype2 = {
                   paths: affix.paths
                 },
                 particle: entry.affix,
-                tempStem: affix.tempStem,//why does this have i- applied still?
+                tempStem: affix.tempStem,
                 type: affix.type
               };
               tempMap.newerEntry = {
@@ -183,7 +202,6 @@ export const matchtype2 = {
                   type: affix.type
                 });
               }
-              //partSuffix_adj_and_noun(tempAffixChecker.nounSuffix, 'partSuffix-nounSuffix');
             }
           }
           if (tempAffixChecker.partPrefix) {
@@ -211,30 +229,6 @@ export const matchtype2 = {
               stem: entry.tempStem,
               type: entry.type
             });
-          }
-          function partSuffix_adj_and_noun(mapLocal, resultKey) {
-            for (const affix of mapLocal) {
-              if (!DICTIONARY.ALL_WORDS.MAP[affix.tempStem]) continue;
-              console.log(affix)
-              {
-                const targetDeclension = DICTIONARY.NOUNS.MAP[affix.tempStem].declension;
-                if (affix.paths.every(path => path[3] !== targetDeclension)) continue;
-              }
-
-              tempResults[resultKey].push({
-                raws: {
-                  'pre-declensionFinder()-entry': entry,
-                  'post-declensionFinder()-entry': affix
-                },
-                suffix: {
-                  suffix: affix.affix,
-                  paths: affix.paths
-                },
-                particle: entry.affix,
-                stem: affix.tempStem,
-                type: affix.type
-              });
-            }
           }
           tempMap.results.push(tempResults);
           break;
