@@ -93,7 +93,7 @@ export const matchtype2 = {
           }
           const tempResults = {
             'partSuffix-nounSuffix-partPrefix': [],
-            'partSuffix-nounSuffix-ppPrefix': [],
+            'partSuffix-nounSuffix-ppPrefix': [],//hm. can adjs also have partSuffix-pp/partPrefixes?
             'partSuffix-adjSuffix': [],
             'partSuffix-nounSuffix': [],
             'partSuffix-partPrefix': [],
@@ -237,7 +237,7 @@ export const matchtype2 = {
             ? matchtype2.affixChecker(entry.tempStem, DICTIONARY.VERBS.PREFIXES.MATCHES, true)
             : matchtype2.affixChecker(entry.tempStem, DICTIONARY.VERBS.SUFFIXES.MATCHES, false);
           for (const affix of tempMap.newEntry) {
-            if (!DICTIONARY.ALL_WORDS.MAP[affix.tempStem]) continue;
+            if (!DICTIONARY.VERBS.MAP[affix.tempStem]) continue;
 
             tempMap.results.push({
               raws: {
@@ -266,11 +266,9 @@ export const matchtype2 = {
           }
           break;
         case IDS.WORDS.N:
-          console.log('hi', entry)
           tempMap.newEntry = matchtype2.affixChecker(entry.tempStem, DICTIONARY.PREPOSITIONS.MAP, true)
             ? matchtype2.affixChecker(entry.tempStem, DICTIONARY.PREPOSITIONS.MAP, true)
             : null
-          console.log('tempMap.newEntry |', tempMap.newEntry)
           const result = {
             suffix: {
               suffix: entry.affix,
@@ -296,16 +294,23 @@ export const matchtype2 = {
                 : tempMap.newEntry.map(e => e.affix)
             })
           }
+          if (!DICTIONARY.NOUNS.MAP[result.stem]) continue;
           entry.paths.map(path => path[3] === DICTIONARY.NOUNS.MAP[result.stem].declension
             ? tempMap.results.push(entry) //checks if path declension is 'legal' //only pushes result if legal.
             : null
           );
           break;
         case IDS.WORDS.PP:
-
-        default:
-          console.warn('unhandled declensionFinder type |', entry.type);
+          tempMap.results.push({
+            raws: {
+              'pre-declensionFinder()-entry': entry
+            },
+            preposition: entry.affix,
+            stem: entry.tempStem,
+            paths: entry.paths
+          });
           break;
+        default: console.warn('unhandled declensionFinder type |', entry.type);
       }
     }
     /*
