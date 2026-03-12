@@ -77,11 +77,11 @@ globalThis.search = function search(word = false) {
   ) {
     console.log('-----type2-----');
     const test1 = {
-      'verbPrefix-verbSuffix': oop.matchtype2.declensionFinder(type2AffixesMap.verbPrefix, false)/*probably remove one, or ill get double results. only for double case though(xenæfon, but not xenæf or xenæfon)*/,
-      'verbSuffix-verbSuffix': oop.matchtype2.declensionFinder(type2AffixesMap.verbSuffix, true),
       'partSuffix-...': oop.matchtype2.declensionFinder(type2AffixesMap.partSuffix, false),
       'nounSuffix-...': oop.matchtype2.declensionFinder(type2AffixesMap.nounSuffix, true),
-      'ppPrefix-...': oop.matchtype2.declensionFinder(type2AffixesMap.ppPrefix, true)
+      'ppPrefix-...': oop.matchtype2.declensionFinder(type2AffixesMap.ppPrefix, true),
+      'verbSuffix': oop.matchtype2.declensionFinder(type2AffixesMap.verbSuffix, false),
+      'verbPrefix-...': oop.matchtype2.declensionFinder(type2AffixesMap.verbPrefix, true)
     }
     console.log(test1);
   }

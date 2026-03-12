@@ -233,36 +233,72 @@ export const matchtype2 = {
           tempMap.results.push(tempResults);
           break;
         case IDS.WORDS.V:
-          tempMap.newEntry = isPrefix
-            ? matchtype2.affixChecker(entry.tempStem, DICTIONARY.VERBS.PREFIXES.MATCHES, true)
-            : matchtype2.affixChecker(entry.tempStem, DICTIONARY.VERBS.SUFFIXES.MATCHES, false);
-          for (const affix of tempMap.newEntry) {
-            if (!DICTIONARY.VERBS.MAP[affix.tempStem]) continue;
-
-            tempMap.results.push({
-              raws: {
-                'pre-declensionFinder()-entry': entry,
-                'post-declensionFinder()-entry': tempMap.newEntry
-              },
-              suffix: {
-                suffix: isPrefix
-                  ? entry.affix
-                  : affix.affix,
-                paths: isPrefix
-                  ? entry.paths
-                  : affix.paths
-              },
-              prefix: {
-                prefix: isPrefix
-                  ? affix.affix
-                  : entry.affix,
-                paths: isPrefix
-                  ? affix.paths
-                  : entry.paths
-              },
-              stem: affix.tempStem,
-              type: affix.type
-            });
+          const tempResultsVerb = {
+            'verbPrefix': [],
+            'verbPrefix-verbSuffix': []
+          }
+          if (isPrefix) {
+            tempMap.newEntry = matchtype2.affixChecker(entry.tempStem, DICTIONARY.VERBS.SUFFIXES.MATCHES, false)
+              ? matchtype2.affixChecker(entry.tempStem, DICTIONARY.VERBS.SUFFIXES.MATCHES, false)
+              : [];
+            for (const affix of tempMap.newEntry) {
+              if (!DICTIONARY.VERBS.MAP[affix.tempStem]) continue;
+              const result = {
+                raws: {
+                  'pre-declensionFinder()-entry': entry,
+                  'post-declensionFinder()-entry': tempMap.newEntry
+                },
+                suffix: {
+                  suffix: affix.affix,
+                  paths: affix.paths
+                },
+                prefix: {
+                  prefix: entry.affix,
+                  paths: entry.paths
+                },
+                stem: affix.tempStem,
+                type: affix.type
+              };
+              DICTIONARY.VERBS.MAP[result.stem]
+                ? tempResultsVerb['verbPrefix-verbSuffix'].push(result)
+                : null
+            }
+            {
+              const result = {
+                raws: {
+                  'pre-declensionFinder()-entry': entry,
+                },
+                prefix: {
+                  prefix: entry.affix,
+                  paths: entry.paths
+                },
+                stem: entry.tempStem,
+                type: entry.type
+              };
+              DICTIONARY.VERBS.MAP[result.stem]
+                ? tempResultsVerb.verbPrefix.push(result)
+                : null
+            }
+            tempMap.results.push(tempResultsVerb);
+          }
+          else {
+            {
+              const result = {
+                raws: {
+                  'pre-declensionFinder()-entry': entry
+                },
+                suffix: {
+                  suffix: entry.affix,
+                  paths: entry.paths
+                },
+                stem: entry.tempStem,
+                type: entry.type
+              };
+              DICTIONARY.VERBS.MAP[result.stem]
+                ? tempMap.results.push(result)//tempResultsVerb.verbSuffix.push(result)
+                : null
+            }
+            //tempMap.results.push(tempResultsVerb);
           }
           break;
         case IDS.WORDS.N:
