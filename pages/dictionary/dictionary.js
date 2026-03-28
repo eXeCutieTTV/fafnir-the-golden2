@@ -32,8 +32,7 @@ globalThis.search = function search(word = false) {
       : searchFLD && searchFLD.value
         ? searchFLD.value.trim().toLowerCase()
         : '',
-    results: [],
-    resultz: {// will replace this.results
+    results: {
       matchtype1: [],
       matchtype2: []
     }
@@ -74,7 +73,7 @@ globalThis.search = function search(word = false) {
     for (const wordclass of temp) {
       const classMap = DICTIONARY[wordclass]?.MAP;
       classMap?.[initObj.keyword]//'thox'
-        ? initObj.results.push(classMap[initObj.keyword])
+        ? initObj.results.matchtype1.push(classMap[initObj.keyword])
         : console.log('err for', wordclass)
     }
     console.log(initObj);
@@ -99,11 +98,18 @@ globalThis.search = function search(word = false) {
       'detSuffix': oop.matchtype2.declensionFinder(typeMap.type2.detSuffix, false)
     }
     console.log('checkerMap', checkerMap);
-    initObj.resultz.matchtype2 = oop.matchtype2.flatten(checkerMap)
-    console.log('initObj', initObj)
+    initObj.results.matchtype2 = oop.matchtype2.flatten(checkerMap);//need other map, sorted by stem?
+    console.log('initObj', initObj);
   }
+  sessionStorage.setItem('initObj', JSON.stringify(initObj));
+  initObj.results.matchtype1.length > 0
+    ? window.location.href = './results/matchtype-1.html'
+    : Object.values(initObj.results.matchtype2).length > 0
+      ? window.location.href = './results/matchtype-2.html'
+      : null
 }
 
+//window.location.href = ./results/...
 searchBTN.addEventListener('click', () => {
   search();
 });
@@ -114,21 +120,4 @@ searchFLD.addEventListener('keydown', (ev) => {
   }
 });
 
-
-/*
-for (const a of Object.values(DICTIONARY.VERBS.MAP)) oop.helperFunctions.run('fix', a.word)
-for (const a of Object.values(DICTIONARY.ADJECTIVES.MAP)) oop.helperFunctions.run('fix', a.word, 'adj')
-for (const a of Object.values(DICTIONARY.ADVERBS.MAP)) oop.helperFunctions.run('fix', a.word, 'adv')
-*/
-
-/*
-test = {
-    verbPre: AFFIXES.PREFIXES.match("xenæf", DICTIONARY.VERBS.PREFIXES.MATCHES, true),
-    verbSuf: AFFIXES.SUFFIXES.match("æfon", DICTIONARY.VERBS.SUFFIXES.MATCHES, true),
-    adj: AFFIXES.SUFFIXES.match("æklôħon", DICTIONARY.ADJECTIVES.SUFFIXES.MATCHES, true),
-    noun: AFFIXES.SUFFIXES.match("æklūn", DICTIONARY.NOUNS.SUFFIXES.MATCHES, true),
-    partPre: AFFIXES.PREFIXES.match("iæklū", DICTIONARY.PARTICLES.MAP, true),
-    partSuf: AFFIXES.SUFFIXES.match("æklôħnyl", DICTIONARY.PARTICLES.MAP, true),
-    pp: AFFIXES.PREFIXES.match("æze'æklū", DICTIONARY.PREPOSITIONS.MAP, true)
-}
-*/
+// make english vs draconic search based on a dropdown, instead of a default fallback.
