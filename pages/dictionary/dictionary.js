@@ -32,7 +32,11 @@ globalThis.search = function search(word = false) {
       : searchFLD && searchFLD.value
         ? searchFLD.value.trim().toLowerCase()
         : '',
-    results: []
+    results: [],
+    resultz: {// will replace this.results
+      matchtype1: [],
+      matchtype2: []
+    }
   }
 
   console.log('keyword |', initObj.keyword);
@@ -40,7 +44,6 @@ globalThis.search = function search(word = false) {
     searchFLD.value = '';
     searchFLD.blur();
   }
-  // for type2
   const typeMap = {
     irregulars: {
       correlative: oop.irregulars.correlative(initObj.keyword) || [],
@@ -84,7 +87,8 @@ globalThis.search = function search(word = false) {
     Object.values(typeMap.type2).some(matches => matches.length > 0)
   ) {
     console.log('-----type2-----');
-    const test1 = {
+    initObj.matchType = 2;
+    const checkerMap = {
       'partSuffix-...': oop.matchtype2.declensionFinder(typeMap.type2.partSuffix, false),
       'partPrefix': oop.matchtype2.declensionFinder(typeMap.type2.partPrefix, true),
       'nounSuffix-...': oop.matchtype2.declensionFinder(typeMap.type2.nounSuffix, true),
@@ -94,7 +98,9 @@ globalThis.search = function search(word = false) {
       'adjSuffix-...': oop.matchtype2.declensionFinder(typeMap.type2.adjSuffix, false),
       'detSuffix': oop.matchtype2.declensionFinder(typeMap.type2.detSuffix, false)
     }
-    console.log(test1);
+    console.log('checkerMap', checkerMap);
+    initObj.resultz.matchtype2 = oop.matchtype2.flatten(checkerMap)
+    console.log('initObj', initObj)
   }
 }
 

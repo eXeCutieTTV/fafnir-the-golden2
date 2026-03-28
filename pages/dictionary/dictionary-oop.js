@@ -622,6 +622,40 @@ export const matchtype2 = {
     } else affixFinder(word, affixMatch, isPrefix);
     */ //not even here yet tbh
     return tempMap.results;
+  },
+  flatten: (map) => {
+    const result = {};
+    for (const [key, value] of Object.entries(map)) {
+      switch (key) {
+        case 'partSuffix-...':
+        case 'partPrefix-...':
+        case 'ppPrefix-...':
+        case 'verbPrefix-...':
+        case 'adjSuffix-...':
+          for (const entry of Object.values(value)) {
+            for (const [key1, value1] of Object.entries(entry)) {
+              if (!value1.length > 0) continue;
+              for (const el of Object.values(value1)) {
+                result[key1]
+                  ? result[key1].push(el)
+                  : (result[key1] = [], result[key1].push(el))
+              }
+            }
+          }
+          break;
+        case 'nounSuffix-...':
+        case 'detSuffix':
+        case 'verbSuffix':
+          for (const entry of value) {
+            if (!Object.values(entry).length > 0) continue;
+            result[key]
+              ? result[key].push(entry)
+              : (result[key] = [], result[key].push(entry))
+          }
+          break;
+      }
+    }
+    return result;
   }
 }
 export const irregulars = {
