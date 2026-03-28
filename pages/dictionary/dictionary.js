@@ -41,18 +41,26 @@ globalThis.search = function search(word = false) {
     searchFLD.blur();
   }
   // for type2
-  const type2AffixesMap = {
-    adjSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.ADJECTIVES.SUFFIXES.MATCHES, false) || [],
-    auxPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
-    detSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.DETERMINERS.SUFFIXES.MATCHES, false) || [],
-    nounSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.NOUNS.SUFFIXES.MATCHES, false) || [],
-    partPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, true) || [],
-    partSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, false) || [],
-    ppPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PREPOSITIONS.MAP, true) || [],
-    verbPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
-    verbSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.SUFFIXES.MATCHES, false) || []
+  const typeMap = {
+    irregulars: {
+      correlative: oop.irregulars.correlative(initObj.keyword) || [],
+      determiner: oop.irregulars.determiner(initObj.keyword) || [],
+      lur: oop.irregulars.lur(initObj.keyword) || [],
+      pronoun: oop.irregulars.pronoun(initObj.keyword) || []
+    },
+    type2: {
+      adjSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.ADJECTIVES.SUFFIXES.MATCHES, false) || [],
+      auxPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
+      detSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.DETERMINERS.SUFFIXES.MATCHES, false) || [],
+      nounSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.NOUNS.SUFFIXES.MATCHES, false) || [],
+      partPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, true) || [],
+      partSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, false) || [],
+      ppPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PREPOSITIONS.MAP, true) || [],
+      verbPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
+      verbSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.SUFFIXES.MATCHES, false) || []
+    }
   }
-  console.log('type2AffixesMap |', type2AffixesMap);//make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
+  console.log('typeMap |', typeMap);//make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
   if (DICTIONARY.ALL_WORDS.MAP[initObj.keyword]?.word?.length > 0) { // type 1
     initObj.matchType = 1;
     console.log('-----type1-----');
@@ -73,17 +81,18 @@ globalThis.search = function search(word = false) {
     //a.click();
     //alert('hi')
   } else if (//type 2
-    Object.values(type2AffixesMap).some(matches => matches.length > 0)
+    Object.values(typeMap.type2).some(matches => matches.length > 0)
   ) {
     console.log('-----type2-----');
     const test1 = {
-      'partSuffix-...': oop.matchtype2.declensionFinder(type2AffixesMap.partSuffix, false),
-      'partPrefix': oop.matchtype2.declensionFinder(type2AffixesMap.partPrefix, true),
-      'nounSuffix-...': oop.matchtype2.declensionFinder(type2AffixesMap.nounSuffix, true),
-      'ppPrefix-...': oop.matchtype2.declensionFinder(type2AffixesMap.ppPrefix, true),
-      'verbSuffix': oop.matchtype2.declensionFinder(type2AffixesMap.verbSuffix, false),
-      'verbPrefix-...': oop.matchtype2.declensionFinder(type2AffixesMap.verbPrefix, true),
-      'adjSuffix-...': oop.matchtype2.declensionFinder(type2AffixesMap.adjSuffix, false)
+      'partSuffix-...': oop.matchtype2.declensionFinder(typeMap.type2.partSuffix, false),
+      'partPrefix': oop.matchtype2.declensionFinder(typeMap.type2.partPrefix, true),
+      'nounSuffix-...': oop.matchtype2.declensionFinder(typeMap.type2.nounSuffix, true),
+      'ppPrefix-...': oop.matchtype2.declensionFinder(typeMap.type2.ppPrefix, true),
+      'verbSuffix': oop.matchtype2.declensionFinder(typeMap.type2.verbSuffix, false),
+      'verbPrefix-...': oop.matchtype2.declensionFinder(typeMap.type2.verbPrefix, true),
+      'adjSuffix-...': oop.matchtype2.declensionFinder(typeMap.type2.adjSuffix, false),
+      'detSuffix': oop.matchtype2.declensionFinder(typeMap.type2.detSuffix, false)
     }
     console.log(test1);
   }

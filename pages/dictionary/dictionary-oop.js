@@ -84,6 +84,55 @@ export const matchtype2 = {
     }
     for (const entry of map) {
       switch (entry.type) {
+        case IDS.WORDS.AUX:
+          //dont need, case verb will catch all since aux prefixes are just verb prefixes. it has proper .type so its fine
+          break;
+        case IDS.WORDS.DET:
+          const tempAffixChecker = {
+            'detSuffix-ppPrefix': matchtype2.affixChecker(entry.tempStem, DICTIONARY.PREPOSITIONS.MAP, true)
+          }
+          const tempResults = {
+            'detSuffix-ppPrefix': [],
+            'detSuffix': []
+          }
+          if (tempAffixChecker["detSuffix-ppPrefix"]) {
+            for (const affix of tempAffixChecker["detSuffix-ppPrefix"]) {
+              if (!DICTIONARY.DETERMINERS.MAP[affix.tempStem]) continue;
+              const result = {
+                raws: {
+                  'pre-declensionFinder()-entry': entry,
+                  'post-declensionFinder()-entry': affix
+                },
+                suffix: {
+                  suffix: entry.affix,
+                  paths: entry.paths
+                },
+                preposition: affix.affix,
+                stem: affix.tempStem,
+                type: DICTIONARY.ALL_WORDS.MAP[affix.tempStem].type
+              }
+              tempResults["detSuffix-ppPrefix"].push(result);
+            }
+          }
+          {
+            //if (!DICTIONARY.DETERMINERS.MAP[entry.tempStem]) continue;
+            const result = {
+              raws: {
+                'pre-declensionFinder()-entry': entry
+              },
+              suffix: {
+                suffix: entry.affix,
+                paths: entry.paths
+              },
+              stem: entry.tempStem,
+              type: ''//DICTIONARY.ALL_WORDS.MAP[entry.tempStem].type
+            }
+            DICTIONARY.ALL_WORDS.MAP[result.stem]
+              ? (result.type = DICTIONARY.ALL_WORDS.MAP[entry.tempStem].type, tempResults["detSuffix"].push(result))
+              : null
+          }
+          tempMap.results.push(tempResults);
+          break;
         case IDS.WORDS.PART:
           if (!isPrefix) {
             const tempAffixChecker = {//partsuffix(needs to be in case part) 
@@ -119,7 +168,7 @@ export const matchtype2 = {
                   },
                   particle: entry.affix,
                   stem: affix.tempStem,
-                  type: affix.type
+                  type: DICTIONARY.ALL_WORDS.MAP[affix.tempStem].type
                 });
               }
             }
@@ -136,7 +185,7 @@ export const matchtype2 = {
                   },
                   particle: entry.affix,
                   tempStem: affix.tempStem,
-                  type: affix.type
+                  type: DICTIONARY.ALL_WORDS.MAP[affix.tempStem].type
                 };
                 tempMap.newerEntry = {
                   partPrefix: matchtype2.affixChecker(tempObj.tempStem, DICTIONARY.PARTICLES.MAP, true),
@@ -217,31 +266,88 @@ export const matchtype2 = {
                   particleSuffix: entry.affix,
                   particlePrefix: affix.affix,
                   stem: affix.tempStem,
-                  type: affix.type
+                  type: DICTIONARY.ALL_WORDS.MAP[affix.tempStem].type
                 });
               }
             }
-            if (!tempAffixChecker.adjSuffix && !tempAffixChecker.nounSuffix && !tempAffixChecker.partPrefix && !tempAffixChecker.ppPrefix) {
+            if (DICTIONARY.ALL_WORDS.MAP[entry.tempStem]) {
               tempResults['partSuffix'].push({
                 raws: {
                   'pre-declensionFinder()-entry': entry
                 },
                 particleSuffix: entry.affix,
                 stem: entry.tempStem,
-                type: entry.type
+                type: DICTIONARY.ALL_WORDS.MAP[entry.tempStem].type
               });
             }
             tempMap.results.push(tempResults);
           } else {
-            if (!DICTIONARY.NOUNS.MAP[entry.tempStem]) continue;
-            tempMap.results.push({
-              raws: {
-                'pre-declensionFinder()-entry': entry
-              },
-              particlePrefix: entry.affix,
-              stem: entry.tempStem,
-              type: entry.type
-            });
+            const tempAffixChecker = {//partsuffix(needs to be in case part) 
+              adjSuffix: matchtype2.affixChecker(entry.tempStem, DICTIONARY.ADJECTIVES.SUFFIXES.MATCHES, false),
+              nounSuffix: matchtype2.affixChecker(entry.tempStem, DICTIONARY.NOUNS.SUFFIXES.MATCHES, false)
+            }
+            const tempResults = {
+              'partPrefix-nounSuffix': [],
+              'partPrefix-adjSuffix': [],
+              'partSuffix': []
+            }
+            if (tempAffixChecker.nounSuffix) {
+              for (const affix of tempAffixChecker.nounSuffix) {
+                if (!DICTIONARY.NOUNS.MAP[affix.tempStem]) continue;
+                const result = {
+                  raws: {
+                    'pre-declensionFinder()-entry': entry,
+                    'post-declensionFinder()-entry': affix
+                  },
+                  suffix: {
+                    suffix: affix.affix,
+                    paths: affix.paths
+                  },
+                  particle: entry.affix,
+                  stem: affix.tempStem,
+                  type: DICTIONARY.ALL_WORDS.MAP[affix.tempStem].type
+                }
+                result.suffix.paths.map(path => {
+                  path[3] === DICTIONARY.NOUNS.MAP[affix.tempStem].declension
+                    ? tempResults['partPrefix-nounSuffix'].push(result) //checks if path declension is 'legal' //only pushes result if legal.
+                    : null
+                });
+              }
+            }
+            if (tempAffixChecker.adjSuffix) {
+              for (const affix of tempAffixChecker.adjSuffix) {
+                if (!DICTIONARY.ADJECTIVES.MAP[affix.tempStem]) continue;
+                const result = {
+                  raws: {
+                    'pre-declensionFinder()-entry': entry,
+                    'post-declensionFinder()-entry': affix
+                  },
+                  suffix: {
+                    suffix: affix.affix,
+                    paths: affix.paths
+                  },
+                  particle: entry.affix,
+                  stem: affix.tempStem,
+                  type: DICTIONARY.ALL_WORDS.MAP[affix.tempStem].type
+                }
+                result.suffix.paths.map(path => {
+                  path[3] === DICTIONARY.ADJECTIVES.MAP[affix.tempStem].declension
+                    ? tempResults['partPrefix-adjSuffix'].push(result) //checks if path declension is 'legal' //only pushes result if legal.
+                    : null
+                });
+              }
+            }
+            if (DICTIONARY.ALL_WORDS.MAP[entry.tempStem]) {
+              tempResults['partSuffix'].push({
+                raws: {
+                  'pre-declensionFinder()-entry': entry
+                },
+                particlePrefix: entry.affix,
+                stem: entry.tempStem,
+                type: DICTIONARY.ALL_WORDS.MAP[entry.tempStem].type
+              });
+            }
+            tempMap.results.push(tempResults);
           }
           break;
         case IDS.WORDS.V:
@@ -269,7 +375,7 @@ export const matchtype2 = {
                   paths: entry.paths
                 },
                 stem: affix.tempStem,
-                type: affix.type
+                type: DICTIONARY.ALL_WORDS.MAP[affix.tempStem].type
               };
               DICTIONARY.VERBS.MAP[result.stem]
                 ? tempResultsVerb['verbPrefix-verbSuffix'].push(result)
@@ -285,16 +391,16 @@ export const matchtype2 = {
                   paths: entry.paths
                 },
                 stem: entry.tempStem,
-                type: entry.type
+                type: DICTIONARY.ALL_WORDS.MAP[entry.tempStem].type
               };
-              DICTIONARY.VERBS.MAP[result.stem]
-                ? tempResultsVerb.verbPrefix.push(result)
-                : null
+              if (!(DICTIONARY.VERBS.MAP[result.stem] || DICTIONARY.AUXILIARIES.MAP[result.stem])) continue;
+              tempResultsVerb.verbPrefix.push(result)
             }
             tempMap.results.push(tempResultsVerb);
           }
           else {
             {
+              if (!DICTIONARY.VERBS.MAP[entry.tempStem]) continue;
               const result = {
                 raws: {
                   'pre-declensionFinder()-entry': entry
@@ -304,11 +410,9 @@ export const matchtype2 = {
                   paths: entry.paths
                 },
                 stem: entry.tempStem,
-                type: entry.type
+                type: DICTIONARY.ALL_WORDS.MAP[entry.tempStem].type
               };
-              DICTIONARY.VERBS.MAP[result.stem]
-                ? tempMap.results.push(result)//tempResultsVerb.verbSuffix.push(result)
-                : null
+              tempMap.results.push(result)
             }
             //tempMap.results.push(tempResultsVerb);
           }
@@ -349,15 +453,36 @@ export const matchtype2 = {
           );
           break;
         case IDS.WORDS.PP:
-          if (!DICTIONARY.ALL_WORDS.MAP[entry.tempStem]) continue;
-          tempMap.results.push({
-            raws: {
-              'pre-declensionFinder()-entry': entry
-            },
-            preposition: entry.affix,
-            stem: entry.tempStem,
-            paths: entry.paths
-          });
+          const tempResult = {
+            'irregular': [],
+            'regular': []
+          }
+          if (!(irregulars.determiner(entry.tempStem).length > 0 || DICTIONARY.NOUNS.MAP[entry.tempStem] || DICTIONARY.DETERMINERS.MAP[entry.tempStem] || DICTIONARY.ADJECTIVES.MAP[entry.tempStem])) continue;
+          if (irregulars.determiner(entry.tempStem).length > 0) {
+            for (const el of irregulars.determiner(entry.tempStem)) {
+              tempResult.irregular.push({
+                raws: {
+                  'pre-declensionFinder()-entry': entry,
+                  'irregular-entry': el
+                },
+                preposition: entry.affix,
+                stem: entry.tempStem,
+                path: el.path,
+                type: el.type
+              });
+            }
+          } else {
+            tempResult.regular.push({
+              raws: {
+                'pre-declensionFinder()-entry': entry,
+              },
+              preposition: entry.affix,
+              stem: entry.tempStem,
+              paths: entry.paths,
+              type: DICTIONARY.ALL_WORDS.MAP[entry.tempStem].type
+            });
+          }
+          tempMap.results.push(tempResult);
           break;
         case IDS.WORDS.ADJ:
           const tempResultsAdj = {
@@ -393,7 +518,7 @@ export const matchtype2 = {
               }
             }
             else {
-                if (!DICTIONARY.ADJECTIVES.MAP[entry.tempStem]) continue;
+              if (!DICTIONARY.ADJECTIVES.MAP[entry.tempStem]) continue;
               const result = {
                 raws: {
                   'pre-declensionFinder()-entry': entry
@@ -430,6 +555,204 @@ export const matchtype2 = {
     } else affixFinder(word, affixMatch, isPrefix);
     */ //not even here yet tbh
     return tempMap.results;
+  }
+}
+export const irregulars = {
+  pronoun: (word) => {
+    const matches = [];
+    for (const [genderKey, genderMap] of Object.entries(PRONOUNS.MAP)) {
+      for (const [numberKey, numberMap] of Object.entries(genderMap)) {
+        for (const [personKey, personMap] of Object.entries(numberMap)) {
+          for (const [caseKey, caseValue] of Object.entries(personMap)) {
+            if (caseValue === word) {
+              function shortpath() {
+                const temp = {
+                  arr: [],
+                  map: [IDS.NUMBERS, IDS.CASE]
+                }
+                for (const el of temp.map) {
+                  for (const [short, long] of Object.entries(el)) {
+                    if (caseKey === long) {
+                      temp.arr.push(short);
+                    }
+                    if (numberKey === long) {
+                      temp.arr.push(short);
+                    }
+                  }
+                }
+                for (const entry of Object.values(GENDERS.MAP)) {
+                  if (entry.NAME === genderKey) {
+                    temp.arr.push(entry.SHORT);
+                  }
+                }
+                const result = `pers.${temp.arr[2]}.${temp.arr[1]}.${personKey}.${temp.arr[0]}`;//type.gender.number.person.case
+                //console.log(tempArray);
+                return result;
+              }
+              const result = {
+                path: {
+                  gender: genderKey,
+                  number: numberKey,
+                  person: personKey,
+                  case: caseKey,
+                },
+                word: caseValue,
+                type: 'personal',
+                short_path: shortpath() || '',
+              }
+              matches.push(result);
+            }
+          }
+        }
+      }
+    }
+    return matches;
+  },
+  determiner: (word) => {
+    const matches = [];
+    for (const [genderKey, genderMap] of Object.entries(DICTIONARY.DETERMINERS.IRREGULARS.MAP)) {
+      for (const [typeKey, typeMap] of Object.entries(genderMap)) {
+        for (const [numberKey, numberValue] of Object.entries(typeMap)) {
+          if (numberValue === word) {
+            function shortpath() {
+              const temp = {
+                arr: [],
+                map: [IDS.NUMBERS, IDS.DET_TYPES]
+              }
+              for (const el of temp.map) {
+                for (const [short, long] of Object.entries(el)) {
+                  if (numberKey === long) {
+                    temp.arr.push(short);
+                  }
+                  if (typeKey === long) {
+                    temp.arr.push(short);
+                  }
+                }
+              }
+              for (const entry of Object.values(GENDERS.MAP)) {
+                if (entry.NAME === genderKey) {
+                  temp.arr.push(entry.SHORT);
+                }
+              }
+              const result = `${temp.arr[1]}.${temp.arr[0]}.${temp.arr[2]}`;//type.number.gender
+              return result;
+            }
+            const result = {
+              path: {
+                gender: genderKey,
+                number: numberKey,
+              },
+              word: numberValue,
+              type: typeKey,
+              short_path: shortpath() || '',
+            }
+            matches.push(result);
+          }
+        }
+      }
+    }
+    return matches;
+  },
+  correlative: (word) => {
+    const matches = [];
+    for (const [genderKey, genderMap] of Object.entries(CORRELATIVES.MAP)) {
+      for (const [typeKey, typeMap] of Object.entries(genderMap)) {
+        for (const [caseKey, caseValue] of Object.entries(typeMap)) {
+          if (caseValue === word) {
+            function shortpath() {
+              const temp = {
+                arr: [],
+                map: [IDS.CASE, IDS.COR_TYPES]
+              }
+              for (const el of temp.map) {
+                for (const [short, long] of Object.entries(el)) {
+                  if (caseKey === long) {
+                    temp.arr.push(short);
+                  }
+                  if (typeKey === long) {
+                    temp.arr.push(short);
+                  }
+                }
+              }
+              for (const entry of Object.values(GENDERS.MAP)) {
+                if (entry.NAME === genderKey) {
+                  temp.arr.push(entry.SHORT);
+                }
+              }
+              const result = `${temp.arr[1]}.${temp.arr[0]}.${temp.arr[2]}`;//type.case.gender
+              return result;
+            }
+            const result = {
+              path: {
+                gender: genderKey,
+                case: caseKey,
+              },
+              word: caseValue,
+              type: typeKey,
+              short_path: shortpath() || '',
+            }
+            matches.push(result);
+          }
+        }
+      }
+    }
+    return matches;
+  },
+  lur: (word) => {
+    const matches = [];
+    for (const [aspectKey, aspectMap] of Object.entries(LUR.MAP)) {
+      for (const [tenseKey, tenseMap] of Object.entries(aspectMap)) {
+        for (const [genderKey, genderMap] of Object.entries(tenseMap)) {
+          for (const [personKey, personMap] of Object.entries(genderMap)) {
+            for (const [numberKey, numberValue] of Object.entries(personMap)) {
+              if (numberValue === word) {
+                function shortpath() {
+                  const temp = {
+                    arr: [],
+                    map: [IDS.ASPECT, IDS.NUMBERS, IDS.TENSE]
+                  }
+                  for (const el of temp.map) {
+                    for (const [short, long] of Object.entries(el)) {
+                      if (aspectKey === long) {
+                        temp.arr.push(short);
+                      }
+                      if (tenseKey === long) {
+                        temp.arr.push(short);
+                      }
+                      if (numberKey === long) {
+                        temp.arr.push(short);
+                      }
+                    }
+                  }
+                  for (const entry of Object.values(GENDERS.MAP)) {
+                    if (entry.NAME === genderKey) {
+                      temp.arr.push(entry.SHORT);
+                    }
+                  }
+                  const result = `${temp.arr[0]}.${temp.arr[3]}.${temp.arr[1]}.${personKey}.${temp.arr[2]}`;//aspect.gender.number.person.tense.
+                  return result;
+                }
+                const result = {
+                  form: {
+                    aspect: aspectKey,
+                    tense: tenseKey,
+                  },
+                  path: {
+                    gender: genderKey,
+                    person: personKey,
+                    number: numberKey
+                  },
+                  short_path: shortpath() || '',
+                  word: numberValue
+                }
+                matches.push(result);
+              }
+            }
+          }
+        }
+      }
+    }
+    return matches;
   }
 }
 
