@@ -1020,7 +1020,7 @@ export const htmlEditing = {
       //th
       const thead = document.createElement('thead');
       const headerRow = document.createElement('tr');
-      const headers = [mood, "Singular", "Dual", "Plural"];
+      const headers = [`${mood} (${declension})`, "Singular", "Dual", "Plural"];
       headers.forEach(text => {
         const th = document.createElement('th');
         th.textContent = text;
