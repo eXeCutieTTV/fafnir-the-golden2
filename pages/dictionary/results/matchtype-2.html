@@ -11,11 +11,27 @@
 
 <body>
   <div id="bodyHtml"></div>
+  <div>
+    <table>
+      <thead>
+        <tr>
+          <th>word</th>
+          <th style="width:75%">path</th>
+          <th>load tables</th>
+        </tr>
+      </thead>
+      <tbody id="tableTbody">
+        <tr>
+        </tr>
+      </tbody>
+    </table>
+    <div id="loadableTable">
+      <div></div>
+      <div></div>
+    </div>
+  </div>
   <script>getLocalHtml('/tabbar/html.html')</script>
-  <script>
-    console.log(JSON.parse(sessionStorage.getItem('initObj')))
-
-  </script>
 </body>
+<script src="./js/matchtype-2.js" type="module"></script>
 
 </html>

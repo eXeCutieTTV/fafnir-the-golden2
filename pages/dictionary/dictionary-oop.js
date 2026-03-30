@@ -97,7 +97,7 @@ export const matchtype2 = {
           }
           if (tempAffixChecker["detSuffix-ppPrefix"]) {
             for (const affix of tempAffixChecker["detSuffix-ppPrefix"]) {
-              if (!DICTIONARY.DETERMINERS.MAP[affix.tempStem]) continue;
+              if (!dictionaryBased.findStemFromShort(affix.tempStem).length > 0) continue;
               const result = {
                 raws: {
                   'pre-declensionFinder()-entry': entry,
@@ -115,7 +115,7 @@ export const matchtype2 = {
             }
           }
           {
-            //if (!DICTIONARY.DETERMINERS.MAP[entry.tempStem]) continue;
+            //if (!dictionaryBased.findStemFromShort(entry.tempStem).length > 0) continue;
             const result = {
               raws: {
                 'pre-declensionFinder()-entry': entry
@@ -177,7 +177,7 @@ export const matchtype2 = {
                 console.log('tempMap.newerEntry |', tempMap.newerEntry)
                 if (tempMap.newerEntry.partPrefix) {
                   for (const affix2 of Object.values(tempMap.newerEntry.partPrefix)) {
-                    if (!DICTIONARY.ADJECTIVES.MAP[affix2.tempStem]) continue;
+                    if (!dictionaryBased.findStemFromShort(affix2.tempStem).length > 0) continue;
                     {//just to keep the const out of scope.
                       const targetDeclension = DICTIONARY.ADJECTIVES.MAP[affix2.tempStem].declension;
                       if (tempObj.suffix.paths.every(path => path[3] !== targetDeclension)) continue;
@@ -197,7 +197,7 @@ export const matchtype2 = {
                 }
                 if (tempMap.newerEntry.ppPrefix) {
                   for (const affix2 of Object.values(tempMap.newerEntry.ppPrefix)) {
-                    if (!DICTIONARY.ADJECTIVES.MAP[affix2.tempStem]) continue;
+                    if (!dictionaryBased.findStemFromShort(affix2.tempStem).length > 0) continue;
                     {//just to keep the const out of scope.
                       const targetDeclension = DICTIONARY.ADJECTIVES.MAP[affix2.tempStem].declension;
                       if (tempObj.suffix.paths.every(path => path[3] !== targetDeclension)) continue;
@@ -216,7 +216,7 @@ export const matchtype2 = {
                   }
                 }
                 if (!(tempMap.newerEntry.partPrefix || tempMap.newerEntry.ppPrefix)) {
-                  if (!DICTIONARY.ALL_WORDS.MAP[affix.tempStem]) continue;
+                  if (!dictionaryBased.findStemFromShort(affix.tempStem).length > 0) continue;
                   {
                     const targetDeclension = DICTIONARY.ADJECTIVES.MAP[affix.tempStem].declension;
                     if (affix.paths.every(path => path[3] !== targetDeclension)) continue;
@@ -261,7 +261,7 @@ export const matchtype2 = {
                 console.log('tempMap.newerEntry |', tempMap.newerEntry)
                 if (tempMap.newerEntry.partPrefix) {
                   for (const affix2 of Object.values(tempMap.newerEntry.partPrefix)) {
-                    if (!DICTIONARY.NOUNS.MAP[affix2.tempStem]) continue;
+                    if (!dictionaryBased.findStemFromShort(affix2.tempStem).length > 0) continue;
                     {//just to keep the const out of scope.
                       const targetDeclension = DICTIONARY.NOUNS.MAP[affix2.tempStem].declension;
                       if (tempObj.suffix.paths.every(path => path[3] !== targetDeclension)) continue;
@@ -281,7 +281,7 @@ export const matchtype2 = {
                 }
                 if (tempMap.newerEntry.ppPrefix) {
                   for (const affix2 of Object.values(tempMap.newerEntry.ppPrefix)) {
-                    if (!DICTIONARY.NOUNS.MAP[affix2.tempStem]) continue;
+                    if (!dictionaryBased.findStemFromShort(affix2.tempStem).length > 0) continue;
                     {//just to keep the const out of scope.
                       const targetDeclension = DICTIONARY.NOUNS.MAP[affix2.tempStem].declension;
                       if (tempObj.suffix.paths.every(path => path[3] !== targetDeclension)) continue;
@@ -300,7 +300,7 @@ export const matchtype2 = {
                   }
                 }
                 if (!(tempMap.newerEntry.partPrefix || tempMap.newerEntry.ppPrefix)) {
-                  if (!DICTIONARY.ALL_WORDS.MAP[affix.tempStem]) continue;
+                  if (!dictionaryBased.findStemFromShort(affix.tempStem).length > 0) continue;
                   {
                     const targetDeclension = DICTIONARY.NOUNS.MAP[affix.tempStem].declension;
                     if (affix.paths.every(path => path[3] !== targetDeclension)) continue;
@@ -323,7 +323,7 @@ export const matchtype2 = {
             }
             if (temp.affixChecker.partPrefix) {
               for (const affix of temp.affixChecker.partPrefix) {
-                if (!DICTIONARY.ALL_WORDS.MAP[affix.tempStem]) continue;
+                if (!dictionaryBased.findStemFromShort(affix.tempStem).length > 0) continue;
 
                 temp.results['partSuffix-partPrefix'].push({
                   raws: {
@@ -360,7 +360,7 @@ export const matchtype2 = {
             }
             if (tempAffixChecker.nounSuffix) {
               for (const affix of tempAffixChecker.nounSuffix) {
-                if (!DICTIONARY.NOUNS.MAP[affix.tempStem]) continue;
+                if (!dictionaryBased.findStemFromShort(affix.tempStem).length > 0) continue;
                 const result = {
                   raws: {
                     'pre-declensionFinder()-entry': entry,
@@ -383,7 +383,7 @@ export const matchtype2 = {
             }
             if (tempAffixChecker.adjSuffix) {
               for (const affix of tempAffixChecker.adjSuffix) {
-                if (!DICTIONARY.ADJECTIVES.MAP[affix.tempStem]) continue;
+                if (!dictionaryBased.findStemFromShort(affix.tempStem).length > 0) continue;
                 const result = {
                   raws: {
                     'pre-declensionFinder()-entry': entry,
@@ -427,7 +427,7 @@ export const matchtype2 = {
               ? matchtype2.affixChecker(entry.tempStem, DICTIONARY.VERBS.SUFFIXES.MATCHES, false)
               : [];
             for (const affix of tempMap.newEntry) {
-              if (!DICTIONARY.VERBS.MAP[affix.tempStem]) continue;
+              if (!dictionaryBased.findStemFromShort(affix.tempStem).length > 0) continue;
               const result = {
                 raws: {
                   'pre-declensionFinder()-entry': entry,
@@ -458,16 +458,16 @@ export const matchtype2 = {
                   paths: entry.paths
                 },
                 stem: entry.tempStem,
-                type: DICTIONARY.ALL_WORDS.MAP[entry.tempStem].type
+                type: entry.type
               };
-              if (!(DICTIONARY.VERBS.MAP[result.stem] || DICTIONARY.AUXILIARIES.MAP[result.stem])) continue;
+              if (!(DICTIONARY.VERBS.MAP[result.stem] || DICTIONARY.AUXILIARIES.MAP[result.stem])) continue;//fix
               tempResultsVerb.verbPrefix.push(result)
             }
             tempMap.results.push(tempResultsVerb);
           }
           else {
             {
-              if (!DICTIONARY.VERBS.MAP[entry.tempStem]) continue;
+              if (!dictionaryBased.findStemFromShort(entry.tempStem).length > 0) continue;
               const result = {
                 raws: {
                   'pre-declensionFinder()-entry': entry
@@ -477,47 +477,59 @@ export const matchtype2 = {
                   paths: entry.paths
                 },
                 stem: entry.tempStem,
-                type: DICTIONARY.ALL_WORDS.MAP[entry.tempStem].type
+                type: entry.type
               };
-              tempMap.results.push(result)
+              for (const entry2 of dictionaryBased.findStemFromShort(result.stem)) {
+                if (entry2.type !== result.type) continue;
+                //console.log(entry2, entry, result.type, entry2.type, entry2.type === result.type)
+                result.stemReal = entry2.text;
+                tempMap.results.push(result)
+              }
             }
             //tempMap.results.push(tempResultsVerb);
           }
           break;
         case IDS.WORDS.N:
           tempMap.newEntry = matchtype2.affixChecker(entry.tempStem, DICTIONARY.PREPOSITIONS.MAP, true)
-            ? matchtype2.affixChecker(entry.tempStem, DICTIONARY.PREPOSITIONS.MAP, true)
-            : null
+          if (!tempMap.newEntry) {
+            tempMap.newEntry = null;
+          }
+
           const result = {
             suffix: {
               suffix: entry.affix,
               paths: entry.paths
             },
-            stem: tempMap.newEntry
-              ? tempMap.newEntry.length === 1
-                ? tempMap.newEntry[0].tempStem
-                : tempMap.newEntry.map(e => e.tempStem) //later will just have to check if this is an array - if yes, then x, if no, then y.
-              : entry.tempStem,
+            stem: entry.tempStem,
             type: entry.type,
-            raw: tempMap.newEntry === null
-              ? {
-                'pre-declensionFinder()-entry': entry
-              }
-              : {
-                'pre-declensionFinder()-entry': entry,
-                'post-declensionFinder()-entry': tempMap.newEntry
-              },
-            ...(tempMap.newEntry !== null && {
-              pp: tempMap.newEntry.length === 1
-                ? tempMap.newEntry[0].affix
-                : tempMap.newEntry.map(e => e.affix)
-            })
+            raws: {
+              'pre-declensionFinder()-entry': entry
+            }
           }
-          if (!DICTIONARY.NOUNS.MAP[result.stem]) continue;
-          entry.paths.map(path => path[3] === DICTIONARY.NOUNS.MAP[result.stem].declension
-            ? tempMap.results.push(result) //checks if path declension is 'legal' //only pushes result if legal.
-            : null
-          );
+
+          if (tempMap.newEntry) {
+            if (tempMap.newEntry.length === 1) {
+              result.stem = tempMap.newEntry[0].tempStem;
+              result.pp = tempMap.newEntry[0].affix;
+            }
+            else {
+              result.stem = tempMap.newEntry.map(e => e.tempStem); //later will just have to check if this is an array - if yes, then x, if no, then y.
+              result.pp = tempMap.newEntry.map(e => e.affix);
+            }
+
+            result.raws = {
+              'pre-declensionFinder()-entry': entry,
+              'post-declensionFinder()-entry': tempMap.newEntry
+            };
+          }
+          if (!dictionaryBased.findStemFromShort(result.stem).length > 0) continue;
+          for (const entry2 of dictionaryBased.findStemFromShort(result.stem)) if (entry2.type === IDS.WORDS.N) {
+            result.stemReal = entry2.text;
+            entry.paths.map(path => path[3] === entry2.declension
+              ? tempMap.results.push(result) //checks if path declension is 'legal' //only pushes result if legal.
+              : null
+            );
+          }
           break;
         case IDS.WORDS.PP:
           const tempResult = {
@@ -563,7 +575,7 @@ export const matchtype2 = {
 
             if (tempAffixChecker) {
               for (const affix of tempAffixChecker) {
-                if (!DICTIONARY.ADJECTIVES.MAP[affix.tempStem]) continue;
+                if (!dictionaryBased.findStemFromShort(affix.tempStem).length > 0) continue;
                 const result = {
                   raws: {
                     'pre-declensionFinder()-entry': entry,
@@ -577,15 +589,16 @@ export const matchtype2 = {
                   stem: affix.tempStem,
                   type: entry.type
                 }
-                result.suffix.paths.map(path => {
-                  path[3] === DICTIONARY.ADJECTIVES.MAP[affix.tempStem].declension
+                for (const entry2 of dictionaryBased.findStemFromShort(affix.tempStem)) if (entry.type === IDS.WORDS.ADJ) {
+                  entry.paths.map(path => path[3] === entry2.declension
                     ? tempResultsAdj['adjSuffix-partSuffix'].push(result) //checks if path declension is 'legal' //only pushes result if legal.
                     : null
-                });
+                  );
+                }
               }
             }
             else {
-              if (!DICTIONARY.ADJECTIVES.MAP[entry.tempStem]) continue;
+              if (!dictionaryBased.findStemFromShort(entry.tempStem).length > 0) continue;
               const result = {
                 raws: {
                   'pre-declensionFinder()-entry': entry
@@ -597,11 +610,13 @@ export const matchtype2 = {
                 stem: entry.tempStem,
                 type: entry.type
               }
-              result.suffix.paths.map(path => {
-                path[3] === DICTIONARY.ADJECTIVES.MAP[entry.tempStem].declension
+              for (const entry2 of dictionaryBased.findStemFromShort(result.stem)) if (entry2.type === IDS.WORDS.ADJ) {
+                //console.log(entry2, entry)
+                entry.paths.map(path => path[3] === entry2.declension
                   ? tempResultsAdj.adjSuffix.push(result) //checks if path declension is 'legal' //only pushes result if legal.
                   : null
-              });
+                );
+              }
             }
           }//vv trick such that empty maps arent pushed.
           let i = 0;
@@ -656,6 +671,22 @@ export const matchtype2 = {
       }
     }
     return result;
+  },
+  sortByEntry: (map) => {
+    const grouped = {};
+    for (const [key, value] of Object.entries(map)) {
+      for (const entry of value) {
+        if (!grouped[entry.stem]) {
+          grouped[entry.stem] = {};
+        }
+        if (!grouped[entry.stem][entry.type]) {
+          grouped[entry.stem][entry.type] = [];
+        }
+        grouped[entry.stem][entry.type].push(entry);
+        entry['key'] = key
+      }
+    }
+    return grouped;
   }
 }
 export const irregulars = {
@@ -854,6 +885,198 @@ export const irregulars = {
       }
     }
     return matches;
+  }
+}
+export const dictionaryBased = {
+  findStemFromShort: (short_stem) => {
+    const results = [];
+    const matches = DICTIONARY.ALL_WORDS.fetch(short_stem);
+    for (const result of matches) {
+      if (result.text.length === short_stem.length + 1) {
+        results.push(result);
+      }
+    }
+    return results;
+  },
+  dicIdFromType: (type) => {
+    switch (type) {
+      case IDS.WORDS.V: return 'VERBS'
+      case IDS.WORDS.N: return 'NOUNS'
+    }
+  }
+}
+export const htmlEditing = {
+  insertTr: (el, html, top = true) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = String(html);
+    top
+      ? el.insertBefore(tr, el.children[0])
+      : el.appendChild(tr);
+  },
+  createDivById: (id, wrapper, html) => {
+    let div = document.getElementById(id);
+    if (!div) {
+      div = document.createElement('div');
+    }
+    if (id.length > 0) {
+      div.id = id;
+    }
+    div.innerHTML = html;
+
+    const divwrapper = wrapper;
+
+    if (!divwrapper) {
+      console.error("no div wrapper");
+      return;
+    }
+
+    divwrapper.appendChild(div);
+  },
+  tables: {
+    verb: (isPrefix, word, wrapper) => {
+
+      const affixStateMap = {
+        true: ['Prefix',],// ⟅(^‿^)⟆ - Shelf the elf
+        false: ['Suffix', DICTIONARY.VERBS.SUFFIXES.MAP]
+      } // ⟅(^‿^)⟆ - Shelf the elf
+
+      function affixHandlerGenders(isPrefix, word, person, number, hasBorder = false) {
+        let string = "";
+        for (const gender of GENDERS.FLAT.NAME) {
+          string += `<td${hasBorder ? " style = 'border-bottom: 1px solid var(--border)' " : ''}>${affixHandler(isPrefix, word, person, number, gender)}</td>\n`;
+        }
+        return string;
+      }
+
+      function affixHandler(isPrefix, word, person, number, gender) {// ⟅(^‿^)⟆ - Shelf the elf
+        return isPrefix
+          ? CHARACTERS.entriesToText(AFFIXES.connectSplit(DICTIONARY.VERBS.PREFIXES.MAP[person][number][gender], word, '')[0])
+          : DICTIONARY.VERBS.SUFFIXES.MAP[person][number][gender];
+      }
+
+      const html = `
+        <table id="Verb-Table-${isPrefix ? 'Prefix' : 'Suffix'}" style="margin-bottom: 10px;">
+            <thead>
+                <tr>
+                    <th colSpan = 2>${affixStateMap[isPrefix][0]}</th>
+                    <th>Exalted</th>
+                    <th>Rational</th>
+                    <th>Monstrous</th>
+                    <th>Irrational</th>
+                    <th>Magical</th>
+                    <th>Mundane</th>
+                    <th>Abstract</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th style = "width:86px" rowSpan = 3>Singular</th>
+                    <th style = "width:14px">1.</th>
+                    ${affixHandlerGenders(isPrefix, word, 1, IDS.NUMBERS.S)}
+                </tr>
+                <tr>
+                    <th>2.</th>
+                    ${affixHandlerGenders(isPrefix, word, 2, IDS.NUMBERS.S)} 
+                </tr>
+                <tr>
+                    <th>3.</th>
+                    ${affixHandlerGenders(isPrefix, word, 3, IDS.NUMBERS.S, true)} 
+                </tr>
+                <tr>
+                    <th rowSpan = 3>Dual</th>
+                    <th>1.</th>
+                    ${affixHandlerGenders(isPrefix, word, 1, IDS.NUMBERS.D)}
+                </tr>
+                <tr>
+                    <th>2.</th>
+                    ${affixHandlerGenders(isPrefix, word, 2, IDS.NUMBERS.D)} 
+                </tr>
+                <tr>
+                    <th>3.</th>
+                    ${affixHandlerGenders(isPrefix, word, 3, IDS.NUMBERS.D, true)} 
+                </tr>
+                <tr>
+                    <th rowSpan = 3>Plural</th>
+                    <th>1.</th>
+                    ${affixHandlerGenders(isPrefix, word, 1, IDS.NUMBERS.P)}
+                </tr>
+                <tr>
+                    <th>2.</th>
+                    ${affixHandlerGenders(isPrefix, word, 2, IDS.NUMBERS.P)} 
+                </tr>
+                <tr>
+                    <th>3.</th>
+                    ${affixHandlerGenders(isPrefix, word, 3, IDS.NUMBERS.P)} 
+                </tr>
+            </tbody>
+        </table>
+        `;
+      htmlEditing.createDivById('', wrapper, html);
+    },
+    noun: (declension, mood, wrapper, combinedGendersObject) => {
+      const table = document.createElement('table');
+
+      table.id = `Noun-Table-${mood}`;
+      //th
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      const headers = [mood, "Singular", "Dual", "Plural"];
+      headers.forEach(text => {
+        const th = document.createElement('th');
+        th.textContent = text;
+        headerRow.appendChild(th);
+        th.id = `neoSummaryHeader-${text}`;
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      //rows
+      for (const [gender, def] of Object.entries(combinedGendersObject)) {
+        const trd = document.createElement('tr');
+        const rowth = document.createElement('th');
+        rowth.textContent = gender;
+        trd.appendChild(rowth);
+        const map = {
+          1: 'Singular',
+          2: 'Dual',
+          3: 'Plural'
+        }
+
+        for (let i = 0; i < (headers.length - 1); i++) {
+          const td = document.createElement('td');
+          td.textContent = 'placeholder';
+          if (i === 0) {
+            td.className = `neoSummarytd-${map[1]}`
+          }
+          else if (i === 1) {
+            td.className = `neoSummarytd-${map[2]}`
+          }
+          else if (i === 2) {
+            td.className = `neoSummarytd-${map[3]}`
+          }
+          //inner
+          for (const [gndr, array] of Object.entries(DICTIONARY.NOUNS.SUFFIXES.MAP[mood])) {
+            if (gndr === gender) {
+              const numberKey = map[i + 1];
+              const cellValue = array[numberKey] && array[numberKey][declension];
+              if (cellValue !== undefined) {
+                td.textContent = cellValue;
+              }
+            }
+          }
+          trd.appendChild(td);
+
+        }
+        table.appendChild(trd);
+      }
+
+      table.style = "margin-bottom: 10px";
+
+      const tbody = document.createElement('tbody');
+      table.appendChild(tbody);
+
+      wrapper.appendChild(table);
+    }
   }
 }
 

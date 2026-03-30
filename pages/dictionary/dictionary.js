@@ -98,8 +98,9 @@ globalThis.search = function search(word = false) {
       'detSuffix': oop.matchtype2.declensionFinder(typeMap.type2.detSuffix, false)
     }
     console.log('checkerMap', checkerMap);
-    initObj.results.matchtype2 = oop.matchtype2.flatten(checkerMap);//need other map, sorted by stem?
+    initObj.results.matchtype2 = oop.matchtype2.sortByEntry(oop.matchtype2.flatten(checkerMap));
     console.log('initObj', initObj);
+    console.log('results', initObj.results.matchtype2);
   }
   sessionStorage.setItem('initObj', JSON.stringify(initObj));
   initObj.results.matchtype1.length > 0
