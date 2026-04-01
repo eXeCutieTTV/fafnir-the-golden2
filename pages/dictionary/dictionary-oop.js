@@ -613,7 +613,6 @@ export const matchtype2 = {
                 [IDS.WORDS.ADJ]: DICTIONARY[IDS.WORDS.ADJ].MAP[entry.tempStem] || {}
               }
             }
-            console.log({ ppMap })
             const makePPResult = (raws, irregular = null) =>
               localHelperMap.functions.makeBaseResult({
                 raws,
@@ -645,9 +644,7 @@ export const matchtype2 = {
             const hasValues = obj => Object.values(obj).length > 0;
             for (const type of [IDS.WORDS.N, IDS.WORDS.ADJ]) {
               if (!hasValues(ppMap.stemChecker[type])) continue;
-
               const result = makePPResult([entry]);
-
               localHelperMap.functions.pushPossibilities({
                 result,
                 bucket: ppMap.results[type],
@@ -668,66 +665,32 @@ export const matchtype2 = {
           }
           break;
         case IDS.WORDS.ADJ:
-          const tempResultsAdj = {
-            'adjSuffix': [],
-            'adjSuffix-partSuffix': []
-          };
           {
-            const tempAffixChecker = matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, false)
-              ? matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, false)
-              : null;
-
-            if (tempAffixChecker) {
-              for (const affix of tempAffixChecker) {
-                if (!dictionaryBased.findStemFromShort(affix.tempStem).length > 0) continue;
-                const result = {
-                  raws: {
-                    'pre-declensionFinder()-entry': entry,
-                    'post-declensionFinder()-entry': affix
-                  },
-                  suffix: {
-                    suffix: entry.affix,
-                    paths: entry.paths
-                  },
-                  particle: affix.affix,
-                  stem: affix.tempStem,
-                  type: entry.type
-                }
-                for (const entry2 of dictionaryBased.findStemFromShort(affix.tempStem)) if (entry.type === IDS.WORDS.ADJ) {
-                  entry.paths.map(path => path[3] === entry2.declension
-                    ? tempResultsAdj['adjSuffix-partSuffix'].push(result) //checks if path declension is 'legal' //only pushes result if legal.
-                    : null
-                  );
-                }
-              }
+            const adjMap = {
+              results: {
+                adjSuffix: []
+              },
+              affixChecker: {}
             }
-            else {
-              if (!dictionaryBased.findStemFromShort(entry.tempStem).length > 0) continue;
-              const result = {
-                raws: {
-                  'pre-declensionFinder()-entry': entry
-                },
+            console.log({ adjMap });
+            const result = localHelperMap.functions.makeBaseResult({
+              raws: [entry],
+              stem: entry.tempStem,
+              affixes: {
                 suffix: {
                   suffix: entry.affix,
                   paths: entry.paths
-                },
-                stem: entry.tempStem,
-                type: entry.type
+                }
               }
-              for (const entry2 of dictionaryBased.findStemFromShort(result.stem)) if (entry2.type === IDS.WORDS.ADJ) {
-                //console.log(entry2, entry)
-                entry.paths.map(path => path[3] === entry2.declension
-                  ? tempResultsAdj.adjSuffix.push(result) //checks if path declension is 'legal' //only pushes result if legal.
-                  : null
-                );
-              }
-            }
-          }//vv trick such that empty maps arent pushed.
-          let i = 0;
-          for (const key in tempResultsAdj) {
-            if (tempResultsAdj[key].length > 0) i++;
+            });
+            localHelperMap.functions.pushPossibilities({
+              result,
+              bucket: adjMap.results['adjSuffix'],
+              allowed: [IDS.WORDS.ADJ],
+              isNorADJ: true
+            });
+            if (Object.values(adjMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(adjMap.results);
           }
-          if (i !== 0) tempMap.results.push(tempResultsAdj);
           break;
         default: console.warn('unhandled declensionFinder type |', entry.type);
       }
