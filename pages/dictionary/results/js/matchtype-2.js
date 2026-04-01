@@ -42,7 +42,8 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                 <td>${/*`${entry.affixes.prefix.prefix}<strong>${entry.stem}</strong>${entry.affixes.suffix.suffix}`*/initObj.keyword} (${entry.type})</td>
                 <td>${pathStr}</td>
                 <td data-key="${entry.key.replace("-...", "")}" 
-                    id="${ids.row}">temp</td>`
+                    id="${ids.row}"
+                    style="user-select: none; cursor: pointer;">temp</td>`
             );
             pressableLoadTableButtons(
               document.getElementById(ids.row),
@@ -76,7 +77,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                 <td style="${border} text-align:left;">
                     ${definition}
                 </td>
-                <td style="${border}" 
+                <td style="${border} user-select:none; cursor: pointer;" 
                     data-key="${wordclass}" 
                     id="${ids.defRow}">temp</td>
               `;
@@ -156,6 +157,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
       case 'nounSuffix':
       case 'verbPrefix-verbSuffix':
         el.textContent = 'unavaliable';
+        el.style.cursor = 'default';
         break;
     }
   }
