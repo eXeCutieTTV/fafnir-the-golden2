@@ -86,21 +86,33 @@ export const matchtype2 = {
     const localHelperMap = {
       results: [],
       functions: {
-        makeBaseResult: (raws, affixes, stem) => {
+        makeBaseResult: ({
+          raws,
+          affixes,
+          stem,
+          irregular = null }) => {
           return {
             raws,//oldest to newest
             affixes,
             stem,
             stemReal: 'temp',
-            type: 'temp'
+            type: 'temp',
+            state: 'regular',
+            ...(irregular && { irregularObject: irregular })
           }
         },
-        pushPossibilities: (result, bucket, allowed, isNorADJ = false) => {
+        pushPossibilities: ({
+          result,
+          bucket,
+          allowed,
+          isNorADJ = false
+        }) => {
           for (const possibility of dictionaryBased.findStemFromShort(result.stem)) {
             if (!allowed.includes(possibility.type)) continue;
             if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
             if (isNorADJ) {
               if (!(possibility.type === IDS.WORDS.N || possibility.type === IDS.WORDS.ADJ)) continue;
+              //if (result.raws[0].paths === 'no-paths-for-this-type') continue;
               // Check declension legality
               const legal = result.raws[0].paths.some(
                 path => path[3] === possibility.declension
@@ -468,9 +480,9 @@ export const matchtype2 = {
             }
             if (verbMap.affixChecker.verbSuffix.length > 0) {
               for (const entry2 of verbMap.affixChecker.verbSuffix) {
-                const result = localHelperMap.functions.makeBaseResult(
-                  [entry, entry2],
-                  {
+                const result = localHelperMap.functions.makeBaseResult({
+                  raws: [entry, entry2],
+                  affixes: {
                     suffix: {
                       paths: entry2.paths,
                       suffix: entry2.affix
@@ -480,39 +492,47 @@ export const matchtype2 = {
                       prefix: entry.affix
                     }
                   },
-                  entry2.tempStem
-                );
-                localHelperMap.functions.pushPossibilities(
+                  stem: entry2.tempStem
+                });
+                localHelperMap.functions.pushPossibilities({
                   result,
-                  verbMap.results['verbPrefix-verbSuffix'],
-                  [IDS.WORDS.V]
-                );
+                  bucket: verbMap.results['verbPrefix-verbSuffix'],
+                  allowed: [IDS.WORDS.V]
+                });
               }
             }
             if (isPrefix) {
-              const result = localHelperMap.functions.makeBaseResult(
-                [entry],
-                {
+              const result = localHelperMap.functions.makeBaseResult({
+                raws: [entry],
+                affixes: {
                   prefix: {
                     paths: entry.paths,
                     prefix: entry.affix
                   }
                 },
-                entry.tempStem
-              );
-              localHelperMap.functions.pushPossibilities(result, verbMap.results['verbPrefix'], [IDS.WORDS.V, IDS.WORDS.AUX]);
+                stem: entry.tempStem
+              });
+              localHelperMap.functions.pushPossibilities({
+                result,
+                bucket: verbMap.results['verbPrefix'],
+                allowed: [IDS.WORDS.V, IDS.WORDS.AUX]
+              });
             } else if (!isPrefix) {
-              const result = localHelperMap.functions.makeBaseResult(
-                [entry],
-                {
+              const result = localHelperMap.functions.makeBaseResult({
+                raws: [entry],
+                affixes: {
                   suffix: {
                     paths: entry.paths,
                     suffix: entry.affix
                   }
                 },
-                entry.tempStem
-              );
-              localHelperMap.functions.pushPossibilities(result, verbMap.results['verbSuffix'], [IDS.WORDS.V]);
+                stem: entry.tempStem
+              });
+              localHelperMap.functions.pushPossibilities({
+                result,
+                bucket: verbMap.results['verbSuffix'],
+                allowed: [IDS.WORDS.V]
+              });
             }
             if (Object.values(verbMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(verbMap.results);
           }
@@ -534,9 +554,9 @@ export const matchtype2 = {
             }
             if (nounMap.affixChecker['nounSuffix-ppPrefix'].length > 0) {
               for (const entry2 of nounMap.affixChecker['nounSuffix-ppPrefix']) {
-                const result = localHelperMap.functions.makeBaseResult(
-                  [entry, entry2],
-                  {
+                const result = localHelperMap.functions.makeBaseResult({
+                  raws: [entry, entry2],
+                  affixes: {
                     suffix: {
                       paths: entry2.paths,
                       suffix: entry2.affix
@@ -546,68 +566,106 @@ export const matchtype2 = {
                       preposition: entry.affix
                     }
                   },
-                  entry2.tempStem
-                );
+                  stem: entry2.tempStem
+                });
 
-                localHelperMap.functions.pushPossibilities(
+                localHelperMap.functions.pushPossibilities({
                   result,
-                  nounMap.results['nounSuffix-ppPrefix'],
-                  [IDS.WORDS.N],
-                  true
-                );
+                  bucket: nounMap.results['nounSuffix-ppPrefix'],
+                  allowed: [IDS.WORDS.N],
+                  isNorADJ: true
+                });
               }
             } else {
-              const result = localHelperMap.functions.makeBaseResult(
-                [entry],
-                {
+              const result = localHelperMap.functions.makeBaseResult({
+                raws: [entry],
+                affixes: {
                   suffix: {
                     paths: entry.paths,
                     suffix: entry.affix
                   }
                 },
-                entry.tempStem
-              );
-              localHelperMap.functions.pushPossibilities(
+                stem: entry.tempStem
+              });
+              localHelperMap.functions.pushPossibilities({
                 result,
-                nounMap.results['nounSuffix'],
-                [IDS.WORDS.N],
-                true);
+                bucket: nounMap.results['nounSuffix'],
+                allowed: [IDS.WORDS.N],
+                isNorADJ: true
+              });
             }
-            console.log(Object.values(nounMap.results).some(arr => arr.length > 0))
             if (Object.values(nounMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(nounMap.results);
           }
           break;
         case IDS.WORDS.PP:
-          const tempResult = {
-            'irregular': [],
-            'regular': []
-          }
-          if (!(irregulars.determiner(entry.tempStem).length > 0 || DICTIONARY[IDS.WORDS.N].MAP[entry.tempStem] || DICTIONARY[IDS.WORDS.DET].MAP[entry.tempStem] || DICTIONARY[IDS.WORDS.ADJ].MAP[entry.tempStem])) continue;
-          if (irregulars.determiner(entry.tempStem).length > 0) {
-            for (const el of irregulars.determiner(entry.tempStem)) {
-              tempResult.irregular.push({
-                raws: {
-                  'pre-declensionFinder()-entry': entry,
-                  'irregular-entry': el
+          {
+            const ppMap = {
+              results: {
+                detRegular: [],
+                detIrregular: [],
+                [IDS.WORDS.N]: [],
+                [IDS.WORDS.ADJ]: []
+              },
+              stemChecker: {
+                detRegular: DICTIONARY[IDS.WORDS.DET].MAP[entry.tempStem] || {},
+                detIrregular: irregulars.determiner(entry.tempStem) || [],
+                [IDS.WORDS.N]: DICTIONARY[IDS.WORDS.N].MAP[entry.tempStem] || {},
+                [IDS.WORDS.ADJ]: DICTIONARY[IDS.WORDS.ADJ].MAP[entry.tempStem] || {}
+              }
+            }
+            console.log({ ppMap })
+            const makePPResult = (raws, irregular = null) =>
+              localHelperMap.functions.makeBaseResult({
+                raws,
+                affixes: {
+                  preposition: {
+                    paths: entry.paths,
+                    preposition: entry.affix
+                  }
                 },
-                preposition: entry.affix,
                 stem: entry.tempStem,
-                path: el.path,
-                type: el.type
+                irregular
+              });
+
+            // --- Irregular determiners ---
+            for (const entry2 of ppMap.stemChecker.detIrregular) {
+              const result = makePPResult(
+                [entry, entry2],
+                {
+                  stem: entry.tempStem,
+                  path: entry2.path,
+                  type: entry2.type
+                }
+              );
+              result.state = 'irregular';
+              ppMap.results.detIrregular.push(result);
+            }
+
+            // --- Noun + Adjective (shared logic) ---
+            const hasValues = obj => Object.values(obj).length > 0;
+            for (const type of [IDS.WORDS.N, IDS.WORDS.ADJ]) {
+              if (!hasValues(ppMap.stemChecker[type])) continue;
+
+              const result = makePPResult([entry]);
+
+              localHelperMap.functions.pushPossibilities({
+                result,
+                bucket: ppMap.results[type],
+                allowed: [type]
               });
             }
-          } else {
-            tempResult.regular.push({
-              raws: {
-                'pre-declensionFinder()-entry': entry,
-              },
-              preposition: entry.affix,
-              stem: entry.tempStem,
-              paths: entry.paths,
-              type: DICTIONARY.ALL_WORDS.MAP[entry.tempStem].type
-            });
+
+            // --- Regular determiners ---
+            if (Object.values(ppMap.stemChecker.detRegular).length > 0) {
+              const result = makePPResult([entry]);
+              localHelperMap.functions.pushPossibilities({
+                result,
+                bucket: ppMap.results['detRegular'],
+                allowed: [IDS.WORDS.DET]
+              });
+            }
+            if (Object.values(ppMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(ppMap.results);
           }
-          tempMap.results.push(tempResult);
           break;
         case IDS.WORDS.ADJ:
           const tempResultsAdj = {
