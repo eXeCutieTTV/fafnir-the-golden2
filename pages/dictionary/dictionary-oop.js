@@ -143,7 +143,6 @@ export const matchtype2 = {
                 'detSuffix-ppPrefix': matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PP].MAP, true) || []
               }
             }
-            console.log({ detMap })
             if (detMap.affixChecker['detSuffix-ppPrefix']) {
               for (const entry2 of detMap.affixChecker['detSuffix-ppPrefix']) {
                 const result = localHelperMap.functions.makeBaseResult({
@@ -715,33 +714,15 @@ export const matchtype2 = {
   flatten: (map) => {
     const result = {};
     for (const [key, value] of Object.entries(map)) {
-      switch (key) {
-        case 'partSuffix-...':
-        case 'partPrefix-...':
-        case 'ppPrefix-...':
-        case 'verbPrefix-...':
-        case 'verbSuffix':
-        case 'adjSuffix-...':
-          for (const entry of Object.values(value)) {
-            for (const [key1, value1] of Object.entries(entry)) {
-              if (!value1.length > 0) continue;
-              for (const el of Object.values(value1)) {
-                result[key1]
-                  ? result[key1].push(el)
-                  : (result[key1] = [], result[key1].push(el))
-              }
-            }
+      for (const entry of Object.values(value)) {
+        for (const [key1, value1] of Object.entries(entry)) {
+          if (!value1.length > 0) continue;
+          for (const el of Object.values(value1)) {
+            result[key1]
+              ? result[key1].push(el)
+              : (result[key1] = [], result[key1].push(el))
           }
-          break;
-        case 'nounSuffix-...':
-        case 'detSuffix':
-          for (const entry of value) {
-            if (!Object.values(entry).length > 0) continue;
-            result[key]
-              ? result[key].push(entry)
-              : (result[key] = [], result[key].push(entry))
-          }
-          break;
+        }
       }
     }
     return result;
