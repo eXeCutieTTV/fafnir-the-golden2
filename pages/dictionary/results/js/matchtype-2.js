@@ -11,54 +11,59 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
   for (const [stem, value] of Object.entries(initObj.results.matchtype2)) {
     for (const [wordclass, value2] of Object.entries(value)) {
       for (const entry of value2) {
-        const dicEntry = DICTIONARY[oop.dictionaryBased.dicIdFromType(IDS.WORDS[entry.type.slice(0, 1)])].MAP[entry.stemReal]; //create const in the outermost loop so its not being redefined for no reason...
-        console.log(entry);
-        const affixNeutralAffixArray = Object.entries(entry)[1][1]
-        console.log(affixNeutralAffixArray);
+        const dicEntry = DICTIONARY[IDS.WORDS[entry.type.slice(0, 1)]].MAP[entry.stemReal]; //create const in the outermost loop so its not being redefined for no reason...
+        const affixesCheckMap = {
+          prefix: entry.affixes.prefix?.paths ?? [[]],
+          suffix: entry.affixes.suffix?.paths ?? [[]]
+        }
+        console.log(affixesCheckMap)
+        for (const prefixPaths of affixesCheckMap.prefix) {
+          for (const suffixPaths of affixesCheckMap.suffix) {
+            const pathStr = `${prefixPaths.join(', ')} | ${suffixPaths.join(', ')}`.trim();
+            const ids = {
+              row: `${initObj.keyword}, ${pathStr}`,
+              defRow: `${entry.stemReal}`
+            }
+            console.log(prefixPaths, suffixPaths)
+            console.log('pathStr', pathStr)
+            console.log('dicEntry', dicEntry);
+            console.log('ids', ids);
 
-        for (const path of affixNeutralAffixArray.paths) {
-          const pathStr = path.join(', ');
-          const rowId = `${initObj.keyword}, ${pathStr}`;
-          const defRowId = `${entry.stemReal}, ${pathStr}`;
-          //console.log('pathStr', pathStr)
-          console.log('dicEntry', dicEntry);
-          //console.log('path', path);
-          //console.log('entry', entry);
-
-          // --- Main row ---
-          oop.htmlEditing.insertTr(document.getElementById('tableTbody'), `
-            <td>${initObj.keyword} (${entry.type})</td>
-            <td>${path.map(el => `${el}`).join(', ')}</td>
+            // --- Main row ---
+            oop.htmlEditing.insertTr(document.getElementById('tableTbody'), `
+            <td>${/*`${entry.affixes.prefix.prefix}<strong>${entry.stem}</strong>${entry.affixes.suffix.suffix}`*/initObj.keyword} (${entry.type})</td>
+            <td>${pathStr}</td>
             <td data-key="${entry.key.replace("-...", "")}" 
-                id="${rowId}">temp</td>`);
-          pressableLoadTableButtons(document.getElementById(rowId), initObj.keyword);
+                id="${ids.row}">temp</td>`);
+            pressableLoadTableButtons(document.getElementById(ids.row), initObj.keyword);
 
-          // --- Definition row (only once per type) ---
-          if (!temp[entry.type]) {
-            const highlight = (str) =>
-              str.replace(new RegExp(`${path[1]}.+;`), '<strong>$&</strong>');
-            const definition =
-              entry.type === 'Noun' || entry.type === 'Adjective'
-                ? highlight(
-                  Object.entries(dicEntry.genders)
-                    .map(([k, v]) => `${k}: ${v}`)
-                    .join('; ')
-                )
-                : highlight(dicEntry.definition);
+            // --- Definition row (only once per type) ---
+            if (!temp[entry.type]) {
+              const highlight = (str) =>
+                str.replace(new RegExp(`${entry.stem}.+;`), '<strong>$&</strong>');
+              const definition =
+                entry.type === 'Noun' || entry.type === 'Adjective'
+                  ? highlight(
+                    Object.entries(dicEntry.genders)
+                      .map(([k, v]) => `${k}: ${v}`)
+                      .join('; ')
+                  )
+                  : highlight(dicEntry.definition);
 
-            temp[entry.type] = `
-              <td style="border-top:solid 1px black;">
-                ${entry.stemReal} (${entry.type}):
-              </td>
-              <td style="border-top:solid 1px black; text-align:left;">
-                ${definition}
-              </td>
-              <td style="border-top:solid 1px black;" 
-                  data-key="${entry.type}" 
-                  id="${defRowId}">temp</td>
-            `;
-            oop.htmlEditing.insertTr(document.getElementById('tableTbody'), temp[entry.type], false);
-            pressableLoadTableButtons(document.getElementById(defRowId), entry.stemReal);
+              temp[entry.type] = `
+                <td style="border-top:solid 1px black;">
+                  ${entry.stemReal} (${entry.type}):
+                </td>
+                <td style="border-top:solid 1px black; text-align:left;">
+                  ${definition}
+                </td>
+                <td style="border-top:solid 1px black;" 
+                    data-key="${entry.type}" 
+                    id="${ids.defRow}">temp</td>
+              `;
+              oop.htmlEditing.insertTr(document.getElementById('tableTbody'), temp[entry.type], false);
+              pressableLoadTableButtons(document.getElementById(ids.defRow), entry.stemReal);
+            }
           }
         }
       }
@@ -72,43 +77,30 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
   function pressableLoadTableButtons(el, word, object = {}) {
     const wrapperWrapper = document.getElementById('loadableTable');
     function clearHtml() { for (const wrapper of wrapperWrapper.children) while (wrapper.firstChild) wrapper.firstChild.remove(); }
-    let temp = {
-      Verb: false,
-      verbSuffix: false,
-      other: false,
-      Noun: false
-    }
-    //console.log(el, el.dataset.key)
+
     switch (el.dataset.key) {
       case 'Verb':
         el.addEventListener('click', () => {
-          if (temp.Verb) {
-            clearHtml();
-            temp.Verb = false;
-          } else {
-            clearHtml();
+          const isEmpty = !Array.from(wrapperWrapper.children).some(child => child.innerHTML.trim().length > 0);
+          clearHtml();
+          if (isEmpty) {
             oop.htmlEditing.tables.verb(true, word, wrapperWrapper.children[0]);
             oop.htmlEditing.tables.verb(false, word, wrapperWrapper.children[1]);
-            temp.Verb = true;
-          }
-          for (let key in temp) {
-            if (key !== 'Verb') temp[key] = false;
           }
         });
         break;
       case 'verbSuffix':
         el.addEventListener('click', () => {
-          if (temp.verbSuffix) {
-            clearHtml();
-            temp.verbSuffix = false;
-          } else {
-            clearHtml();
-            oop.htmlEditing.tables.verb(true, word, wrapperWrapper.children[1]);
-            temp.verbSuffix = true;
-          }
-          for (let key in temp) {
-            if (key !== 'verbSuffix') temp[key] = false;
-          }
+          const isEmpty = !Array.from(wrapperWrapper.children).some(child => child.innerHTML.trim().length > 0);
+          clearHtml();
+          if (isEmpty) oop.htmlEditing.tables.verb(false, word, wrapperWrapper.children[1]);
+        });
+        break;
+      case 'verbPrefix':
+        el.addEventListener('click', () => {
+          const isEmpty = !Array.from(wrapperWrapper.children).some(child => child.innerHTML.trim().length > 0);
+          clearHtml();
+          if (isEmpty) oop.htmlEditing.tables.verb(true, word, wrapperWrapper.children[0]);
         });
         break;
       case 'Noun':
@@ -130,6 +122,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
         });
         break;
       case 'nounSuffix':
+      case 'verbPrefix-verbSuffix':
         el.textContent = 'unavaliable';
         break;
     }
