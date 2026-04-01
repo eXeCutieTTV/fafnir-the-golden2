@@ -103,11 +103,11 @@ globalThis.search = function search(word = false) {
     console.log('results', initObj.results.matchtype2);
   }
   sessionStorage.setItem('initObj', JSON.stringify(initObj));
-  initObj.results.matchtype1.length > 0
-    ? window.location.href = './results/matchtype-1.html'
-    : Object.values(initObj.results.matchtype2).length > 0
-      ? window.location.href = './results/matchtype-2.html'
-      : null
+  //initObj.results.matchtype1.length > 0
+  //  ? window.location.href = './results/matchtype-1.html'
+  //  : Object.values(initObj.results.matchtype2).length > 0
+  //    ? window.location.href = './results/matchtype-2.html'
+  //    : null
 }
 
 //window.location.href = ./results/...

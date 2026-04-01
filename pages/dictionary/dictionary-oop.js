@@ -418,75 +418,86 @@ export const matchtype2 = {
           }
           break;
         case IDS.WORDS.V:
-          const tempResultsVerb = {
-            'verbPrefix': [],
-            'verbPrefix-verbSuffix': []
-          }
-          if (isPrefix) {
-            tempMap.newEntry = matchtype2.affixChecker(entry.tempStem, DICTIONARY.VERBS.SUFFIXES.MATCHES, false)
-              ? matchtype2.affixChecker(entry.tempStem, DICTIONARY.VERBS.SUFFIXES.MATCHES, false)
-              : [];
-            for (const affix of tempMap.newEntry) {
-              if (!dictionaryBased.findStemFromShort(affix.tempStem).length > 0) continue;
-              const result = {
-                raws: {
-                  'pre-declensionFinder()-entry': entry,
-                  'post-declensionFinder()-entry': tempMap.newEntry
-                },
-                suffix: {
-                  suffix: affix.affix,
-                  paths: affix.paths
-                },
-                prefix: {
-                  prefix: entry.affix,
-                  paths: entry.paths
-                },
-                stem: affix.tempStem,
-                type: DICTIONARY.ALL_WORDS.MAP[affix.tempStem].type
-              };
-              DICTIONARY.VERBS.MAP[result.stem]
-                ? tempResultsVerb['verbPrefix-verbSuffix'].push(result)
-                : null
+          {
+            //console.log('entry-top', entry)
+            const results = {
+              'verbPrefix': [],
+              'verbSuffix': [],
+              'verbPrefix-verbSuffix': []
             }
-            {
-              const result = {
-                raws: {
-                  'pre-declensionFinder()-entry': entry,
-                },
-                prefix: {
-                  prefix: entry.affix,
-                  paths: entry.paths
-                },
-                stem: entry.tempStem,
-                type: entry.type
-              };
-              if (!(DICTIONARY.VERBS.MAP[result.stem] || DICTIONARY.AUXILIARIES.MAP[result.stem])) continue;//fix
-              tempResultsVerb.verbPrefix.push(result)
+            const affixChecker = {
+              'verbSuffix': matchtype2.affixChecker(entry.tempStem, DICTIONARY.VERBS.SUFFIXES.MATCHES, false) || []
             }
-            tempMap.results.push(tempResultsVerb);
-          }
-          else {
-            {
-              if (!dictionaryBased.findStemFromShort(entry.tempStem).length > 0) continue;
-              const result = {
-                raws: {
-                  'pre-declensionFinder()-entry': entry
-                },
-                suffix: {
-                  suffix: entry.affix,
-                  paths: entry.paths
-                },
-                stem: entry.tempStem,
-                type: entry.type
-              };
-              for (const entry2 of dictionaryBased.findStemFromShort(result.stem)) {
-                if (entry2.type !== result.type) continue;
-                //console.log(entry2, entry, result.type, entry2.type, entry2.type === result.type)
-                result.stemReal = entry2.text;
-                tempMap.results.push(result)
+            if (affixChecker.verbSuffix.length > 0) {
+              //console.log('hi')
+              for (const entry2 of affixChecker.verbSuffix) {
+                const result = {
+                  raws: [entry, entry2],//oldest to newest
+                  affixes: {
+                    suffix: {
+                      paths: entry2.paths,
+                      suffix: entry2.affix
+                    },
+                    prefix: {
+                      paths: entry.paths,
+                      prefix: entry.affix
+                    }
+                  },
+                  stem: entry2.tempStem,
+                  stemReal: 'temp',
+                  type: 'temp'
+                }
+                for (const possibility of dictionaryBased.findStemFromShort(entry2.tempStem)) {
+                  if (possibility.type !== IDS.WORDS.V) continue;
+                  result.stemReal = possibility.text;
+                  result.type = possibility.type;
+                  results['verbPrefix-verbSuffix'].push(result);
+                }
               }
             }
-            //tempMap.results.push(tempResultsVerb);
+            if (isPrefix) {
+              const result = {
+                raws: [entry],
+                affixes: {
+                  prefix: {
+                    paths: entry.paths,
+                    prefix: entry.affix
+                  }
+                },
+                stem: entry.tempStem,
+                stemReal: 'temp',
+                type: 'temp'
+              }
+              for (const possibility of dictionaryBased.findStemFromShort(entry.tempStem)) {
+                if (possibility.type !== IDS.WORDS.V) continue;
+                result.stemReal = possibility.text;
+                result.type = possibility.type;
+                //console.log('result', result)
+                results['verbPrefix'].push(result);
+              }
+            } else if (!isPrefix) {
+              const result = {
+                raws: [entry],
+                affixes: {
+                  suffix: {
+                    paths: entry.paths,
+                    suffix: entry.affix
+                  }
+                },
+                stem: entry.tempStem,
+                stemReal: 'temp',
+                type: 'temp'
+              }
+              for (const possibility of dictionaryBased.findStemFromShort(entry.tempStem)) {
+                if (possibility.type !== IDS.WORDS.V) continue;
+                result.stemReal = possibility.text;
+                result.type = possibility.type;
+                //console.log('result', result)
+                results['verbSuffix'].push(result);
+              }
+            }
+            //console.log(results)
+            tempMap.results.push(results);
           }
           break;
         case IDS.WORDS.N:
@@ -646,6 +657,7 @@ export const matchtype2 = {
         case 'partPrefix-...':
         case 'ppPrefix-...':
         case 'verbPrefix-...':
+        case 'verbSuffix':
         case 'adjSuffix-...':
           for (const entry of Object.values(value)) {
             for (const [key1, value1] of Object.entries(entry)) {
@@ -660,7 +672,6 @@ export const matchtype2 = {
           break;
         case 'nounSuffix-...':
         case 'detSuffix':
-        case 'verbSuffix':
           for (const entry of value) {
             if (!Object.values(entry).length > 0) continue;
             result[key]
@@ -892,9 +903,10 @@ export const dictionaryBased = {
     const results = [];
     const matches = DICTIONARY.ALL_WORDS.fetch(short_stem);
     for (const result of matches) {
-      if (result.text.length === short_stem.length + 1) {
+      if ((result.text.length === short_stem.length + 1)) {
+        if (!result.text.slice(-1).match(regex.isVowel)) continue;
         results.push(result);
-      }
+      } else if (result.text === short_stem) results.push(result);
     }
     return results;
   },
@@ -933,6 +945,21 @@ export const htmlEditing = {
     divwrapper.appendChild(div);
   },
   tables: {
+    populate: (keyword, table, isPrefix = false) => {
+      if (!table) return;
+      const tds = table.querySelectorAll("td");
+      tds.forEach(td => {
+        // prefer original stored raw suffix (data-raw) if present 
+        const textInCell = (td.dataset.raw && td.dataset.raw.trim()) ? td.dataset.raw : td.textContent.trim();
+
+        // process raw
+        const entries = isPrefix
+          ? AFFIXES.connectSplit(textInCell, keyword, "")
+          : AFFIXES.connectSplit("", keyword, textInCell)
+        td.innerHTML = `<strong>${CHARACTERS.entriesToText(entries[0])}</strong>${CHARACTERS.entriesToText(entries[1])}<strong>${CHARACTERS.entriesToText(entries[2])}</strong>`;
+        // place keyword as prefix or suffix (you can change behavior per table)
+      });
+    },
     verb: (isPrefix, word, wrapper) => {
 
       const affixStateMap = {
@@ -1013,8 +1040,9 @@ export const htmlEditing = {
         `;
       htmlEditing.createDivById('', wrapper, html);
     },
-    noun: (declension, mood, wrapper, combinedGendersObject) => {
+    noun: (declension, mood, wrapper, keyword = '') => {
       const table = document.createElement('table');
+      const combinedGendersObject = DICTIONARY.NOUNS.MAP[keyword].genders;
 
       table.id = `Noun-Table-${mood}`;
       //th
@@ -1076,6 +1104,8 @@ export const htmlEditing = {
       table.appendChild(tbody);
 
       wrapper.appendChild(table);
+
+      htmlEditing.tables.populate(keyword, table)
     }
   }
 }
