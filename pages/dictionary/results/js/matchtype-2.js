@@ -138,24 +138,17 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
         break;
       case 'Noun':
         el.addEventListener('click', () => {
-          if (temp.Noun) {
-            clearHtml();
-            temp.Noun = false;
-          } else {
-            clearHtml();
+          const isEmpty = !Array.from(wrapperWrapper.children).some(child => child.innerHTML.trim().length > 0);
+          clearHtml();
+          if (isEmpty) {
             oop.htmlEditing.tables.noun(1, 'Directive', wrapperWrapper.children[0], word);
             oop.htmlEditing.tables.noun(1, 'Recessive', wrapperWrapper.children[1], word);
-            //oop.htmlEditing.tables.populate(word, wrapperWrapper.children[0]);
-            //oop.htmlEditing.tables.populate(word, wrapperWrapper.children[1]);
-            temp.Noun = true;
-          }
-          for (let key in temp) {
-            if (key !== 'Noun') temp[key] = false;
           }
         });
         break;
       case 'nounSuffix':
       case 'verbPrefix-verbSuffix':
+      default:
         el.textContent = 'unavaliable';
         el.style.cursor = 'default';
         break;

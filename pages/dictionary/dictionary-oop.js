@@ -82,6 +82,39 @@ export const matchtype2 = {
       newerEntry: [],
       results: [] //returned array
     }
+
+    const localHelperMap = {
+      results: [],
+      functions: {
+        makeBaseResult: (raws, affixes, stem) => {
+          return {
+            raws,//oldest to newest
+            affixes,
+            stem,
+            stemReal: 'temp',
+            type: 'temp'
+          }
+        },
+        pushPossibilities: (result, bucket, allowed, isNorADJ = false) => {
+          for (const possibility of dictionaryBased.findStemFromShort(result.stem)) {
+            if (!allowed.includes(possibility.type)) continue;
+            if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
+            if (isNorADJ) {
+              if (!(possibility.type === IDS.WORDS.N || possibility.type === IDS.WORDS.ADJ)) continue;
+              // Check declension legality
+              const legal = result.raws[0].paths.some(
+                path => path[3] === possibility.declension
+              );
+              if (!legal) continue;
+            }
+
+            result.stemReal = possibility.text;
+            result.type = possibility.type;
+            bucket.push(result);
+          }
+        }
+      }
+    }
     for (const entry of map) {
       switch (entry.type) {
         case IDS.WORDS.AUX:
@@ -419,21 +452,25 @@ export const matchtype2 = {
           break;
         case IDS.WORDS.V:
           {
-            //console.log('entry-top', entry)
-            const results = {
-              'verbPrefix': [],
-              'verbSuffix': [],
-              'verbPrefix-verbSuffix': []
+            const verbMap = {
+              results: {
+                verbPrefix: [],
+                verbSuffix: [],
+                'verbPrefix-verbSuffix': []
+              },
+              affixChecker: {
+                verbSuffix: matchtype2.affixChecker(
+                  entry.tempStem,
+                  DICTIONARY[IDS.WORDS.V].SUFFIXES.MATCHES,
+                  false
+                ) || []
+              }
             }
-            const affixChecker = {
-              'verbSuffix': matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.V].SUFFIXES.MATCHES, false) || []
-            }
-            if (affixChecker.verbSuffix.length > 0) {
-              //console.log('hi')
-              for (const entry2 of affixChecker.verbSuffix) {
-                const result = {
-                  raws: [entry, entry2],//oldest to newest
-                  affixes: {
+            if (verbMap.affixChecker.verbSuffix.length > 0) {
+              for (const entry2 of verbMap.affixChecker.verbSuffix) {
+                const result = localHelperMap.functions.makeBaseResult(
+                  [entry, entry2],
+                  {
                     suffix: {
                       paths: entry2.paths,
                       suffix: entry2.affix
@@ -443,106 +480,101 @@ export const matchtype2 = {
                       prefix: entry.affix
                     }
                   },
-                  stem: entry2.tempStem,
-                  stemReal: 'temp',
-                  type: 'temp'
-                }
-                for (const possibility of dictionaryBased.findStemFromShort(entry2.tempStem)) {
-                  if (possibility.type !== IDS.WORDS.V) continue;
-                  if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
-                  result.stemReal = possibility.text;
-                  result.type = possibility.type;
-                  results['verbPrefix-verbSuffix'].push(result);
-                }
+                  entry2.tempStem
+                );
+                localHelperMap.functions.pushPossibilities(
+                  result,
+                  verbMap.results['verbPrefix-verbSuffix'],
+                  [IDS.WORDS.V]
+                );
               }
             }
             if (isPrefix) {
-              const result = {
-                raws: [entry],
-                affixes: {
+              const result = localHelperMap.functions.makeBaseResult(
+                [entry],
+                {
                   prefix: {
                     paths: entry.paths,
                     prefix: entry.affix
                   }
                 },
-                stem: entry.tempStem,
-                stemReal: 'temp',
-                type: 'temp'
-              }
-              for (const possibility of dictionaryBased.findStemFromShort(entry.tempStem)) {
-                if (possibility.type !== IDS.WORDS.V) continue;
-                if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
-                result.stemReal = possibility.text;
-                result.type = possibility.type;
-                //console.log('result', result)
-                results['verbPrefix'].push(result);
-              }
+                entry.tempStem
+              );
+              localHelperMap.functions.pushPossibilities(result, verbMap.results['verbPrefix'], [IDS.WORDS.V, IDS.WORDS.AUX]);
             } else if (!isPrefix) {
-              const result = {
-                raws: [entry],
-                affixes: {
+              const result = localHelperMap.functions.makeBaseResult(
+                [entry],
+                {
                   suffix: {
                     paths: entry.paths,
                     suffix: entry.affix
                   }
                 },
-                stem: entry.tempStem,
-                stemReal: 'temp',
-                type: 'temp'
-              }
-              for (const possibility of dictionaryBased.findStemFromShort(entry.tempStem)) {
-                if (possibility.type !== IDS.WORDS.V) continue;
-                if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
-                result.stemReal = possibility.text;
-                result.type = possibility.type;
-                //console.log('result', result)
-                results['verbSuffix'].push(result);
-              }
+                entry.tempStem
+              );
+              localHelperMap.functions.pushPossibilities(result, verbMap.results['verbSuffix'], [IDS.WORDS.V]);
             }
-            //console.log(results)
-            tempMap.results.push(results);
+            if (Object.values(verbMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(verbMap.results);
           }
           break;
         case IDS.WORDS.N:
-          tempMap.newEntry = matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PP].MAP, true)
-          if (!tempMap.newEntry) {
-            tempMap.newEntry = null;
-          }
-
-          const result = {
-            suffix: {
-              suffix: entry.affix,
-              paths: entry.paths
-            },
-            stem: entry.tempStem,
-            type: entry.type,
-            raws: {
-              'pre-declensionFinder()-entry': entry
+          {
+            const nounMap = {
+              results: {
+                nounSuffix: [],
+                'nounSuffix-ppPrefix': []
+              },
+              affixChecker: {
+                'nounSuffix-ppPrefix': matchtype2.affixChecker(
+                  entry.tempStem,
+                  DICTIONARY[IDS.WORDS.PP].MAP,
+                  true
+                ) || []
+              }
             }
-          }
+            if (nounMap.affixChecker['nounSuffix-ppPrefix'].length > 0) {
+              for (const entry2 of nounMap.affixChecker['nounSuffix-ppPrefix']) {
+                const result = localHelperMap.functions.makeBaseResult(
+                  [entry, entry2],
+                  {
+                    suffix: {
+                      paths: entry2.paths,
+                      suffix: entry2.affix
+                    },
+                    preposition: {
+                      paths: entry.paths,
+                      preposition: entry.affix
+                    }
+                  },
+                  entry2.tempStem
+                );
 
-          if (tempMap.newEntry) {
-            if (tempMap.newEntry.length === 1) {
-              result.stem = tempMap.newEntry[0].tempStem;
-              result.pp = tempMap.newEntry[0].affix;
+                localHelperMap.functions.pushPossibilities(
+                  result,
+                  nounMap.results['nounSuffix-ppPrefix'],
+                  [IDS.WORDS.N],
+                  true
+                );
+              }
+            } else {
+              const result = localHelperMap.functions.makeBaseResult(
+                [entry],
+                {
+                  suffix: {
+                    paths: entry.paths,
+                    suffix: entry.affix
+                  }
+                },
+                entry.tempStem
+              );
+              localHelperMap.functions.pushPossibilities(
+                result,
+                nounMap.results['nounSuffix'],
+                [IDS.WORDS.N],
+                true);
             }
-            else {
-              result.stem = tempMap.newEntry.map(e => e.tempStem); //later will just have to check if this is an array - if yes, then x, if no, then y.
-              result.pp = tempMap.newEntry.map(e => e.affix);
-            }
-
-            result.raws = {
-              'pre-declensionFinder()-entry': entry,
-              'post-declensionFinder()-entry': tempMap.newEntry
-            };
-          }
-          if (!dictionaryBased.findStemFromShort(result.stem).length > 0) continue;
-          for (const entry2 of dictionaryBased.findStemFromShort(result.stem)) if (entry2.type === IDS.WORDS.N) {
-            result.stemReal = entry2.text;
-            entry.paths.map(path => path[3] === entry2.declension
-              ? tempMap.results.push(result) //checks if path declension is 'legal' //only pushes result if legal.
-              : null
-            );
+            console.log(Object.values(nounMap.results).some(arr => arr.length > 0))
+            if (Object.values(nounMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(nounMap.results);
           }
           break;
         case IDS.WORDS.PP:
@@ -650,7 +682,7 @@ export const matchtype2 = {
       }
     } else affixFinder(word, affixMatch, isPrefix);
     */ //not even here yet tbh
-    return tempMap.results;
+    return localHelperMap.results;
   },
   flatten: (map) => {
     const result = {};
@@ -1055,8 +1087,8 @@ export const htmlEditing = {
       headers.forEach(text => {
         const th = document.createElement('th');
         th.textContent = text;
+        th.style.width = '25%';//fix later. first th should be less wide than the other 3.
         headerRow.appendChild(th);
-        th.id = `neoSummaryHeader-${text}`;
       });
       thead.appendChild(headerRow);
       table.appendChild(thead);
@@ -1076,15 +1108,6 @@ export const htmlEditing = {
         for (let i = 0; i < (headers.length - 1); i++) {
           const td = document.createElement('td');
           td.textContent = 'placeholder';
-          if (i === 0) {
-            td.className = `neoSummarytd-${map[1]}`
-          }
-          else if (i === 1) {
-            td.className = `neoSummarytd-${map[2]}`
-          }
-          else if (i === 2) {
-            td.className = `neoSummarytd-${map[3]}`
-          }
           //inner
           for (const [gndr, array] of Object.entries(DICTIONARY[IDS.WORDS.N].SUFFIXES.MAP[mood])) {
             if (gndr === gender) {
@@ -1096,11 +1119,9 @@ export const htmlEditing = {
             }
           }
           trd.appendChild(td);
-
         }
         table.appendChild(trd);
       }
-
       table.style = "margin-bottom: 10px";
 
       const tbody = document.createElement('tbody');
@@ -1113,8 +1134,6 @@ export const htmlEditing = {
   }
 }
 
-export const text = {
-}
 export const regex = {
   isVowel: /^[iīeēæyuūoōaāúûóôáâIĪEĒÆYUŪOŌAĀÚÛÓÔÁÂ]$/,
   isConsonant: /^[tkqq̇'cfdszgχhlrɾmnŋTKQQ̇'CFDSZGΧHLRɾMNŊ]$/
