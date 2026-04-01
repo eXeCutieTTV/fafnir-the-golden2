@@ -449,6 +449,7 @@ export const matchtype2 = {
                 }
                 for (const possibility of dictionaryBased.findStemFromShort(entry2.tempStem)) {
                   if (possibility.type !== IDS.WORDS.V) continue;
+                  if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
                   result.stemReal = possibility.text;
                   result.type = possibility.type;
                   results['verbPrefix-verbSuffix'].push(result);
@@ -470,6 +471,7 @@ export const matchtype2 = {
               }
               for (const possibility of dictionaryBased.findStemFromShort(entry.tempStem)) {
                 if (possibility.type !== IDS.WORDS.V) continue;
+                if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
                 result.stemReal = possibility.text;
                 result.type = possibility.type;
                 //console.log('result', result)
@@ -490,6 +492,7 @@ export const matchtype2 = {
               }
               for (const possibility of dictionaryBased.findStemFromShort(entry.tempStem)) {
                 if (possibility.type !== IDS.WORDS.V) continue;
+                if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
                 result.stemReal = possibility.text;
                 result.type = possibility.type;
                 //console.log('result', result)
@@ -901,7 +904,7 @@ export const irregulars = {
 export const dictionaryBased = {
   findStemFromShort: (short_stem) => {
     const results = [];
-    const matches = DICTIONARY.ALL_WORDS.fetch(short_stem);
+    const matches = DICTIONARY.ALL_WORDS.fuzzyFetchByWord(short_stem);
     for (const result of matches) {
       if ((result.text.length === short_stem.length + 1)) {
         if (!result.text.slice(-1).match(regex.isVowel)) continue;
@@ -961,7 +964,6 @@ export const htmlEditing = {
       });
     },
     verb: (isPrefix, word, wrapper) => {
-
       const affixStateMap = {
         true: ['Prefix',],// ⟅(^‿^)⟆ - Shelf the elf
         false: ['Suffix', DICTIONARY[IDS.WORDS.V].SUFFIXES.MAP]

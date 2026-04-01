@@ -51,15 +51,15 @@ globalThis.search = function search(word = false) {
       pronoun: oop.irregulars.pronoun(initObj.keyword) || []
     },
     type2: {
-      adjSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.ADJECTIVES.SUFFIXES.MATCHES, false) || [],
-      auxPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
-      detSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.DETERMINERS.SUFFIXES.MATCHES, false) || [],
-      nounSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.NOUNS.SUFFIXES.MATCHES, false) || [],
-      partPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, true) || [],
-      partSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PARTICLES.MAP, false) || [],
-      ppPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.PREPOSITIONS.MAP, true) || [],
-      verbPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.PREFIXES.MATCHES, true) || [],
-      verbSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY.VERBS.SUFFIXES.MATCHES, false) || []
+      adjSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.ADJ].SUFFIXES.MATCHES, false) || [],
+      auxPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.V].PREFIXES.MATCHES, true) || [],
+      detSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.DET].SUFFIXES.MATCHES, false) || [],
+      nounSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.N].SUFFIXES.MATCHES, false) || [],
+      partPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.PART].MAP, true) || [],
+      partSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.PART].MAP, false) || [],
+      ppPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.PP].MAP, true) || [],
+      verbPrefix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.V].PREFIXES.MATCHES, true) || [],
+      verbSuffix: oop.matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.V].SUFFIXES.MATCHES, false) || []
     }
   }
   console.log('typeMap |', typeMap);//make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
