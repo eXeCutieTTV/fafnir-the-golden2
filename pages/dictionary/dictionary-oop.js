@@ -753,7 +753,7 @@ export const irregulars = {
   },
   determiner: (word) => {
     const matches = [];
-    for (const [genderKey, genderMap] of Object.entries(DICTIONARY.DETERMINERS.IRREGULARS.MAP)) {
+    for (const [genderKey, genderMap] of Object.entries(DICTIONARY[IDS.WORDS.DET].IRREGULARS.MAP)) {
       for (const [typeKey, typeMap] of Object.entries(genderMap)) {
         for (const [numberKey, numberValue] of Object.entries(typeMap)) {
           if (numberValue === word) {
@@ -964,7 +964,7 @@ export const htmlEditing = {
 
       const affixStateMap = {
         true: ['Prefix',],// ⟅(^‿^)⟆ - Shelf the elf
-        false: ['Suffix', DICTIONARY.VERBS.SUFFIXES.MAP]
+        false: ['Suffix', DICTIONARY[IDS.WORDS.V].SUFFIXES.MAP]
       } // ⟅(^‿^)⟆ - Shelf the elf
 
       function affixHandlerGenders(isPrefix, word, person, number, hasBorder = false) {
