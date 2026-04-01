@@ -133,50 +133,58 @@ export const matchtype2 = {
           //dont need, case verb will catch all since aux prefixes are just verb prefixes. it has proper .type so its fine
           break;
         case IDS.WORDS.DET:
-          const tempAffixChecker = {
-            'detSuffix-ppPrefix': matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PP].MAP, true)
-          }
-          const tempResults = {
-            'detSuffix-ppPrefix': [],
-            'detSuffix': []
-          }
-          if (tempAffixChecker["detSuffix-ppPrefix"]) {
-            for (const affix of tempAffixChecker["detSuffix-ppPrefix"]) {
-              if (!dictionaryBased.findStemFromShort(affix.tempStem).length > 0) continue;
-              const result = {
-                raws: {
-                  'pre-declensionFinder()-entry': entry,
-                  'post-declensionFinder()-entry': affix
-                },
+          {
+            const detMap = {
+              results: {
+                detSuffix: [],
+                'detSuffix-ppPrefix': []
+              },
+              affixChecker: {
+                'detSuffix-ppPrefix': matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PP].MAP, true) || []
+              }
+            }
+            console.log({ detMap })
+            if (detMap.affixChecker['detSuffix-ppPrefix']) {
+              for (const entry2 of detMap.affixChecker['detSuffix-ppPrefix']) {
+                const result = localHelperMap.functions.makeBaseResult({
+                  stem: entry2.tempStem,
+                  affixes: {
+                    suffix: {
+                      suffix: entry.affix,
+                      paths: entry.paths
+                    },
+                    preposition: {
+                      preposition: entry2.affix,
+                      paths: entry2.paths
+                    }
+                  },
+                  raws: [entry, entry2]
+                });
+                localHelperMap.functions.pushPossibilities({
+                  result,
+                  bucket: detMap.results['detSuffix-ppPrefix'],
+                  allowed: [IDS.WORDS.DET]
+                });
+              }
+            }
+            const result = localHelperMap.functions.makeBaseResult({
+              raws: [entry],
+              stem: entry.tempStem,
+              affixes: {
                 suffix: {
                   suffix: entry.affix,
                   paths: entry.paths
-                },
-                preposition: affix.affix,
-                stem: affix.tempStem,
-                type: DICTIONARY.ALL_WORDS.MAP[affix.tempStem].type
+                }
               }
-              tempResults["detSuffix-ppPrefix"].push(result);
-            }
+            });
+            localHelperMap.functions.pushPossibilities({
+              result,
+              bucket: detMap.results.detSuffix,
+              allowed: [IDS.WORDS.DET]
+            });
+
+            if (Object.values(detMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(detMap.results);
           }
-          {
-            //if (!dictionaryBased.findStemFromShort(entry.tempStem).length > 0) continue;
-            const result = {
-              raws: {
-                'pre-declensionFinder()-entry': entry
-              },
-              suffix: {
-                suffix: entry.affix,
-                paths: entry.paths
-              },
-              stem: entry.tempStem,
-              type: ''//DICTIONARY.ALL_WORDS.MAP[entry.tempStem].type
-            }
-            DICTIONARY.ALL_WORDS.MAP[result.stem]
-              ? (result.type = DICTIONARY.ALL_WORDS.MAP[entry.tempStem].type, tempResults["detSuffix"].push(result))
-              : null
-          }
-          tempMap.results.push(tempResults);
           break;
         case IDS.WORDS.PART:
           if (!isPrefix) {
@@ -672,7 +680,6 @@ export const matchtype2 = {
               },
               affixChecker: {}
             }
-            console.log({ adjMap });
             const result = localHelperMap.functions.makeBaseResult({
               raws: [entry],
               stem: entry.tempStem,
