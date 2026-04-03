@@ -91,7 +91,7 @@ export const matchtype2 = {
             stem,
             stemReal: 'temp',
             type: 'temp',
-            state: 'regular',
+            state: irregular ? 'irregular' : 'regular',
             ...(irregular && { irregularObject: irregular })
           }
         },
@@ -712,8 +712,9 @@ export const matchtype2 = {
                 nounSuffix: [],//
                 'nounSuffix-ppPrefix': [],//
                 'nounSuffix-partSuffix': [],//
-                'nounSuffix-partSuffix-ppPrefix': [],
-                'nounSuffix-partPrefix-ppPrefix': []
+                'nounSuffix-partSuffix-ppPrefix': [],//
+                'nounSuffix-partPrefix-ppPrefix': [],//
+                'nounSuffix-partPrefix-partSuffix-ppPrefix': []//
               },
               affixChecker: {
                 'nounSuffix-ppPrefix': matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PP].MAP, true) || [],
@@ -743,6 +744,90 @@ export const matchtype2 = {
                   allowed: [IDS.WORDS.N],
                   isNorADJ: true
                 });
+
+                const innerNounMap = {
+                  affixChecker: {
+                    partSuffix: matchtype2.affixChecker(entry2.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, false) || [],
+                    partPrefix: matchtype2.affixChecker(entry2.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, true) || []
+                  },
+                  functions: {
+                    localResultMaker: (isPrefix) => {
+                      for (const entry3 of isPrefix ? innerNounMap.affixChecker.partPrefix : innerNounMap.affixChecker.partSuffix) {
+                        const result = localHelperMap.functions.makeBaseResult({
+                          raws: [entry, entry2, entry3],
+                          affixes: {
+                            suffix: {
+                              paths: entry.paths,
+                              suffix: entry.affix
+                            },
+                            preposition: {
+                              paths: entry2.paths,
+                              preposition: entry2.affix
+                            },
+                            particle: [{
+                              paths: entry3.paths,
+                              particle: entry3.affix,
+                              state: isPrefix ? 'prefix' : 'suffix'
+                            }]
+                          },
+                          stem: entry3.tempStem
+                        });
+                        localHelperMap.functions.pushPossibilities({
+                          result,
+                          bucket: isPrefix ? nounMap.results['nounSuffix-partPrefix-ppPrefix'] : nounMap.results['nounSuffix-partSuffix-ppPrefix'],
+                          allowed: [IDS.WORDS.N],
+                          isNorADJ: true
+                        });
+                        if (!isPrefix) continue;// only do it once, otherwise id get double result
+                        const innerInnerNounMap = {
+                          affixChecker: {
+                            partSuffix: matchtype2.affixChecker(entry3.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, false) || []
+                          }
+                        }
+                        //console.log({ innerInnerNounMap }, entry3);
+                        if (innerInnerNounMap.affixChecker.partSuffix.length > 0) {
+                          for (const entry4 of innerInnerNounMap.affixChecker.partSuffix) {
+                            const result = localHelperMap.functions.makeBaseResult({
+                              raws: [entry, entry2, entry3, entry4],
+                              affixes: {
+                                suffix: {
+                                  paths: entry.paths,
+                                  suffix: entry.affix
+                                },
+                                preposition: {
+                                  paths: entry2.paths,
+                                  preposition: entry2.affix
+                                },
+                                particle: [{
+                                  paths: entry4.paths,
+                                  particle: entry4.affix,
+                                  state: 'suffix'
+                                }, {
+                                  paths: entry3.paths,
+                                  particle: entry3.affix,
+                                  state: 'prefix'
+                                }]
+                              },
+                              stem: entry4.tempStem
+                            });
+                            localHelperMap.functions.pushPossibilities({
+                              result,
+                              bucket: nounMap.results['nounSuffix-partPrefix-partSuffix-ppPrefix'],
+                              allowed: [IDS.WORDS.N],
+                              isNorADJ: true
+                            });
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                if (innerNounMap.affixChecker.partSuffix) {
+                  innerNounMap.functions.localResultMaker(false);
+                }
+                if (innerNounMap.affixChecker.partPrefix) {
+                  innerNounMap.functions.localResultMaker(true);
+                }
               }
             }
             {
@@ -822,6 +907,7 @@ export const matchtype2 = {
                 }
               }
             }
+            console.log({ ppMap });
 
             // --- Irregular determiners ---
             for (const entry2 of ppMap.stemChecker.detIrregular) {
@@ -833,8 +919,9 @@ export const matchtype2 = {
                   type: entry2.type
                 }
               );
-              result.state = 'irregular';
-              if (DICTIONARY[IDS.WORDS.DET].IRREGULARS.fetch(result.text)[0].text !== word) continue;
+              //result.state = 'irregular';
+              if (!result) continue;
+              if (DICTIONARY[IDS.WORDS.DET].IRREGULARS.fetch(result.stem)[0].text !== word) continue;
               ppMap.results.detIrregular.push(result);
             }
 
@@ -866,26 +953,170 @@ export const matchtype2 = {
           {
             const adjMap = {
               results: {
-                adjSuffix: []
+                nounSuffix: [],//
+                'adjSuffix-ppPrefix': [],//
+                'adjSuffix-partSuffix': [],//
+                'adjSuffix-partSuffix-ppPrefix': [],//
+                'adjSuffix-partPrefix-ppPrefix': [],//
+                'adjSuffix-partPrefix-partSuffix-ppPrefix': []//
               },
-              affixChecker: {}
+              affixChecker: {
+                'adjSuffix-ppPrefix': matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PP].MAP, true) || [],
+                'adjSuffix-partSuffix': matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, false) || []
+              }
             }
-            const result = localHelperMap.functions.makeBaseResult({
-              raws: [entry],
-              stem: entry.tempStem,
-              affixes: {
-                suffix: {
-                  suffix: entry.affix,
-                  paths: entry.paths
+            if (adjMap.affixChecker['adjSuffix-ppPrefix'].length > 0) {
+              for (const entry2 of adjMap.affixChecker['adjSuffix-ppPrefix']) {
+                const result = localHelperMap.functions.makeBaseResult({
+                  raws: [entry, entry2],
+                  affixes: {
+                    suffix: {
+                      paths: entry2.paths,
+                      suffix: entry2.affix
+                    },
+                    preposition: {
+                      paths: entry.paths,
+                      preposition: entry.affix
+                    }
+                  },
+                  stem: entry2.tempStem
+                });
+
+                localHelperMap.functions.pushPossibilities({
+                  result,
+                  bucket: adjMap.results['adjSuffix-ppPrefix'],
+                  allowed: [IDS.WORDS.ADJ],
+                  isNorADJ: true
+                });
+
+                const innerNounMap = {
+                  affixChecker: {
+                    partSuffix: matchtype2.affixChecker(entry2.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, false) || [],
+                    partPrefix: matchtype2.affixChecker(entry2.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, true) || []
+                  },
+                  functions: {
+                    localResultMaker: (isPrefix) => {
+                      for (const entry3 of isPrefix ? innerNounMap.affixChecker.partPrefix : innerNounMap.affixChecker.partSuffix) {
+                        const result = localHelperMap.functions.makeBaseResult({
+                          raws: [entry, entry2, entry3],
+                          affixes: {
+                            suffix: {
+                              paths: entry.paths,
+                              suffix: entry.affix
+                            },
+                            preposition: {
+                              paths: entry2.paths,
+                              preposition: entry2.affix
+                            },
+                            particle: [{
+                              paths: entry3.paths,
+                              particle: entry3.affix,
+                              state: isPrefix ? 'prefix' : 'suffix'
+                            }]
+                          },
+                          stem: entry3.tempStem
+                        });
+                        localHelperMap.functions.pushPossibilities({
+                          result,
+                          bucket: isPrefix ? nounMap.results['nounSuffix-partPrefix-ppPrefix'] : nounMap.results['adjSuffix-partSuffix-ppPrefix'],
+                          allowed: [IDS.WORDS.N],
+                          isNorADJ: true
+                        });
+                        if (!isPrefix) continue;// only do it once, otherwise id get double result
+                        const innerInnerNounMap = {
+                          affixChecker: {
+                            partSuffix: matchtype2.affixChecker(entry3.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, false) || []
+                          }
+                        }
+                        //console.log({ innerInnerNounMap }, entry3);
+                        if (innerInnerNounMap.affixChecker.partSuffix.length > 0) {
+                          for (const entry4 of innerInnerNounMap.affixChecker.partSuffix) {
+                            const result = localHelperMap.functions.makeBaseResult({
+                              raws: [entry, entry2, entry3, entry4],
+                              affixes: {
+                                suffix: {
+                                  paths: entry.paths,
+                                  suffix: entry.affix
+                                },
+                                preposition: {
+                                  paths: entry2.paths,
+                                  preposition: entry2.affix
+                                },
+                                particle: [{
+                                  paths: entry4.paths,
+                                  particle: entry4.affix,
+                                  state: 'suffix'
+                                }, {
+                                  paths: entry3.paths,
+                                  particle: entry3.affix,
+                                  state: 'prefix'
+                                }]
+                              },
+                              stem: entry4.tempStem
+                            });
+                            localHelperMap.functions.pushPossibilities({
+                              result,
+                              bucket: adjMap.results['adjSuffix-partPrefix-partSuffix-ppPrefix'],
+                              allowed: [IDS.WORDS.ADJ],
+                              isNorADJ: true
+                            });
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                if (innerNounMap.affixChecker.partSuffix) {
+                  innerNounMap.functions.localResultMaker(false);
+                }
+                if (innerNounMap.affixChecker.partPrefix) {
+                  innerNounMap.functions.localResultMaker(true);
                 }
               }
-            });
-            localHelperMap.functions.pushPossibilities({
-              result,
-              bucket: adjMap.results['adjSuffix'],
-              allowed: [IDS.WORDS.ADJ],
-              isNorADJ: true
-            });
+            }
+            {
+              const result = localHelperMap.functions.makeBaseResult({
+                raws: [entry],
+                affixes: {
+                  suffix: {
+                    paths: entry.paths,
+                    suffix: entry.affix
+                  }
+                },
+                stem: entry.tempStem
+              });
+              localHelperMap.functions.pushPossibilities({
+                result,
+                bucket: adjMap.results['adjSuffix'],
+                allowed: [IDS.WORDS.ADJ],
+                isNorADJ: true
+              });
+            }
+            if (adjMap.affixChecker['adjSuffix-partSuffix'].length > 0) {
+              for (const entry2 of adjMap.affixChecker['adjSuffix-partSuffix']) {
+                const result = localHelperMap.functions.makeBaseResult({
+                  raws: [entry, entry2],
+                  affixes: {
+                    suffix: {
+                      paths: entry2.paths,
+                      suffix: entry2.affix
+                    },
+                    particle: {
+                      paths: entry.paths,
+                      particle: entry.affix,
+                      state: 'suffix'
+                    }
+                  },
+                  stem: entry2.tempStem
+                });
+                localHelperMap.functions.pushPossibilities({
+                  result,
+                  bucket: adjMap.results['adjSuffix-partSuffix'],
+                  allowed: [IDS.WORDS.ADJ],
+                  isNorADJ: true
+                });
+              }
+            }
             if (Object.values(adjMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(adjMap.results);
           }
           break;
@@ -989,8 +1220,8 @@ export const irregulars = {
   determiner: (word) => {
     const matches = [];
     for (const [genderKey, genderMap] of Object.entries(DICTIONARY[IDS.WORDS.DET].IRREGULARS.MAP)) {
-      console.log([genderKey, genderMap], 0)
-      console.log(genderMap, 1)
+      //console.log([genderKey, genderMap], 0)
+      //console.log(genderMap, 1)
       if (genderMap.text === 'q̇e') {
         matches.push({
           path: {
@@ -1004,9 +1235,9 @@ export const irregulars = {
         continue;
       }
       for (const [typeKey, typeMap] of Object.entries(genderMap)) {
-        console.log([typeKey, typeMap], 1)
+        //console.log([typeKey, typeMap], 1)
         for (const [numberKey, numberValue] of Object.entries(typeMap)) {
-          console.log([numberKey, numberValue], 2)
+          //console.log([numberKey, numberValue], 2)
           if (numberValue === word) {
             function shortpath() {
               const temp = {
