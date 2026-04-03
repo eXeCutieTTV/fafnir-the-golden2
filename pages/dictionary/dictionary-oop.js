@@ -77,14 +77,8 @@ export const matchtype2 = {
     return results;
   },
   declensionFinder: (map, isPrefix) => {
-    const tempMap = {
-      newEntry: [],
-      newerEntry: [],
-      results: [] //returned array
-    }
-
     const localHelperMap = {
-      results: [],
+      results: [], //returned array
       functions: {
         makeBaseResult: ({
           raws,
@@ -192,7 +186,7 @@ export const matchtype2 = {
               results: {
                 'partPrefix-partSuffix-nounSuffix': [],//
                 'partPrefix-partSuffix-adjSuffix': [],//
-                // 'partPrefix-ppPrefix-nounSuffix': [],//order is pp-p-stem-suffix, so need to make it in either nounSuffix or pp cases
+                // 'partPrefix-ppPrefix-nounSuffix': [],//order is pp-p-stem-suffix, so need to make it in either nounSuffix or pp cases. 'partSuffix-nounSuffix'. 'partSuffix-adjSuffix'. 'partSuffix-ppPrefix'. 'partSuffix-nounSuffix-ppPrefix'. 'partSuffix-adjSuffix-ppPrefix'.
                 //'partPrefix-ppPrefix-adjSuffix': [],//doesnt exist
                 'partPrefix-nounSuffix': [],//
                 'partPrefix-adjSuffix': [],//
@@ -707,17 +701,23 @@ export const matchtype2 = {
           break;
         case IDS.WORDS.N:
           {
+            //order is pp-p-stem-suffix, so need to make it in either nounSuffix or pp cases. 
+            // 'partSuffix-ppPrefix'. //maybe into part case afterall.
+
+            // 'partSuffix-adjSuffix'. 
+            // 'partSuffix-adjSuffix-ppPrefix'.
+
             const nounMap = {
               results: {
-                nounSuffix: [],
-                'nounSuffix-ppPrefix': []
+                nounSuffix: [],//
+                'nounSuffix-ppPrefix': [],//
+                'nounSuffix-partSuffix': [],//
+                'nounSuffix-partSuffix-ppPrefix': [],
+                'nounSuffix-partPrefix-ppPrefix': []
               },
               affixChecker: {
-                'nounSuffix-ppPrefix': matchtype2.affixChecker(
-                  entry.tempStem,
-                  DICTIONARY[IDS.WORDS.PP].MAP,
-                  true
-                ) || []
+                'nounSuffix-ppPrefix': matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PP].MAP, true) || [],
+                'nounSuffix-partSuffix': matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, false) || []
               }
             }
             if (nounMap.affixChecker['nounSuffix-ppPrefix'].length > 0) {
@@ -744,7 +744,8 @@ export const matchtype2 = {
                   isNorADJ: true
                 });
               }
-            } else {
+            }
+            {
               const result = localHelperMap.functions.makeBaseResult({
                 raws: [entry],
                 affixes: {
@@ -761,6 +762,31 @@ export const matchtype2 = {
                 allowed: [IDS.WORDS.N],
                 isNorADJ: true
               });
+            }
+            if (nounMap.affixChecker['nounSuffix-partSuffix'].length > 0) {
+              for (const entry2 of nounMap.affixChecker['nounSuffix-partSuffix']) {
+                const result = localHelperMap.functions.makeBaseResult({
+                  raws: [entry, entry2],
+                  affixes: {
+                    suffix: {
+                      paths: entry2.paths,
+                      suffix: entry2.affix
+                    },
+                    particle: {
+                      paths: entry.paths,
+                      particle: entry.affix,
+                      state: 'suffix'
+                    }
+                  },
+                  stem: entry2.tempStem
+                });
+                localHelperMap.functions.pushPossibilities({
+                  result,
+                  bucket: nounMap.results['nounSuffix-partSuffix'],
+                  allowed: [IDS.WORDS.N],
+                  isNorADJ: true
+                });
+              }
             }
             if (Object.values(nounMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(nounMap.results);
           }
@@ -779,24 +805,27 @@ export const matchtype2 = {
                 detIrregular: irregulars.determiner(entry.tempStem) || [],
                 [IDS.WORDS.N]: DICTIONARY[IDS.WORDS.N].MAP[entry.tempStem] || {},
                 [IDS.WORDS.ADJ]: DICTIONARY[IDS.WORDS.ADJ].MAP[entry.tempStem] || {}
+              },
+              functions: {
+                makePPResult: (raws, irregular = null) => {
+                  localHelperMap.functions.makeBaseResult({
+                    raws,
+                    affixes: {
+                      preposition: {
+                        paths: entry.paths,
+                        preposition: entry.affix
+                      }
+                    },
+                    stem: entry.tempStem,
+                    irregular
+                  });
+                }
               }
             }
-            const makePPResult = (raws, irregular = null) =>
-              localHelperMap.functions.makeBaseResult({
-                raws,
-                affixes: {
-                  preposition: {
-                    paths: entry.paths,
-                    preposition: entry.affix
-                  }
-                },
-                stem: entry.tempStem,
-                irregular
-              });
 
             // --- Irregular determiners ---
             for (const entry2 of ppMap.stemChecker.detIrregular) {
-              const result = makePPResult(
+              const result = ppMap.functions.makePPResult(
                 [entry, entry2],
                 {
                   stem: entry.tempStem,
@@ -805,6 +834,7 @@ export const matchtype2 = {
                 }
               );
               result.state = 'irregular';
+              if (DICTIONARY[IDS.WORDS.DET].IRREGULARS.fetch(result.text)[0].text !== word) continue;
               ppMap.results.detIrregular.push(result);
             }
 
@@ -812,7 +842,7 @@ export const matchtype2 = {
             const hasValues = obj => Object.values(obj).length > 0;
             for (const type of [IDS.WORDS.N, IDS.WORDS.ADJ]) {
               if (!hasValues(ppMap.stemChecker[type])) continue;
-              const result = makePPResult([entry]);
+              const result = ppMap.functions.makePPResult([entry]);
               localHelperMap.functions.pushPossibilities({
                 result,
                 bucket: ppMap.results[type],
@@ -822,7 +852,7 @@ export const matchtype2 = {
 
             // --- Regular determiners ---
             if (Object.values(ppMap.stemChecker.detRegular).length > 0) {
-              const result = makePPResult([entry]);
+              const result = ppMap.functions.makePPResult([entry]);
               localHelperMap.functions.pushPossibilities({
                 result,
                 bucket: ppMap.results['detRegular'],
@@ -955,15 +985,28 @@ export const irregulars = {
       }
     }
     return matches;
-  },/*
+  },
   determiner: (word) => {
     const matches = [];
     for (const [genderKey, genderMap] of Object.entries(DICTIONARY[IDS.WORDS.DET].IRREGULARS.MAP)) {
-      console.log([genderKey, genderMap])
+      console.log([genderKey, genderMap], 0)
+      console.log(genderMap, 1)
+      if (genderMap.text === 'q̇e') {
+        matches.push({
+          path: {
+            gender: 'unavailable',
+            number: 'unavailable',
+          },
+          word: genderMap.text,
+          type: 'Negative-Article',
+          short_path: 'unavailable'
+        });
+        continue;
+      }
       for (const [typeKey, typeMap] of Object.entries(genderMap)) {
-        console.log([typeKey, typeMap])
+        console.log([typeKey, typeMap], 1)
         for (const [numberKey, numberValue] of Object.entries(typeMap)) {
-          console.log([numberKey, numberValue])
+          console.log([numberKey, numberValue], 2)
           if (numberValue === word) {
             function shortpath() {
               const temp = {
@@ -1003,7 +1046,7 @@ export const irregulars = {
       }
     }
     return matches;
-  },*///lirox changed the map. fix later if he doesnt change it back
+  },
   correlative: (word) => {
     const matches = [];
     for (const [genderKey, genderMap] of Object.entries(CORRELATIVES.MAP)) {

@@ -46,7 +46,7 @@ globalThis.search = function search(word = false) {
   const typeMap = {
     irregulars: {
       correlative: oop.irregulars.correlative(initObj.keyword) || [],
-      //determiner: oop.irregulars.determiner(initObj.keyword) || [],
+      determiner: oop.irregulars.determiner(initObj.keyword) || [],
       lur: oop.irregulars.lur(initObj.keyword) || [],
       pronoun: oop.irregulars.pronoun(initObj.keyword) || []
     },
