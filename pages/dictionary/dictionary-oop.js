@@ -104,8 +104,9 @@ export const matchtype2 = {
         pushPossibilities: ({
           result,
           bucket,
-          allowed,
-          isNorADJ = false
+          allowed = [IDS.WORDS.ADJ, IDS.WORDS.ADV, IDS.WORDS.AUX, IDS.WORDS.CON, IDS.WORDS.DET, IDS.WORDS.N, IDS.WORDS.PART, IDS.WORDS.PP, IDS.WORDS.V],//all are allowed per default, unless else is specified
+          isNorADJ = false,
+          NorADJraw = 0
         }) => {
           for (const possibility of dictionaryBased.findStemFromShort(result.stem)) {
             if (!allowed.includes(possibility.type)) continue;
@@ -114,7 +115,7 @@ export const matchtype2 = {
               if (!(possibility.type === IDS.WORDS.N || possibility.type === IDS.WORDS.ADJ)) continue;
               //if (result.raws[0].paths === 'no-paths-for-this-type') continue;
               // Check declension legality
-              const legal = result.raws[0].paths.some(
+              const legal = result.raws[NorADJraw].paths.some(
                 path => path[3] === possibility.declension
               );
               if (!legal) continue;
@@ -186,6 +187,166 @@ export const matchtype2 = {
           }
           break;
         case IDS.WORDS.PART:
+          {
+            const partMap = {
+              results: {
+                'partPrefix-partSuffix-nounSuffix': [],//
+                'partPrefix-partSuffix-adjSuffix': [],//
+                // 'partPrefix-ppPrefix-nounSuffix': [],//order is pp-p-stem-suffix, so need to make it in either nounSuffix or pp cases
+                //'partPrefix-ppPrefix-adjSuffix': [],//doesnt exist
+                'partPrefix-nounSuffix': [],//
+                'partPrefix-adjSuffix': [],//
+                'partPrefix-partSuffix': [],//
+                'partPrefix': [],
+                'partSuffix': []
+
+                //'partSuffix-nounSuffix-partPrefix': [],
+                //'partSuffix-nounSuffix-ppPrefix': [],
+                //'partSuffix-adjSuffix-partPrefix': [],
+                //'partSuffix-adjSuffix-ppPrefix': [],
+                //'partSuffix-adjSuffix': [],//move to adjSuffix case, as the particle is on the stem, not after the suffix.
+                //'partSuffix-nounSuffix': [],//move to nounSuffix case, as the particle is on the stem, not after the suffix.
+                //'partSuffix-partPrefix': [],
+                //'partSuffix': []
+              },
+              affixChecker: {
+                adjSuffix: matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.ADJ].SUFFIXES.MATCHES, false),
+                nounSuffix: matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.N].SUFFIXES.MATCHES, false),
+                partSuffix: matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, false)
+              },
+              functions: {
+                NandADJChecker: ({ suffixList, baseBucket, comboBucket, allowedPOS }) => {
+                  if (!suffixList) return;
+                  if (!isPrefix) return;
+
+                  for (const entry2 of suffixList) {
+                    const baseResult = localHelperMap.functions.makeBaseResult({
+                      raws: [entry, entry2],
+                      affixes: {
+                        suffix: {
+                          suffix: entry2.affix,
+                          paths: entry2.paths
+                        },
+                        particle: [{
+                          particle: entry.affix,
+                          paths: entry.paths,
+                          state: 'prefix'
+                        }]
+                      },
+                      stem: entry2.tempStem
+                    });
+
+                    localHelperMap.functions.pushPossibilities({
+                      result: baseResult,
+                      bucket: partMap.results[baseBucket],
+                      allowed: [allowedPOS],
+                      isNorADJ: true,
+                      NorADJraw: 1
+                    });
+
+                    // inner partSuffix check
+                    const partSuffixList = matchtype2.affixChecker(entry2.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, false) || [];
+
+                    for (const entry3 of partSuffixList) {
+                      const comboResult = localHelperMap.functions.makeBaseResult({
+                        raws: [entry, entry2, entry3],
+                        affixes: {
+                          suffix: {
+                            suffix: entry2.affix,
+                            paths: entry2.paths
+                          },
+                          particle: [
+                            {
+                              particle: entry.affix,
+                              paths: entry.paths,
+                              state: 'prefix'
+                            },
+                            {
+                              particle: entry3.affix,
+                              paths: entry3.paths,
+                              state: 'suffix'
+                            }
+                          ]
+                        },
+                        stem: entry3.tempStem
+                      });
+
+                      localHelperMap.functions.pushPossibilities({
+                        result: comboResult,
+                        bucket: partMap.results[comboBucket],
+                        allowed: [allowedPOS],
+                        isNorADJ: true,
+                        NorADJraw: 1
+                      });
+                    }
+                  }
+                }
+              }
+            }
+            console.log({ partMap });
+            // partPrefix-partSuffix-nounSuffix branch
+            partMap.functions.NandADJChecker({
+              suffixList: partMap.affixChecker.nounSuffix,
+              baseBucket: 'partPrefix-nounSuffix',
+              comboBucket: 'partPrefix-partSuffix-nounSuffix',
+              allowedPOS: IDS.WORDS.N
+            });
+
+            // partPrefix-partSuffix-adjSuffix branch
+            partMap.functions.NandADJChecker({
+              suffixList: partMap.affixChecker.adjSuffix,
+              baseBucket: 'partPrefix-adjSuffix',
+              comboBucket: 'partPrefix-partSuffix-adjSuffix',
+              allowedPOS: IDS.WORDS.ADJ
+            });
+
+            // partPrefix-partSuffix branch
+            if (partMap.affixChecker['partSuffix'] && isPrefix) {
+              for (const entry2 of partMap.affixChecker['partSuffix']) {
+                const result = localHelperMap.functions.makeBaseResult({
+                  raws: [entry, entry2],
+                  affixes: {
+                    particle: [{
+                      particle: entry.affix,
+                      paths: entry.paths,
+                      state: 'prefix'
+                    }, {
+                      particle: entry2.affix,
+                      paths: entry2.paths,
+                      state: 'suffix'
+                    }]
+                  },
+                  stem: entry2.tempStem
+                });
+                localHelperMap.functions.pushPossibilities({
+                  result,
+                  bucket: partMap.results['partPrefix-partSuffix']
+                });
+              }
+            }
+
+            // partPrefix || partSuffix branch
+            {
+              const result = localHelperMap.functions.makeBaseResult({
+                raws: [entry],
+                affixes: {
+                  particle: [{
+                    particle: entry.affix,
+                    paths: entry.paths,
+                    state: isPrefix ? 'prefix' : 'suffix'
+                  }]
+                },
+                stem: entry.tempStem
+              });
+              localHelperMap.functions.pushPossibilities({
+                result,
+                bucket: isPrefix ? partMap.results['partPrefix'] : partMap.results['partSuffix']
+              });
+            }
+
+            if (Object.values(partMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(partMap.results);
+          }
+          /*
           if (!isPrefix) {
             const temp = {
               affixChecker: {
@@ -376,7 +537,7 @@ export const matchtype2 = {
             if (temp.affixChecker.partPrefix) {
               for (const affix of temp.affixChecker.partPrefix) {
                 if (!dictionaryBased.findStemFromShort(affix.tempStem).length > 0) continue;
-
+ 
                 temp.results['partSuffix-partPrefix'].push({
                   raws: {
                     'pre-declensionFinder()-entry': entry,
@@ -467,7 +628,7 @@ export const matchtype2 = {
               });
             }
             tempMap.results.push(tempResults);
-          }
+          }*/
           break;
         case IDS.WORDS.V:
           {
@@ -794,12 +955,15 @@ export const irregulars = {
       }
     }
     return matches;
-  },
+  },/*
   determiner: (word) => {
     const matches = [];
     for (const [genderKey, genderMap] of Object.entries(DICTIONARY[IDS.WORDS.DET].IRREGULARS.MAP)) {
+      console.log([genderKey, genderMap])
       for (const [typeKey, typeMap] of Object.entries(genderMap)) {
+        console.log([typeKey, typeMap])
         for (const [numberKey, numberValue] of Object.entries(typeMap)) {
+          console.log([numberKey, numberValue])
           if (numberValue === word) {
             function shortpath() {
               const temp = {
@@ -839,7 +1003,7 @@ export const irregulars = {
       }
     }
     return matches;
-  },
+  },*///lirox changed the map. fix later if he doesnt change it back
   correlative: (word) => {
     const matches = [];
     for (const [genderKey, genderMap] of Object.entries(CORRELATIVES.MAP)) {
@@ -945,7 +1109,7 @@ export const irregulars = {
 export const dictionaryBased = {
   findStemFromShort: (short_stem) => {
     const results = [];
-    const matches = DICTIONARY.ALL_WORDS.fuzzyFetchByWord(short_stem);
+    const matches = DICTIONARY.ALL_WORDS.fetch(short_stem);
     for (const result of matches) {
       if ((result.text.length === short_stem.length + 1)) {
         if (!result.text.slice(-1).match(regex.isVowel)) continue;
