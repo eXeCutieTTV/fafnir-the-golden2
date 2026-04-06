@@ -68,7 +68,7 @@ export const matchtype2 = {
               ? word.slice(tempMap.affix.length)
               : word.slice(0, -tempMap.affix.length),
             type: affixMatch.type,
-            paths: 'no-paths-for-this-type'
+            paths: 'indecl'
           });
           break;
         default: console.warn('unhandled affix match type |', affixMatch.type);
@@ -107,7 +107,7 @@ export const matchtype2 = {
             if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
             if (isNorADJ) {
               if (!(possibility.type === IDS.WORDS.N || possibility.type === IDS.WORDS.ADJ)) continue;
-              //if (result.raws[0].paths === 'no-paths-for-this-type') continue;
+              //if (result.raws[0].paths === 'indecl') continue;
               // Check declension legality
               const legal = result.raws[NorADJraw].paths.some(
                 path => path[3] === possibility.declension
@@ -1348,7 +1348,7 @@ export const htmlEditing = {
       htmlEditing.tables.populate(keyword, table)
     }
   },
-  pathStr: (affixesObject) => {
+  affixesStr: (affixesObject) => {
     const affixes = {
       prefix: affixesObject.prefix ? affixesObject.prefix : null,
       suffix: affixesObject.suffix ? affixesObject.suffix : null,
@@ -1372,10 +1372,60 @@ export const htmlEditing = {
 
     const str = {
       text: titleText.text,
-      html: `<span title="${titleText.title}">${titleText.text}</span>`
+      html: `<span  style="cursor: help; width: 100%; display: block;" title="${titleText.title}">${titleText.text}</span>`
     }
 
     return str;
+  },
+  pathStr: (affixesObject) => {
+    const { prefix, suffix, preposition, particle } = affixesObject;
+
+    const paths = {
+      prefix: prefix?.paths || null,
+      suffix: suffix?.paths || null,
+      preposition: preposition?.paths || 'ø',
+      particle: particle
+        ? Object.fromEntries(particle.map(({ state, paths }) => [state, paths]))
+        : null
+    }
+
+    for (const prefix of paths.prefix || [[]]) {
+      for (const suffix of paths.suffix || [[]]) {
+        console.log({ prefix, suffix });
+
+        const tempStrs = {
+          preposition: paths.preposition,
+          particlePrefix: paths.particle?.prefix || 'ø',
+          prefix: prefix.length > 0 ? prefix.join(', ') : 'ø',
+          particleSuffix: paths.particle?.suffix || 'ø',
+          suffix: suffix.length > 0 ? suffix.join(', ') : 'ø'
+        }
+
+        const title = Object.entries(tempStrs)
+          .map(([k, v]) => `${k.startsWith('particle') ? 'particle' : k}: ${v}`)
+          .join('\n');
+
+        const text = Object.values(tempStrs).join(' | ');
+
+        const html = text
+          .split(' | ')
+          .map((part, i) => {
+            if (i === 2 && prefix) {
+              return `<span style="cursor: help;" title="case: ${prefix[0]}\ngender: ${prefix[1]}\nnumber: ${prefix[2]}\ndeclension: ${prefix[3]}">${part}</span>`;
+            }
+            if (i === 4 && suffix) {
+              return `<span style="cursor: help;" title="case: ${suffix[0]}\ngender: ${suffix[1]}\nnumber: ${suffix[2]}\ndeclension: ${suffix[3]}">${part}</span>`;
+            }
+            return part;
+          })
+          .join(' | ');
+
+        return {
+          text,
+          html: `<span style="cursor: help; width: 100%; display: block;" title="${title}">${html}</span>`
+        };
+      }
+    }
   }
 }
 

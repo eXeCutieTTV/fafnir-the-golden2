@@ -15,11 +15,26 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
       for (const entry of value2) {
         const dicEntry = DICTIONARY[IDS.WORDS[entry.type.slice(0, 1)]].MAP[entry.stemReal]; //create const in the outermost loop so its not being redefined for no reason...
 
-        const pathStr = oop.htmlEditing.pathStr(entry.affixes).html;
+        const affixesStr = oop.htmlEditing.affixesStr(entry.affixes);
+        const pathStr = oop.htmlEditing.pathStr(entry.affixes);
+
+        const ids = {
+          row: `${initObj.keyword}, ${pathStr.text}`,
+          defRow: `${entry.stemReal}`
+        }
+        console.log({
+          pathStr,
+          ids,
+          dicEntry,
+          entry
+        })
+
+
         oop.htmlEditing.insertTr(
           document.getElementById('tableTbody'), `
             <td>${initObj.keyword} (${entry.type})</td>
-            <td>${pathStr}</td>
+            <td>${affixesStr.html}</td>
+            <td>${pathStr.html}</td>
             <td data-key="${entry.key.replace("-...", "")}" 
                 id="${entry.key.replace("-...", "")}"
                 style="user-select: none; cursor: pointer;">temp</td>`
