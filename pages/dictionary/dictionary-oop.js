@@ -102,6 +102,7 @@ export const matchtype2 = {
           isNorADJ = false,
           NorADJraw = 0
         }) => {
+          console.log(result)
           for (const possibility of dictionaryBased.findStemFromShort(result.stem)) {
             if (!allowed.includes(possibility.type)) continue;
             if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
@@ -600,7 +601,7 @@ export const matchtype2 = {
               },
               functions: {
                 makePPResult: (raws, irregular = null) => {
-                  localHelperMap.functions.makeBaseResult({
+                  return localHelperMap.functions.makeBaseResult({
                     raws,
                     affixes: {
                       preposition: {
@@ -685,7 +686,7 @@ export const matchtype2 = {
               );
               //result.state = 'irregular';
               if (!result) continue;
-              if (DICTIONARY[IDS.WORDS.DET].IRREGULARS.fetch(result.stem)[0].text !== word) continue;
+              if (!DICTIONARY[IDS.WORDS.DET].IRREGULARS.fetch(result.stem)[0] || DICTIONARY[IDS.WORDS.DET].IRREGULARS.fetch(result.stem)[0].text !== word) continue;
               ppMap.results.detIrregular.push(result);
             }
 
@@ -693,6 +694,7 @@ export const matchtype2 = {
             const hasValues = obj => Object.values(obj).length > 0;
             for (const type of [IDS.WORDS.N, IDS.WORDS.ADJ]) {
               if (!hasValues(ppMap.stemChecker[type])) continue;
+              console.log([entry])
               const result = ppMap.functions.makePPResult([entry]);
               localHelperMap.functions.pushPossibilities({
                 result,
@@ -1291,9 +1293,8 @@ export const htmlEditing = {
       htmlEditing.createDivById('', wrapper, html);
       htmlEditing.tables.populate(word, wrapper, isPrefix);
     },
-    noun: (declension, mood, wrapper, keyword = '') => {
+    noun: (declension, mood, wrapper, keyword, stem = keyword) => {
       const table = document.createElement('table');
-      const combinedGendersObject = DICTIONARY[IDS.WORDS.N].MAP[keyword].genders;
 
       table.id = `Noun-Table-${mood}`;
       //th
@@ -1310,7 +1311,7 @@ export const htmlEditing = {
       table.appendChild(thead);
 
       //rows
-      for (const [gender, def] of Object.entries(combinedGendersObject)) {
+      for (const [gender, def] of Object.entries(DICTIONARY[IDS.WORDS.N].MAP[stem].genders)) {
         const trd = document.createElement('tr');
         const rowth = document.createElement('th');
         rowth.textContent = gender;
@@ -1357,11 +1358,11 @@ export const htmlEditing = {
     }
 
     const values = [
-      affixes?.preposition?.preposition,
-      affixes?.particle?.find(p => p?.state === 'prefix')?.particle,
-      affixes?.prefix?.prefix,
-      affixes?.particle?.find(p => p?.state === 'suffix')?.particle,
-      affixes?.suffix?.suffix
+      affixes?.preposition?.preposition || 'ø',
+      affixes?.particle?.find(p => p?.state === 'prefix')?.particle || 'ø',
+      affixes?.prefix?.prefix || 'ø',
+      affixes?.particle?.find(p => p?.state === 'suffix')?.particle || 'ø',
+      affixes?.suffix?.suffix || 'ø'
     ]
 
     const rendered = values.map(value => value || 'ø');
@@ -1370,15 +1371,15 @@ export const htmlEditing = {
       text: `${rendered.join(' | ')} | `
     }
 
-    const str = {
+    return {
       text: titleText.text,
-      html: `<span  style="cursor: help; width: 100%; display: block;" title="${titleText.title}">${titleText.text}</span>`
-    }
-
-    return str;
+      html: `<span  style="cursor: help; width: 100%; display: block;" title="${titleText.title}">${titleText.text}</span>`,
+      values
+    };
   },
   pathStr: (affixesObject) => {
     const { prefix, suffix, preposition, particle } = affixesObject;
+    const temp = [];
 
     const paths = {
       prefix: prefix?.paths || null,
@@ -1391,7 +1392,6 @@ export const htmlEditing = {
 
     for (const prefix of paths.prefix || [[]]) {
       for (const suffix of paths.suffix || [[]]) {
-        console.log({ prefix, suffix });
 
         const tempStrs = {
           preposition: paths.preposition,
@@ -1411,21 +1411,22 @@ export const htmlEditing = {
           .split(' | ')
           .map((part, i) => {
             if (i === 2 && prefix) {
-              return `<span style="cursor: help;" title="case: ${prefix[0]}\ngender: ${prefix[1]}\nnumber: ${prefix[2]}\ndeclension: ${prefix[3]}">${part}</span>`;
+              return `<span style="cursor: help;" title="case: ${prefix[0] || 'ø'}\ngender: ${prefix[1] || 'ø'}\nnumber: ${prefix[2] || 'ø'}\ndeclension: ${prefix[3] || 'ø'}">${part}</span>`;
             }
             if (i === 4 && suffix) {
-              return `<span style="cursor: help;" title="case: ${suffix[0]}\ngender: ${suffix[1]}\nnumber: ${suffix[2]}\ndeclension: ${suffix[3]}">${part}</span>`;
+              return `<span style="cursor: help;" title="case: ${suffix[0] || 'ø'}\ngender: ${suffix[1] || 'ø'}\nnumber: ${suffix[2] || 'ø'}\ndeclension: ${suffix[3] || 'ø'}">${part}</span>`;
             }
             return part;
           })
           .join(' | ');
 
-        return {
+        temp.push({
           text,
           html: `<span style="cursor: help; width: 100%; display: block;" title="${title}">${html}</span>`
-        };
+        });
       }
     }
+    return temp;
   }
 }
 
