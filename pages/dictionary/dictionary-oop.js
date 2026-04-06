@@ -1347,6 +1347,35 @@ export const htmlEditing = {
 
       htmlEditing.tables.populate(keyword, table)
     }
+  },
+  pathStr: (affixesObject) => {
+    const affixes = {
+      prefix: affixesObject.prefix ? affixesObject.prefix : null,
+      suffix: affixesObject.suffix ? affixesObject.suffix : null,
+      preposition: affixesObject.preposition ? affixesObject.preposition : null,
+      particle: affixesObject.particle ? affixesObject.particle : null
+    }
+
+    const values = [
+      affixes?.preposition?.preposition,
+      affixes?.particle?.find(p => p?.state === 'prefix')?.particle,
+      affixes?.prefix?.prefix,
+      affixes?.particle?.find(p => p?.state === 'suffix')?.particle,
+      affixes?.suffix?.suffix
+    ]
+
+    const rendered = values.map(value => value || 'ø');
+    const titleText = {
+      title: `preposition: ${values[0]}\nparticle: ${values[1]}\nprefix: ${values[2]}\nparticle: ${values[3]}\nsuffix: ${values[4]}`,
+      text: `${rendered.join(' | ')} | `
+    }
+
+    const str = {
+      text: titleText.text,
+      html: `<span title="${titleText.title}">${titleText.text}</span>`
+    }
+
+    return str;
   }
 }
 

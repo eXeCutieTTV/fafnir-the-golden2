@@ -14,6 +14,23 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     for (const [wordclass, value2] of Object.entries(value)) {
       for (const entry of value2) {
         const dicEntry = DICTIONARY[IDS.WORDS[entry.type.slice(0, 1)]].MAP[entry.stemReal]; //create const in the outermost loop so its not being redefined for no reason...
+
+        const pathStr = oop.htmlEditing.pathStr(entry.affixes).html;
+        oop.htmlEditing.insertTr(
+          document.getElementById('tableTbody'), `
+            <td>${initObj.keyword} (${entry.type})</td>
+            <td>${pathStr}</td>
+            <td data-key="${entry.key.replace("-...", "")}" 
+                id="${entry.key.replace("-...", "")}"
+                style="user-select: none; cursor: pointer;">temp</td>`
+        );
+        pressableLoadTableButtons(
+          document.getElementById(entry.key.replace("-...", "")),
+          initObj.keyword
+        );
+
+        /*
+        
         const affixesCheckMap = {
           prefix: entry.affixes.prefix?.paths ?? [[]],
           suffix: entry.affixes.suffix?.paths ?? [[]]
@@ -21,7 +38,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
         //console.log(affixesCheckMap)
         for (const prefixPaths of affixesCheckMap.prefix) {
           for (const suffixPaths of affixesCheckMap.suffix) {
-            const pathStr = `${prefixPaths.join(', ')} | ${suffixPaths.join(', ')}`.trim();
+            const pathStr = `${prefixPaths.join(', ')} | ${suffixPaths.join(', ')}`.trim(); //pathStr()
             const ids = {
               row: `${initObj.keyword}, ${pathStr}`,
               defRow: `${entry.stemReal}`
@@ -39,7 +56,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
             // --- Main row ---
             oop.htmlEditing.insertTr(
               document.getElementById('tableTbody'), `
-                <td>${/*`${entry.affixes.prefix.prefix}<strong>${entry.stem}</strong>${entry.affixes.suffix.suffix}`*/initObj.keyword} (${entry.type})</td>
+                <td>${initObj.keyword} (${entry.type})</td>
                 <td>${pathStr}</td>
                 <td data-key="${entry.key.replace("-...", "")}" 
                     id="${ids.row}"
@@ -96,6 +113,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
 
           }
         }
+        */
       }
     }
   }
