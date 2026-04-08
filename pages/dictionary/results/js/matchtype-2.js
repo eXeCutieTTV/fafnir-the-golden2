@@ -47,7 +47,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                 id="${entry.key.replace("-...", "")}"
                 style="user-select: none; cursor: pointer;">temp</td>`
           );
-          pressableLoadTableButtons({
+          oop.htmlEditing.tables.pressableLoadTableButtons({
             el: document.getElementById(entry.key.replace("-...", "")),
             word: initObj.keyword,
             affixesStrValues: affixesStr.values,
@@ -91,7 +91,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
               false
             );
 
-            pressableLoadTableButtons({
+            oop.htmlEditing.tables.pressableLoadTableButtons({
               el: document.getElementById(ids.defRow),
               word: entry.stemReal,
               ...(dicEntry.declension && { declension: dicEntry.declension })
@@ -190,168 +190,6 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
   //for (const html of Object.values(temp)) {
   //  oop.htmlEditing.insertTr(document.getElementById('tableTbody'), html, false);
   //}
-
-
-  function pressableLoadTableButtons({ el, word, affixesStrValues = [], declension = 1, stem = word }) {
-    const wrapperWrapper = document.getElementById('loadableTable').children;
-    console.log(affixesStrValues)
-
-    const wordClass = el.dataset.wordclass;
-    const hasPrefix = affixesStrValues[2] !== 'ø';
-    const hasSuffix = affixesStrValues[4] !== 'ø';
-
-    const referenceMap = {
-      consts: {},
-      functions: {
-        tables: {
-          [IDS.WORDS.N]: () => {//same indexing for oop.htmlEditin.tables[i] etc
-            referenceMap.functions.misc.clearHtml();
-            oop.htmlEditing.tables.noun(declension, 'Directive', wrapperWrapper[0], word, stem);
-            oop.htmlEditing.tables.noun(declension, 'Recessive', wrapperWrapper[1], word, stem);
-          },
-          [IDS.WORDS.V]: (hasPrefix = true, hasSuffix = true) => {
-            referenceMap.functions.misc.clearHtml();
-            hasPrefix ? oop.htmlEditing.tables.verb(true, word, wrapperWrapper[0]) : null;
-            hasSuffix ? oop.htmlEditing.tables.verb(false, word, wrapperWrapper[1]) : null;
-          },
-          [IDS.WORDS.DET]: () => {
-            referenceMap.functions.misc.clearHtml();
-            oop.htmlEditing.tables.determiner(wrapperWrapper[0], word);
-          },
-          [IDS.WORDS.ADJ]: () => {
-            referenceMap.functions.misc.clearHtml();
-            oop.htmlEditing.tables.adjective(declension, 'Directive', wrapperWrapper[0], word, stem);
-            oop.htmlEditing.tables.adjective(declension, 'Recessive', wrapperWrapper[1], word, stem);
-          }
-        },
-        misc: {
-          clearHtml: () => { for (const wrapper of wrapperWrapper) while (wrapper.firstChild) wrapper.firstChild.remove(); }
-        }
-      }
-    }
-
-    if (el.dataset.defrow) {
-      switch (wordClass) {
-        case IDS.WORDS.N:
-          el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.N](); });
-          break;
-        case IDS.WORDS.V:
-          el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](); });
-          break;
-        case IDS.WORDS.DET:
-          el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.DET](); });
-          break;
-        case IDS.WORDS.ADJ:
-          el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.ADJ](); });
-          break;
-        case IDS.WORDS.AUX:
-          el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](true, false); });
-          break;
-        case IDS.WORDS.PP:
-        case IDS.WORDS.ADV:
-        case IDS.WORDS.CON:
-        case IDS.WORDS.PART:
-          el.textContent = 'tables unavailable';
-          break;
-        default: break;
-      }
-      return;
-    }
-
-    // both prefix + suffix
-    if (hasPrefix && hasSuffix) {
-      el.textContent = 'tables unavailable';
-    }
-
-    // prefix only
-    else if (hasPrefix && !hasSuffix) {
-      if (wordClass === IDS.WORDS.V) {
-        el.textContent = 'verb suffix table';
-        el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](false, true); });
-      } else {
-        el.textContent = 'tables unavailable';
-      }
-      return;
-    }
-
-    // suffix only
-    else if (!hasPrefix && hasSuffix) {
-      if (wordClass === IDS.WORDS.V) {
-        el.textContent = 'verb prefix table';
-        el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](true, false); });
-      } else {
-        el.textContent = 'tables unavailable';
-      }
-    }
-
-    // no affixes
-    else if (!hasPrefix && !hasSuffix) {
-      switch (wordClass) {
-        case IDS.WORDS.N:
-          el.textContent = 'noun tables';
-          el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.N](); });
-          break;
-
-        case IDS.WORDS.V:
-          el.textContent = 'verb tables';
-          el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](); });
-          break;
-
-        default:
-          el.textContent = 'tables unavailable';
-      }
-    }
-
-
-    /*
-    switch (el.dataset.key) {
-      case 'Verb':
-        el.addEventListener('click', () => {
-          const isEmpty = !Array.from(wrapperWrapper.children).some(child => child.innerHTML.trim().length > 0);
-          clearHtml();
-          if (isEmpty) {
-            oop.htmlEditing.tables.verb(true, word, wrapperWrapper.children[0]);
-            oop.htmlEditing.tables.verb(false, word, wrapperWrapper.children[1]);
-            el.dataset.tableToggleState = true;//idk. fix later...
-          }
-        });
-        break;
-      case 'verbSuffix':
-        el.addEventListener('click', () => {
-          const isEmpty = !Array.from(wrapperWrapper.children).some(child => child.innerHTML.trim().length > 0);
-          clearHtml();
-          if (isEmpty) oop.htmlEditing.tables.verb(true, word, wrapperWrapper.children[1]);
-        });
-        break;
-      case 'verbPrefix':
-        el.addEventListener('click', () => {
-          const isEmpty = !Array.from(wrapperWrapper.children).some(child => child.innerHTML.trim().length > 0);
-          clearHtml();
-          if (isEmpty) {
-            oop.htmlEditing.tables.verb(false, word, wrapperWrapper.children[0]);
-          }
-        });
-        break;
-      case 'Noun':
-        el.addEventListener('click', () => {
-          const isEmpty = !Array.from(wrapperWrapper.children).some(child => child.innerHTML.trim().length > 0);
-          clearHtml();
-          if (isEmpty) {
-            oop.htmlEditing.tables.noun(1, 'Directive', wrapperWrapper.children[0], word);
-            oop.htmlEditing.tables.noun(1, 'Recessive', wrapperWrapper.children[1], word);
-          }
-        });
-        break;
-      case 'nounSuffix':
-      case 'verbPrefix-verbSuffix':
-      default:
-        el.textContent = 'unavaliable';
-        el.style.cursor = 'default';
-        break;
-        */
-
-
-  }
 });
 //highlight the cell that shows the current declension (for stem case^^)
 //need def of particles and pp also

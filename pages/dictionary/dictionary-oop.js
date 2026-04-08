@@ -1258,6 +1258,117 @@ export const htmlEditing = {
         // place keyword as prefix or suffix (you can change behavior per table)
       });
     },
+    pressableLoadTableButtons: ({ el, word, affixesStrValues = [], declension = 1, stem = word }) => {
+      const wrapperWrapper = document.getElementById('loadableTable').children;
+      console.log(affixesStrValues)
+
+      const wordClass = el.dataset.wordclass;
+      const hasPrefix = affixesStrValues[2] !== 'ø';
+      const hasSuffix = affixesStrValues[4] !== 'ø';
+
+      const referenceMap = {
+        consts: {},
+        functions: {
+          tables: {
+            [IDS.WORDS.N]: () => {//same indexing for oop.htmlEditin.tables[i] etc
+              referenceMap.functions.misc.clearHtml();
+              htmlEditing.tables.noun(declension, 'Directive', wrapperWrapper[0], word, stem);
+              htmlEditing.tables.noun(declension, 'Recessive', wrapperWrapper[1], word, stem);
+            },
+            [IDS.WORDS.V]: (hasPrefix = true, hasSuffix = true) => {
+              referenceMap.functions.misc.clearHtml();
+              hasPrefix ? htmlEditing.tables.verb(true, word, wrapperWrapper[0]) : null;
+              hasSuffix ? htmlEditing.tables.verb(false, word, wrapperWrapper[1]) : null;
+            },
+            [IDS.WORDS.DET]: () => {
+              referenceMap.functions.misc.clearHtml();
+              htmlEditing.tables.determiner(wrapperWrapper[0], word);
+            },
+            [IDS.WORDS.ADJ]: () => {
+              referenceMap.functions.misc.clearHtml();
+              htmlEditing.tables.adjective(declension, 'Directive', wrapperWrapper[0], word, stem);
+              htmlEditing.tables.adjective(declension, 'Recessive', wrapperWrapper[1], word, stem);
+            }
+          },
+          misc: {
+            clearHtml: () => { for (const wrapper of wrapperWrapper) while (wrapper.firstChild) wrapper.firstChild.remove(); },
+            isEmpty: () => { !Array.from(wrapperWrapper).some(child => child.innerHTML.trim().length > 0) }
+          }
+        }
+      }
+
+      if (el.dataset.defrow) {
+        switch (wordClass) {
+          case IDS.WORDS.N:
+            el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.N](); });
+            break;
+          case IDS.WORDS.V:
+            el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](); });
+            break;
+          case IDS.WORDS.DET:
+            el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.DET](); });
+            break;
+          case IDS.WORDS.ADJ:
+            el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.ADJ](); });
+            break;
+          case IDS.WORDS.AUX:
+            el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](true, false); });
+            break;
+          case IDS.WORDS.PP:
+          case IDS.WORDS.ADV:
+          case IDS.WORDS.CON:
+          case IDS.WORDS.PART:
+            el.textContent = 'tables unavailable';
+            break;
+          default: break;
+        }
+        return;
+      }
+
+      // both prefix + suffix
+      if (hasPrefix && hasSuffix) {
+        el.textContent = 'tables unavailable';
+      }
+
+      // prefix only
+      else if (hasPrefix && !hasSuffix) {
+        if (wordClass === IDS.WORDS.V) {
+          el.textContent = 'verb suffix table';
+          el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](false, true); });
+        } else {
+          el.textContent = 'tables unavailable';
+        }
+        return;
+      }
+
+      // suffix only
+      else if (!hasPrefix && hasSuffix) {
+        if (wordClass === IDS.WORDS.V) {
+          el.textContent = 'verb prefix table';
+          el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](true, false); });
+        } else {
+          el.textContent = 'tables unavailable';
+        }
+      }
+
+      // no affixes
+      else if (!hasPrefix && !hasSuffix) {
+        switch (wordClass) {
+          case IDS.WORDS.N:
+            el.textContent = 'noun tables';
+            el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.N](); });
+            break;
+
+          case IDS.WORDS.V:
+            el.textContent = 'verb tables';
+            el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](); });
+            break;
+
+          default:
+            el.textContent = 'tables unavailable';
+        }
+      }
+    },
     verb: (isPrefix, word, wrapper) => {
       const affixStateMap = {
         true: ['Prefix',],// ⟅(^‿^)⟆ - Shelf the elf
