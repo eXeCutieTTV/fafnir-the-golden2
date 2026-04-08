@@ -102,7 +102,7 @@ export const matchtype2 = {
           isNorADJ = false,
           NorADJraw = 0
         }) => {
-          console.log(result)
+          //console.log(result)
           for (const possibility of dictionaryBased.findStemFromShort(result.stem)) {
             if (!allowed.includes(possibility.type)) continue;
             if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
@@ -118,6 +118,7 @@ export const matchtype2 = {
 
             result.stemReal = possibility.text;
             result.type = possibility.type;
+            console.log(result)
             bucket.push(result);
           }
         }
@@ -585,19 +586,25 @@ export const matchtype2 = {
                 detIrregular: [],
                 [IDS.WORDS.N]: [],
                 [IDS.WORDS.ADJ]: [],
+                [IDS.WORDS.ADV]: [],
+                [IDS.WORDS.AUX]: [],
                 'ppPrefix-partSuffix': [],
                 'ppPrefix-partPrefix': [],
-                'ppPrefix-partPrefix-partSuffix': []
+                'ppPrefix-partPrefix-partSuffix': [],
+                'ppPrefix-auxprefix': []//<---
               },
               stemChecker: {
                 detRegular: DICTIONARY[IDS.WORDS.DET].MAP[entry.tempStem] || {},
                 detIrregular: irregulars.determiner(entry.tempStem) || [],
                 [IDS.WORDS.N]: DICTIONARY[IDS.WORDS.N].MAP[entry.tempStem] || {},
-                [IDS.WORDS.ADJ]: DICTIONARY[IDS.WORDS.ADJ].MAP[entry.tempStem] || {}
+                [IDS.WORDS.ADJ]: DICTIONARY[IDS.WORDS.ADJ].MAP[entry.tempStem] || {},
+                [IDS.WORDS.ADV]: DICTIONARY[IDS.WORDS.ADV].MAP[entry.tempStem] || {},
+                [IDS.WORDS.AUX]: DICTIONARY[IDS.WORDS.AUX].MAP[entry.tempStem] || {}
               },
               affixChecker: {
                 partSuffix: matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, false) || [],
-                partPrefix: matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, true) || []
+                partPrefix: matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, true) || [],
+                auxPrefix: matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.V].MAP, true) || []
               },
               functions: {
                 makePPResult: (raws, irregular = null) => {
@@ -669,6 +676,14 @@ export const matchtype2 = {
                       }
                     }
                   }
+                },
+                advOrAuxResults: (isAux) => {
+                  const result = ppMap.functions.makePPResult([entry]);
+                  localHelperMap.functions.pushPossibilities({
+                    result,
+                    bucket: isAux ? ppMap.results[IDS.WORDS.AUX] : ppMap.results[IDS.WORDS.ADV],
+                    allowed: isAux ? [IDS.WORDS.AUX] : [IDS.WORDS.ADV]
+                  });
                 }
               }
             }
@@ -717,6 +732,34 @@ export const matchtype2 = {
             if (ppMap.affixChecker.partPrefix.length > 0) ppMap.functions.partResults(true);
             if (ppMap.affixChecker.partSuffix.length > 0) ppMap.functions.partResults(false);
 
+            // aux prefix case
+            if (ppMap.affixChecker.auxPrefix.length > 0) {
+              for (const entry2 of ppMap.affixChecker.auxPrefix) {
+                const result = localHelperMap.functions.makeBaseResult({
+                  raws: [entry, entry2],
+                  affixes: {
+                    preposition: {
+                      paths: entry.paths,
+                      preposition: entry.affix
+                    },
+                    prefix: {
+                      paths: entry2.paths,
+                      prefix: entry2.affix
+                    }
+                  },
+                  stem: entry2.tempStem
+                });
+                localHelperMap.functions.pushPossibilities({
+                  result,
+                  bucket: ppMap.results['ppPrefix-auxprefix'],
+                  allowed: [IDS.WORDS.AUX]
+                });
+              }
+            }
+
+            if (Object.values(ppMap.stemChecker[IDS.WORDS.ADV]).length > 0) ppMap.functions.advOrAuxResults(false);
+            if (Object.values(ppMap.stemChecker[IDS.WORDS.AUX]).length > 0) ppMap.functions.advOrAuxResults(true);
+
             if (Object.values(ppMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(ppMap.results);
           }
           break;
@@ -724,7 +767,7 @@ export const matchtype2 = {
           {
             const adjMap = {
               results: {
-                nounSuffix: [],//
+                adjSuffix: [],//
                 'adjSuffix-ppPrefix': [],//
                 'adjSuffix-partSuffix': [],//
                 'adjSuffix-partSuffix-ppPrefix': [],//
@@ -856,6 +899,8 @@ export const matchtype2 = {
                 },
                 stem: entry.tempStem
               });
+              //console.log(result)
+              //if (!result) continue;
               localHelperMap.functions.pushPossibilities({
                 result,
                 bucket: adjMap.results['adjSuffix'],
@@ -1221,7 +1266,7 @@ export const htmlEditing = {
 
       function affixHandlerGenders(isPrefix, word, person, number, hasBorder = false) {
         let string = "";
-        for (const gender of GENDERS.FLAT.NAME) {
+        for (const gender of Object.values(IDS.GENDERS)) {
           string += `<td${hasBorder ? " style = 'border-bottom: 1px solid var(--border)' " : ''}>${affixHandler(isPrefix, word, person, number, gender)}</td>\n`;
         }
         return string;
@@ -1346,7 +1391,109 @@ export const htmlEditing = {
 
       wrapper.appendChild(table);
 
-      htmlEditing.tables.populate(keyword, table)
+      htmlEditing.tables.populate(keyword, table);
+    },
+    adjective: (declension, mood, wrapper, keyword, stem = keyword) => {
+      const table = document.createElement('table');
+
+      table.id = `Adjective-Table-${mood}`;
+      //th
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      const headers = [`${mood} (${declension})`, "Singular", "Dual", "Plural"];
+      headers.forEach(text => {
+        const th = document.createElement('th');
+        th.textContent = text;
+        th.style.width = '25%';//fix later. first th should be less wide than the other 3.
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      //rows
+      for (const gender of Object.values(IDS.GENDERS)) {
+        const trd = document.createElement('tr');
+        const rowth = document.createElement('th');
+        rowth.textContent = gender;
+        trd.appendChild(rowth);
+        const map = {
+          1: 'Singular',
+          2: 'Dual',
+          3: 'Plural'
+        }
+
+        for (let i = 0; i < (headers.length - 1); i++) {
+          const td = document.createElement('td');
+          td.textContent = 'placeholder';
+          //inner
+          for (const [gndr, array] of Object.entries(DICTIONARY[IDS.WORDS.ADJ].SUFFIXES.MAP[mood])) {
+            if (gndr === gender) {
+              const numberKey = map[i + 1];
+              const cellValue = array[numberKey] && array[numberKey][declension];
+              if (cellValue !== undefined) {
+                td.textContent = cellValue;
+              }
+            }
+          }
+          trd.appendChild(td);
+        }
+        table.appendChild(trd);
+      }
+      table.style = "margin-bottom: 10px";
+
+      const tbody = document.createElement('tbody');
+      table.appendChild(tbody);
+
+      wrapper.appendChild(table);
+
+      htmlEditing.tables.populate(keyword, table);
+    },
+    determiner(wrapper, keyword) {
+      const map = DICTIONARY[IDS.WORDS.DET].SUFFIXES.MAP;
+      const html = `
+        <div style="margin-top:30px">
+            <table id="Determiner-Table">
+                <thead>
+                    <tr>
+                        <th class="infoCollum">Genders</th>
+                        <th>Forms</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>Exalted</th>
+                        <td>${map.Exalted}</td>
+                    </tr>
+                    <tr>
+                        <th>Rational</th>
+                        <td>${map.Rational}</td>
+                    </tr>
+                    <tr>
+                        <th>Monstrous</th>
+                        <td>${map.Monstrous}</td>
+                    </tr>
+                    <tr>
+                        <th>Irrational</th>
+                        <td style="border-bottom: black solid 1px">${map.Irrational}</td>
+                    </tr>
+                    <tr>
+                        <th>Magical</th>
+                        <td>${map.Magical}</td>
+                    </tr>
+                    <tr>
+                        <th>Mundane</th>
+                        <td>${map.Mundane}</td>
+                    </tr>
+                    <tr>
+                        <th>Abstract</th>
+                        <td>${map.Abstract}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+      `;
+      htmlEditing.createDivById('', wrapper, html);
+      htmlEditing.tables.populate(keyword, wrapper);
     }
   },
   affixesStr: (affixesObject) => {
