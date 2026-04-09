@@ -11,8 +11,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     DICTIONARY
   });
 
-  oop.search({ input: document.getElementById('search_field'), button: document.getElementById('search_button') });
-
+  oop.searching.setup(document.getElementById('search_field'), document.getElementById('search_button'));
 });
 
 // make english vs draconic search based on a dropdown, instead of a default fallback.
