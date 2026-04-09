@@ -1712,3 +1712,102 @@ export const regex = {
   isVowel: /^[iīeēæyuūoōaāúûóôáâIĪEĒÆYUŪOŌAĀÚÛÓÔÁÂ]$/,
   isConsonant: /^[tkqq̇'cfdszgχhlrɾmnŋTKQQ̇'CFDSZGΧHLRɾMNŊ]$/
 }
+
+export const search = ({ word = false, input, button }) => {
+  if (!globalThis.DICTIONARY?.ALL_WORDS?.MAP) {
+    console.warn('Dictionary not loaded yet.');
+    return;
+  }
+
+  const initObj = {
+    matchType: 3, //asume its type3, if its not then we change it - type3 detection is if(matchType === 3).
+    keyword: word
+      ? word.trim().toLowerCase()
+      : input && input.value
+        ? input.value.trim().toLowerCase()
+        : '',
+    results: {
+      matchtype1: [],
+      matchtype2: []
+    }
+  }
+
+  console.log('keyword |', initObj.keyword);
+  if (input && input.value.trim() !== '') { //clear searchFLD
+    input.value = '';
+    input.blur();
+  }
+  const typeMap = {
+    irregulars: {
+      correlative: irregulars.correlative(initObj.keyword) || [],
+      determiner: irregulars.determiner(initObj.keyword) || [],
+      lur: irregulars.lur(initObj.keyword) || [],
+      pronoun: irregulars.pronoun(initObj.keyword) || []
+    },
+    type2: {
+      adjSuffix: matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.ADJ].SUFFIXES.MATCHES, false) || [],
+      auxPrefix: matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.V].PREFIXES.MATCHES, true) || [],
+      detSuffix: matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.DET].SUFFIXES.MATCHES, false) || [],
+      nounSuffix: matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.N].SUFFIXES.MATCHES, false) || [],
+      partPrefix: matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.PART].MAP, true) || [],
+      partSuffix: matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.PART].MAP, false) || [],
+      ppPrefix: matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.PP].MAP, true) || [],
+      verbPrefix: matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.V].PREFIXES.MATCHES, true) || [],
+      verbSuffix: matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.V].SUFFIXES.MATCHES, false) || []
+    }
+  }
+  console.log('typeMap |', typeMap);//make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
+  if (DICTIONARY.ALL_WORDS.MAP[initObj.keyword]?.available?.length > 0) { // type 1
+    initObj.matchType = 1;
+
+    console.log('-----type1-----');
+
+    const resultMap = DICTIONARY.ALL_WORDS.MAP[initObj.keyword];
+
+    console.log('resultMap|', resultMap);
+
+    const temp = Object.values(IDS.WORDS);
+    for (const wordclass of temp) {
+      DICTIONARY[wordclass]?.MAP?.[initObj.keyword]//'thox'
+        ? initObj.results.matchtype1.push(DICTIONARY[wordclass]?.MAP?.[initObj.keyword])
+        : console.log('err for', wordclass)
+    }
+    console.log(initObj);
+  } else if (//type 2
+    Object.values(typeMap.type2).some(matches => matches.length > 0)
+  ) {
+    console.log('-----type2-----');
+    initObj.matchType = 2;
+    const checkerMap = {
+      'partSuffix-...': matchtype2.declensionFinder(typeMap.type2.partSuffix, false),
+      'partPrefix': matchtype2.declensionFinder(typeMap.type2.partPrefix, true),
+      'nounSuffix-...': matchtype2.declensionFinder(typeMap.type2.nounSuffix, true),
+      'ppPrefix-...': matchtype2.declensionFinder(typeMap.type2.ppPrefix, true),
+      'verbSuffix': matchtype2.declensionFinder(typeMap.type2.verbSuffix, false),
+      'verbPrefix-...': matchtype2.declensionFinder(typeMap.type2.verbPrefix, true),
+      'adjSuffix-...': matchtype2.declensionFinder(typeMap.type2.adjSuffix, false),
+      'detSuffix': matchtype2.declensionFinder(typeMap.type2.detSuffix, false)
+    }
+    console.log('checkerMap', checkerMap);
+    initObj.results.matchtype2 = matchtype2.sortByEntry(matchtype2.flatten(checkerMap));
+    console.log('initObj', initObj);
+    console.log('results', initObj.results.matchtype2);
+  }
+  sessionStorage.setItem('initObj', JSON.stringify(initObj));
+  initObj.results.matchtype1.length > 0
+    ? window.location.href = '/pages/dictionary/results/matchtype-1.html'
+    : Object.values(initObj.results.matchtype2).length > 0
+      ? window.location.href = '/pages/dictionary/results/matchtype-2.html'
+      : null
+
+
+  button.addEventListener('click', () => {
+    search({ input: input })
+  });
+  input.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') {
+      ev.preventDefault(); // prevent form submission
+      search({ input: input })
+    }
+  });
+}

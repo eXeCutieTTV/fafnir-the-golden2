@@ -4,6 +4,7 @@ import { DIALECTS } from "https://draconicconlang.github.io/APIs/dialects/Dialec
 globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
   Object.assign(globalThis, DR);
   // init code
+  oop.search({ input: document.getElementById('search_field'), button: document.getElementById('search_button') });
   const initObj = JSON.parse(sessionStorage.getItem('initObj'));
   console.log({
     DICTIONARY,
