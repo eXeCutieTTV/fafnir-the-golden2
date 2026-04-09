@@ -10,7 +10,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
   const temp = {
     first: true,
     colIndex: 0
-  };
+  }
   for (const [stem, value] of Object.entries(initObj.results.matchtype2)) {
     for (const [wordclass, value2] of Object.entries(value)) {
       for (const entry of value2) {
@@ -18,20 +18,62 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
           IDS.WORDS[entry.type.slice(0, 3).toUpperCase()] ??
           IDS.WORDS[entry.type.slice(0, 1).toUpperCase()];
 
-        const dicEntry = DICTIONARY[typeKey]?.MAP?.[entry.stemReal]; //create const in the outermost loop so its not being redefined for no reason...
-        const affixesStr = oop.htmlEditing.affixesStr(entry.affixes);
-        const pathStrs = oop.htmlEditing.pathStr(entry.affixes, wordclass);
-        for (const pathStr of pathStrs) {
+        const innerReferenceMap = {
+          dicEntry: DICTIONARY[typeKey]?.MAP?.[entry.stemReal],
+          affixesStr: oop.htmlEditing.affixesStr(entry.affixes),
+          pathsStrs: oop.htmlEditing.pathStr(entry.affixes, wordclass),
+          functions: {
+            defRow: ({
+              dicEntry,
+              id
+            }) => {
+              temp[dicEntry.text] ??= {};
+
+              if (!temp[dicEntry.text][dicEntry.type]) {
+                const border = temp.first ? 'border-top:solid 1px black;' : '';
+                temp.first = false;
+
+                const html = `
+                  <td style="${border}">${dicEntry.text} (${dicEntry.type}):</td>
+                  <td colspan="2" style="${border} text-align:left;">${dicEntry.type === IDS.WORDS.N
+                    ? Object.entries(dicEntry.genders)
+                      .map(([k, v]) => `${k}: ${v}`)
+                      .join('; ')
+                    : dicEntry.definition}</td>
+                  <td style="${border} user-select:none; cursor: pointer;"
+                      data-key="${dicEntry.type}"
+                      data-wordclass="${dicEntry.type}"
+                      data-defrow="true"
+                      data-colindex="${temp.colIndex++}"
+                      id="${id}">stem</td>`;
+
+                temp[dicEntry.text][dicEntry.type] = html;
+
+                oop.htmlEditing.insertTr(
+                  document.getElementById('tableTbody'),
+                  html,
+                  false
+                );
+
+                oop.htmlEditing.tables.pressableLoadTableButtons({
+                  el: document.getElementById(id),
+                  word: entry.stemReal,
+                  ...(dicEntry?.declension && { declension: dicEntry.declension })
+                });
+              }
+            }
+          }
+        }
+        for (const pathStr of innerReferenceMap.pathsStrs) {
           const ids = {
             row: `${initObj.keyword}, ${pathStr.text}`,
             defRow: `${entry.stemReal}`
           }
           console.log({
-            pathStrs,
             pathStr,
-            affixesStr,
+            affixesStr: innerReferenceMap.affixesStr,
             ids,
-            dicEntry,
+            dicEntry: innerReferenceMap.dicEntry,
             entry,
             typeKey
           });
@@ -41,10 +83,10 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
           oop.htmlEditing.insertTr(
             document.getElementById('tableTbody'), `
             <td>${initObj.keyword} (${entry.type})</td>
-            <td>${affixesStr.html}</td>
+            <td>${innerReferenceMap.affixesStr.html}</td>
             <td>${pathStr.html}</td>
             <td data-key="${entry.key.replace("-...", "")}"
-                data-wordclass="${dicEntry.type}"
+                data-wordclass="${innerReferenceMap.dicEntry.type}"
                 data-colindex="${temp.colIndex++}"
                 id="${entry.key.replace("-...", "")}"
                 style="user-select: none; cursor: pointer;">temp</td>`
@@ -52,147 +94,28 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
           oop.htmlEditing.tables.pressableLoadTableButtons({
             el: document.getElementById(entry.key.replace("-...", "")),
             word: initObj.keyword,
-            affixesStrValues: affixesStr.values,
+            affixesStrValues: innerReferenceMap.affixesStr.values,
             stem: entry.stemReal,
-            ...(dicEntry.declension && { declension: dicEntry.declension })
+            ...(innerReferenceMap.dicEntry.declension && { declension: innerReferenceMap.dicEntry.declension })
           });
 
+
           // --- Definition row (only once per type) ---
+          innerReferenceMap.functions.defRow({
+            dicEntry: DICTIONARY[wordclass].MAP[stem],
+            id: stem,
+          });
 
-          temp[stem] ??= {};
-
-          if (!temp[stem][wordclass]) {
-            const highlight = (str) =>
-              str.replace(new RegExp(`${entry.stem}.+;`), '<strong>$&</strong>');
-
-            const definition =
-              wordclass === IDS.WORDS.N
-                ? highlight(
-                  Object.entries(dicEntry.genders)
-                    .map(([k, v]) => `${k}: ${v}`)
-                    .join('; ')
-                )
-                : highlight(dicEntry.definition);
-
-            const border = temp.first ? 'border-top:solid 1px black;' : '';
-            temp.first = false;
-
-            temp[stem][wordclass] = `
-                  <td style="${border}">${entry.stemReal} (${wordclass}):</td>
-                  <td colspan="2" style="${border} text-align:left;">${definition}</td>
-                  <td style="${border} user-select:none; cursor: pointer;" 
-                      data-key="${wordclass}"
-                      data-wordclass="${dicEntry.type}"
-                      data-defrow="true"
-                      data-colindex="${temp.colIndex++}"
-                      id="${ids.defRow}">stem</td>
-                `;
-
-            oop.htmlEditing.insertTr(
-              document.getElementById('tableTbody'),
-              temp[stem][wordclass],
-              false
-            );
-
-            oop.htmlEditing.tables.pressableLoadTableButtons({
-              el: document.getElementById(ids.defRow),
-              word: entry.stemReal,
-              ...(dicEntry.declension && { declension: dicEntry.declension })
+          if (entry.affixes?.preposition?.preposition || false) {
+            innerReferenceMap.functions.defRow({
+              dicEntry: DICTIONARY[IDS.WORDS.PP].MAP[entry.affixes?.preposition?.preposition],
+              id: entry.affixes?.preposition?.preposition,
             });
-
           }
-          /*
-          
-          const affixesCheckMap = {
-            prefix: entry.affixes.prefix?.paths ?? [[]],
-            suffix: entry.affixes.suffix?.paths ?? [[]]
-          }
-          //console.log(affixesCheckMap)
-          for (const prefixPaths of affixesCheckMap.prefix) {
-            for (const suffixPaths of affixesCheckMap.suffix) {
-              const pathStr = `${prefixPaths.join(', ')} | ${suffixPaths.join(', ')}`.trim(); //pathStr()
-              const ids = {
-                row: `${initObj.keyword}, ${pathStr}`,
-                defRow: `${entry.stemReal}`
-              }
-              console.log({
-                affixPaths: [prefixPaths, suffixPaths],
-                pathStr,
-                dicEntry,
-                ids,
-                kv1: [stem, value],
-                kv2: [wordclass, value2],
-                entry
-              });
-  
-              // --- Main row ---
-              oop.htmlEditing.insertTr(
-                document.getElementById('tableTbody'), `
-                  <td>${initObj.keyword} (${entry.type})</td>
-                  <td>${pathStr}</td>
-                  <td data-key="${entry.key.replace("-...", "")}" 
-                      id="${ids.row}"
-                      style="user-select: none; cursor: pointer;">temp</td>`
-              );
-              pressableLoadTableButtons(
-                document.getElementById(ids.row),
-                initObj.keyword
-              );
-  
-              // --- Definition row (only once per type) ---
-              temp[stem] ??= {};
-  
-  
-              if (!temp[stem][wordclass]) {
-                const highlight = (str) =>
-                  str.replace(new RegExp(`${entry.stem}.+;`), '<strong>$&</strong>');
-  
-                const definition =
-                  wordclass === 'Noun' || wordclass === 'Adjective'
-                    ? highlight(
-                      Object.entries(dicEntry.genders)
-                        .map(([k, v]) => `${k}: ${v}`)
-                        .join('; ')
-                    )
-                    : highlight(dicEntry.definition);
-  
-                const border = temp.first ? 'border-top:solid 1px black;' : '';
-                temp.first = false;
-  
-                temp[stem][wordclass] = `
-                  <td style="${border}">
-                      ${entry.stemReal} (${wordclass}):
-                  </td>
-                  <td style="${border} text-align:left;">
-                      ${definition}
-                  </td>
-                  <td style="${border} user-select:none; cursor: pointer;" 
-                      data-key="${wordclass}" 
-                      id="${ids.defRow}">temp</td>
-                `;
-  
-                oop.htmlEditing.insertTr(
-                  document.getElementById('tableTbody'),
-                  temp[stem][wordclass],
-                  false
-                );
-  
-                pressableLoadTableButtons(
-                  document.getElementById(ids.defRow),
-                  entry.stemReal
-                );
-              }
-  
-            }
-          }
-          */
         }
       }
     }
   }
-  //for (const html of Object.values(temp)) {
-  //  oop.htmlEditing.insertTr(document.getElementById('tableTbody'), html, false);
-  //}
 });
 //highlight the cell that shows the current declension (for stem case^^)
 //need def of particles and pp also
