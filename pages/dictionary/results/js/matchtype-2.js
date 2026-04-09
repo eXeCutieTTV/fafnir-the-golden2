@@ -41,7 +41,6 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                       .join('; ')
                     : dicEntry.definition}</td>
                   <td style="${border} user-select:none; cursor: pointer;"
-                      data-key="${dicEntry.type}"
                       data-wordclass="${dicEntry.type}"
                       data-defrow="true"
                       data-colindex="${temp.colIndex++}"
@@ -110,6 +109,14 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
             innerReferenceMap.functions.defRow({
               dicEntry: DICTIONARY[IDS.WORDS.PP].MAP[entry.affixes?.preposition?.preposition],
               id: entry.affixes?.preposition?.preposition,
+            });
+          }
+
+          for (const part of entry.affixes?.particle || [{}]) {
+            if (!Object.values(part).length > 0) continue;
+            innerReferenceMap.functions.defRow({
+              dicEntry: DICTIONARY[IDS.WORDS.PART].MAP[part.particle],
+              id: part.particle,
             });
           }
         }
