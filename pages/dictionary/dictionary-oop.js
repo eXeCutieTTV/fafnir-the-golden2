@@ -1801,6 +1801,11 @@ export const searching = {
         ? window.location.href = '/pages/dictionary/results/matchtype-2.html'
         : null
   },
+  types: {//make each type a seperate entry in the export?
+    matchtype1: () => { },
+    matchtype2: () => { },
+    matchtype3: () => { }
+  },
   setup: (input, button) => {
     button.addEventListener('click', () => {
       searching.search({ input })
