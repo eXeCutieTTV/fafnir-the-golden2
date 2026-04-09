@@ -785,12 +785,12 @@ export const matchtype2 = {
                   raws: [entry, entry2],
                   affixes: {
                     suffix: {
-                      paths: entry2.paths,
-                      suffix: entry2.affix
+                      paths: entry.paths,
+                      suffix: entry.affix
                     },
                     preposition: {
-                      paths: entry.paths,
-                      preposition: entry.affix
+                      paths: entry2.paths,
+                      preposition: entry2.affix
                     }
                   },
                   stem: entry2.tempStem
@@ -1292,12 +1292,10 @@ export const htmlEditing = {
             toggleLoad: (Fn) => {
               el.addEventListener('click', () => {
                 if (sessionStorage.getItem('lastLoaded') === el.dataset.colindex && !referenceMap.functions.misc.isEmpty()) {
-                  console.log('hi1', el, sessionStorage.getItem('lastLoaded'));
                   referenceMap.functions.misc.clearHtml();
                   sessionStorage.setItem('lastLoaded', null);
                   return;
                 }
-                console.log('hi2', el, sessionStorage.getItem('lastLoaded'), el.dataset.colindex);
                 referenceMap.functions.misc.clearHtml();
                 sessionStorage.setItem('lastLoaded', el.dataset.colindex)
                 Fn();
@@ -1645,28 +1643,44 @@ export const htmlEditing = {
       values
     };
   },
-  pathStr: (affixesObject) => {
+  pathStr: (affixesObject, wordclass) => {
     const { prefix, suffix, preposition, particle } = affixesObject;
-    const temp = [];
-
-    const paths = {
-      prefix: prefix?.paths || null,
-      suffix: suffix?.paths || null,
-      preposition: preposition?.paths || 'ø',
-      particle: particle
-        ? Object.fromEntries(particle.map(({ state, paths }) => [state, paths]))
-        : null
+    const tempMap = {
+      functions: {
+        title: (wordclass, path) => {
+          let title = '';
+          switch (wordclass) {
+            case IDS.WORDS.N:
+            case IDS.WORDS.ADJ:
+              title = `case: ${path[0] || 'ø'}\ngender: ${path[1] || 'ø'}\nnumber: ${path[2] || 'ø'}\ndeclension: ${path[3] || 'ø'}`;
+              break;
+            case IDS.WORDS.V:
+            case IDS.WORDS.AUX:
+              title = `person: ${path[0] || 'ø'}\nnumber: ${path[1] || 'ø'}\ngender: ${path[2] || 'ø'}`;
+              break;
+          }
+          return title;
+        }
+      },
+      paths: {
+        prefix: prefix?.paths || null,
+        suffix: suffix?.paths || null,
+        preposition: preposition?.paths || 'ø',
+        particle: particle
+          ? Object.fromEntries(particle.map(({ state, paths }) => [state, paths]))
+          : null
+      },
+      results: []
     }
 
-    for (const prefix of paths.prefix || [[]]) {
-      for (const suffix of paths.suffix || [[]]) {
-
+    for (const prefix1 of tempMap.paths.prefix || [[]]) {
+      for (const suffix1 of tempMap.paths.suffix || [[]]) {
         const tempStrs = {
-          preposition: paths.preposition,
-          particlePrefix: paths.particle?.prefix || 'ø',
-          prefix: prefix.length > 0 ? prefix.join(', ') : 'ø',
-          particleSuffix: paths.particle?.suffix || 'ø',
-          suffix: suffix.length > 0 ? suffix.join(', ') : 'ø'
+          preposition: tempMap.paths.preposition,
+          particlePrefix: tempMap.paths.particle?.prefix || 'ø',
+          prefix: prefix1.length > 0 ? prefix1.join(', ') : 'ø',
+          particleSuffix: tempMap.paths.particle?.suffix || 'ø',
+          suffix: suffix1.length > 0 ? suffix1.join(', ') : 'ø'
         }
 
         const title = Object.entries(tempStrs)
@@ -1678,23 +1692,19 @@ export const htmlEditing = {
         const html = text
           .split(' | ')
           .map((part, i) => {
-            if (i === 2 && prefix) {
-              return `<span style="cursor: help;" title="case: ${prefix[0] || 'ø'}\ngender: ${prefix[1] || 'ø'}\nnumber: ${prefix[2] || 'ø'}\ndeclension: ${prefix[3] || 'ø'}">${part}</span>`;
-            }
-            if (i === 4 && suffix) {
-              return `<span style="cursor: help;" title="case: ${suffix[0] || 'ø'}\ngender: ${suffix[1] || 'ø'}\nnumber: ${suffix[2] || 'ø'}\ndeclension: ${suffix[3] || 'ø'}">${part}</span>`;
-            }
+            if (i === 2 && prefix) return `<span style="cursor: help;" title="${tempMap.functions.title(wordclass, prefix1)}">${part}</span>`;
+            if (i === 4 && suffix) return `<span style="cursor: help;" title="${tempMap.functions.title(wordclass, suffix1)}">${part}</span>`;
             return part;
           })
           .join(' | ');
 
-        temp.push({
+        tempMap.results.push({
           text,
           html: `<span style="cursor: help; width: 100%; display: block;" title="${title}">${html}</span>`
         });
       }
     }
-    return temp;
+    return tempMap.results;
   }
 }
 

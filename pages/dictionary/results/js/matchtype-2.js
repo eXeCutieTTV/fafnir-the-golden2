@@ -20,7 +20,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
 
         const dicEntry = DICTIONARY[typeKey]?.MAP?.[entry.stemReal]; //create const in the outermost loop so its not being redefined for no reason...
         const affixesStr = oop.htmlEditing.affixesStr(entry.affixes);
-        const pathStrs = oop.htmlEditing.pathStr(entry.affixes);
+        const pathStrs = oop.htmlEditing.pathStr(entry.affixes, wordclass);
         for (const pathStr of pathStrs) {
           const ids = {
             row: `${initObj.keyword}, ${pathStr.text}`,
