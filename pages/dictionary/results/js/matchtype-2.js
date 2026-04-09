@@ -8,7 +8,8 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
   const initObj = JSON.parse(sessionStorage.getItem('initObj'));
   console.log('initObj', initObj);
   const temp = {
-    first: true
+    first: true,
+    colIndex: 0
   };
   for (const [stem, value] of Object.entries(initObj.results.matchtype2)) {
     for (const [wordclass, value2] of Object.entries(value)) {
@@ -44,6 +45,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
             <td>${pathStr.html}</td>
             <td data-key="${entry.key.replace("-...", "")}"
                 data-wordclass="${dicEntry.type}"
+                data-colindex="${temp.colIndex++}"
                 id="${entry.key.replace("-...", "")}"
                 style="user-select: none; cursor: pointer;">temp</td>`
           );
@@ -82,6 +84,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                       data-key="${wordclass}"
                       data-wordclass="${dicEntry.type}"
                       data-defrow="true"
+                      data-colindex="${temp.colIndex++}"
                       id="${ids.defRow}">stem</td>
                 `;
 

@@ -1271,28 +1271,38 @@ export const htmlEditing = {
         functions: {
           tables: {
             [IDS.WORDS.N]: () => {//same indexing for oop.htmlEditin.tables[i] etc
-              referenceMap.functions.misc.clearHtml();
               htmlEditing.tables.noun(declension, 'Directive', wrapperWrapper[0], word, stem);
               htmlEditing.tables.noun(declension, 'Recessive', wrapperWrapper[1], word, stem);
             },
             [IDS.WORDS.V]: (hasPrefix = true, hasSuffix = true) => {
-              referenceMap.functions.misc.clearHtml();
               hasPrefix ? htmlEditing.tables.verb(true, word, wrapperWrapper[0]) : null;
               hasSuffix ? htmlEditing.tables.verb(false, word, wrapperWrapper[1]) : null;
             },
             [IDS.WORDS.DET]: () => {
-              referenceMap.functions.misc.clearHtml();
               htmlEditing.tables.determiner(wrapperWrapper[0], word);
             },
             [IDS.WORDS.ADJ]: () => {
-              referenceMap.functions.misc.clearHtml();
               htmlEditing.tables.adjective(declension, 'Directive', wrapperWrapper[0], word, stem);
               htmlEditing.tables.adjective(declension, 'Recessive', wrapperWrapper[1], word, stem);
             }
           },
           misc: {
             clearHtml: () => { for (const wrapper of wrapperWrapper) while (wrapper.firstChild) wrapper.firstChild.remove(); },
-            isEmpty: () => { !Array.from(wrapperWrapper).some(child => child.innerHTML.trim().length > 0) }
+            isEmpty: () => { return !Array.from(wrapperWrapper).some(child => child.innerHTML.trim().length > 0) },
+            toggleLoad: (Fn) => {
+              el.addEventListener('click', () => {
+                if (sessionStorage.getItem('lastLoaded') === el.dataset.colindex && !referenceMap.functions.misc.isEmpty()) {
+                  console.log('hi1', el, sessionStorage.getItem('lastLoaded'));
+                  referenceMap.functions.misc.clearHtml();
+                  sessionStorage.setItem('lastLoaded', null);
+                  return;
+                }
+                console.log('hi2', el, sessionStorage.getItem('lastLoaded'), el.dataset.colindex);
+                referenceMap.functions.misc.clearHtml();
+                sessionStorage.setItem('lastLoaded', el.dataset.colindex)
+                Fn();
+              });
+            }
           }
         }
       }
@@ -1300,19 +1310,19 @@ export const htmlEditing = {
       if (el.dataset.defrow) {
         switch (wordClass) {
           case IDS.WORDS.N:
-            el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.N](); });
+            referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.N]());
             break;
           case IDS.WORDS.V:
-            el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](); });
+            referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.V]());
             break;
           case IDS.WORDS.DET:
-            el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.DET](); });
+            referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.DET]());
             break;
           case IDS.WORDS.ADJ:
-            el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.ADJ](); });
+            referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.ADJ]());
             break;
           case IDS.WORDS.AUX:
-            el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](true, false); });
+            referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.V](true, false));
             break;
           case IDS.WORDS.PP:
           case IDS.WORDS.ADV:
@@ -1334,7 +1344,7 @@ export const htmlEditing = {
       else if (hasPrefix && !hasSuffix) {
         if (wordClass === IDS.WORDS.V) {
           el.textContent = 'verb suffix table';
-          el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](false, true); });
+          referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.V](false, true));
         } else {
           el.textContent = 'tables unavailable';
         }
@@ -1345,7 +1355,7 @@ export const htmlEditing = {
       else if (!hasPrefix && hasSuffix) {
         if (wordClass === IDS.WORDS.V) {
           el.textContent = 'verb prefix table';
-          el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](true, false); });
+          referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.V](true, false));
         } else {
           el.textContent = 'tables unavailable';
         }
@@ -1356,12 +1366,12 @@ export const htmlEditing = {
         switch (wordClass) {
           case IDS.WORDS.N:
             el.textContent = 'noun tables';
-            el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.N](); });
+            referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.N]());
             break;
 
           case IDS.WORDS.V:
             el.textContent = 'verb tables';
-            el.addEventListener('click', () => { referenceMap.functions.tables[IDS.WORDS.V](); });
+            referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.V]());
             break;
 
           default:
