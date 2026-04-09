@@ -78,7 +78,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
           });
 
 
-          // --- Main rows ---
+          // --- Main rows --- //make single function for addrow? and have param for isDefRow?
           oop.htmlEditing.insertTr(
             document.getElementById('tableTbody'), `
             <td>${initObj.keyword} (${entry.type})</td>
@@ -125,4 +125,5 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
   }
 });
 //highlight the cell that shows the current declension (for stem case^^)
-//need def of particles and pp also
+//click cell in word col to search for that stem
+//search frompage

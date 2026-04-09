@@ -6,15 +6,10 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
   // init code
 });
 
-function tests() {
-  console.log(oop);
-  console.log(oop.helperFunctions.view("test"))
-  oop.helperFunctions.run("test", 'hi')
-  console.log(oop.helperFunctions.help())
-  console.log(oop.helperFunctions.run("math.add", 2, 3))
-  console.log(oop.helperRegex.view("isVowel"))
-  console.log(DIALECTS)
-} //tests();
+console.log({
+  oop,
+  DIALECTS
+});
 
 let searchBTN = document.getElementById('search_button');
 let searchFLD = document.getElementById('search_field');
@@ -110,7 +105,6 @@ globalThis.search = function search(word = false) {
       : null
 }
 
-//window.location.href = ./results/...
 searchBTN.addEventListener('click', () => {
   search();
 });
