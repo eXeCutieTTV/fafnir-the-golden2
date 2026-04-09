@@ -5,6 +5,8 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
   Object.assign(globalThis, DR);
   // init code
 
+  oop.searching.setup(document.getElementById('search_field'), document.getElementById('search_button'));
+  
   const initObj = JSON.parse(sessionStorage.getItem('initObj'));
   console.log('initObj', initObj);
   const temp = {
