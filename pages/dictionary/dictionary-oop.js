@@ -1714,7 +1714,7 @@ export const regex = {
 }
 
 export const searching = {
-  search: ({ word = false, input, button }) => {
+  search: ({ word = false, input = false, button }) => {
     if (!globalThis.DICTIONARY?.ALL_WORDS?.MAP) {
       console.warn('Dictionary not loaded yet.');
       return;

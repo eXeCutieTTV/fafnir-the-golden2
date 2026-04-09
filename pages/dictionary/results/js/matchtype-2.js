@@ -6,7 +6,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
   // init code
 
   oop.searching.setup(document.getElementById('search_field'), document.getElementById('search_button'));
-  
+
   const initObj = JSON.parse(sessionStorage.getItem('initObj'));
   console.log('initObj', initObj);
   const temp = {
@@ -36,7 +36,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                 temp.first = false;
 
                 const html = `
-                  <td style="${border}">${dicEntry.text} (${dicEntry.type}):</td>
+                  <td class="${id}" style="${border}">${dicEntry.text} (${dicEntry.type}):</td>
                   <td colspan="2" style="${border} text-align:left;">${dicEntry.type === IDS.WORDS.N
                     ? Object.entries(dicEntry.genders)
                       .map(([k, v]) => `${k}: ${v}`)
@@ -46,7 +46,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                       data-wordclass="${dicEntry.type}"
                       data-defrow="true"
                       data-colindex="${temp.colIndex++}"
-                      id="${id}">stem</td>`;
+                      class="${id}">stem</td>`;
 
                 temp[dicEntry.text][dicEntry.type] = html;
 
@@ -57,9 +57,13 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                 );
 
                 oop.htmlEditing.tables.pressableLoadTableButtons({
-                  el: document.getElementById(id),
+                  el: document.getElementsByClassName(id)[1],
                   word: entry.stemReal,
                   ...(dicEntry?.declension && { declension: dicEntry.declension })
+                });
+                
+                document.getElementsByClassName(id)[0].addEventListener('click', () => {
+                  oop.searching.search({ word: dicEntry.text });
                 });
               }
             }
@@ -67,7 +71,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
         }
         for (const pathStr of innerReferenceMap.pathsStrs) {
           const ids = {
-            row: `${initObj.keyword}, ${pathStr.text}`,
+            row: `${initObj.keyword}, ${pathStr.text}, ${temp.colIndex}`,
             defRow: `${entry.stemReal}`
           }
           console.log({
@@ -83,21 +87,25 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
           // --- Main rows --- //make single function for addrow? and have param for isDefRow?
           oop.htmlEditing.insertTr(
             document.getElementById('tableTbody'), `
-            <td>${initObj.keyword} (${entry.type})</td>
+            <td class="${ids.row}">${initObj.keyword} (${entry.type})</td>
             <td>${innerReferenceMap.affixesStr.html}</td>
             <td>${pathStr.html}</td>
             <td data-key="${entry.key.replace("-...", "")}"
                 data-wordclass="${innerReferenceMap.dicEntry.type}"
                 data-colindex="${temp.colIndex++}"
-                id="${entry.key.replace("-...", "")}"
+                class="${ids.row}"
                 style="user-select: none; cursor: pointer;">temp</td>`
           );
           oop.htmlEditing.tables.pressableLoadTableButtons({
-            el: document.getElementById(entry.key.replace("-...", "")),
+            el: document.getElementsByClassName(ids.row)[1],
             word: initObj.keyword,
             affixesStrValues: innerReferenceMap.affixesStr.values,
             stem: entry.stemReal,
             ...(innerReferenceMap.dicEntry.declension && { declension: innerReferenceMap.dicEntry.declension })
+          });
+
+          document.getElementsByClassName(ids.row)[0].addEventListener('click', () => {
+            oop.searching.search({ word: initObj.keyword });
           });
 
 
