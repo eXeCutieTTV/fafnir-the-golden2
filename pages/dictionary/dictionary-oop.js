@@ -1260,8 +1260,6 @@ export const htmlEditing = {
     },
     pressableLoadTableButtons: ({ el, word, affixesStrValues = [], declension = 1, stem = word }) => {
       const wrapperWrapper = document.getElementById('loadableTable').children;
-      if (!affixesStrValues.length > 0) return;
-      console.log(affixesStrValues)
 
       const wordClass = el.dataset.wordclass;
       const hasPrefix = affixesStrValues[2] !== 'ø';
