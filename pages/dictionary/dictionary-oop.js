@@ -80,7 +80,10 @@ export const matchtype2 = {
   },
   declensionFinder: (map, isPrefix) => {
     const localHelperMap = {
-      results: [], //returned array
+      results: {
+        regular: [],
+        irregular: []
+      }, //returned array
       functions: {
         makeBaseResult: ({
           raws,
@@ -106,7 +109,7 @@ export const matchtype2 = {
         }) => {
           //console.log(result)
           for (const possibility of dictionaryBased.findStemFromShort(result.stem)) {
-            console.log({ possibility }, !allowed.includes(possibility.type), !DICTIONARY.ALL_WORDS.MAP[possibility.text], possibility.type === IDS.WORDS.V, allowed)
+            //console.log({ possibility }, !allowed.includes(possibility.type), !DICTIONARY.ALL_WORDS.MAP[possibility.text], possibility.type === IDS.WORDS.V, allowed)
             if (!allowed.includes(possibility.type)) continue;
             if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
             if (isNorADJ) {
@@ -182,7 +185,7 @@ export const matchtype2 = {
               allowed: [IDS.WORDS.DET]
             });
 
-            if (Object.values(detMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(detMap.results);
+            if (Object.values(detMap.results).some(arr => arr.length > 0)) localHelperMap.results.regular.push(detMap.results);
           }
           break;
         case IDS.WORDS.PART:
@@ -332,7 +335,7 @@ export const matchtype2 = {
               });
             }
 
-            if (Object.values(partMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(partMap.results);
+            if (Object.values(partMap.results).some(arr => arr.length > 0)) localHelperMap.results.regular.push(partMap.results);
           }
           break;
         case IDS.WORDS.V:
@@ -407,7 +410,7 @@ export const matchtype2 = {
                 allowed: [IDS.WORDS.V]
               });
             }
-            if (Object.values(verbMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(verbMap.results);
+            if (Object.values(verbMap.results).some(arr => arr.length > 0)) localHelperMap.results.regular.push(verbMap.results);
           }
           break;
         case IDS.WORDS.N:
@@ -578,7 +581,7 @@ export const matchtype2 = {
                 });
               }
             }
-            if (Object.values(nounMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(nounMap.results);
+            if (Object.values(nounMap.results).some(arr => arr.length > 0)) localHelperMap.results.regular.push(nounMap.results);
           }
           break;
         case IDS.WORDS.PP:
@@ -586,7 +589,7 @@ export const matchtype2 = {
             const ppMap = {
               results: {
                 'ppPreifx-detRegular': [], //æzeloxtahyn
-                detIrregular: [], //æzetōq̇ //search works; onpage logic doesnt handle irregulars yet
+                //detIrregular: [], //æzetōq̇ //search works; onpage logic doesnt handle irregulars yet
                 [IDS.WORDS.N]: [], //æzeæklū
                 [IDS.WORDS.ADJ]: [], //æzeæklôħ
                 [IDS.WORDS.ADV]: [], //æzeax
@@ -768,7 +771,7 @@ export const matchtype2 = {
               //result.state = 'irregular';
               if (!result) continue;
               if (!DICTIONARY[IDS.WORDS.DET].IRREGULARS.fetch(entry.tempStem)[0] || DICTIONARY[IDS.WORDS.DET].IRREGULARS.fetch(entry.tempStem)[0].text !== entry.tempStem) continue;
-              ppMap.results.detIrregular.push(result);
+              localHelperMap.results.irregular.push({ detIrregular: [result] });
             }
 
             // --- Noun + Adjective (shared logic) ---
@@ -831,7 +834,7 @@ export const matchtype2 = {
             if (ppMap.affixChecker.verbSuffix.length > 0) ppMap.functions.verbResults(false);
 
 
-            if (Object.values(ppMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(ppMap.results);
+            if (Object.values(ppMap.results).some(arr => arr.length > 0)) localHelperMap.results.regular.push(ppMap.results);
           }
           break;
         case IDS.WORDS.ADJ:
@@ -1003,7 +1006,7 @@ export const matchtype2 = {
                 });
               }
             }
-            if (Object.values(adjMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(adjMap.results);
+            if (Object.values(adjMap.results).some(arr => arr.length > 0)) localHelperMap.results.regular.push(adjMap.results);
           }
           break;
         default: console.warn('unhandled declensionFinder type |', entry.type);
@@ -1013,36 +1016,71 @@ export const matchtype2 = {
     return localHelperMap.results;
   },
   flatten: (map) => {
-    const result = {};
-    for (const [key, value] of Object.entries(map)) {
-      for (const entry of Object.values(value)) {
-        for (const [key1, value1] of Object.entries(entry)) {
-          if (!value1.length > 0) continue;
-          for (const el of Object.values(value1)) {
-            result[key1]
-              ? result[key1].push(el)
-              : (result[key1] = [], result[key1].push(el))
+    const result = {
+      regular: {},
+      irregular: {}
+    };
+
+    const addBucketObject = (bucketObject, category) => {
+      for (const [bucketKey, entries] of Object.entries(bucketObject)) {
+        if (!Array.isArray(entries) || entries.length === 0) continue;
+        for (const entry of entries) {
+          entry.key = bucketKey;
+          result[category][bucketKey] ??= [];
+          result[category][bucketKey].push(entry);
+        }
+      }
+    };
+
+    for (const value of Object.values(map)) {
+      if (Array.isArray(value)) {
+        for (const bucketObject of value) {
+          if (bucketObject && typeof bucketObject === 'object') {
+            addBucketObject(bucketObject, 'regular');
           }
         }
+        continue;
+      }
+      if (value && typeof value === 'object' && (Array.isArray(value.regular) || Array.isArray(value.irregular))) {
+        for (const bucketObject of value.regular || []) {
+          if (bucketObject && typeof bucketObject === 'object') addBucketObject(bucketObject, 'regular');
+        }
+        for (const bucketObject of value.irregular || []) {
+          if (bucketObject && typeof bucketObject === 'object') addBucketObject(bucketObject, 'irregular');
+        }
+        continue;
+      }
+      if (value && typeof value === 'object') {
+        addBucketObject(value, 'regular');
       }
     }
     return result;
   },
   sortByEntry: (map) => {
-    const grouped = {};
-    for (const [key, value] of Object.entries(map)) {
-      for (const entry of value) {
-        if (!grouped[entry.stem]) {
-          grouped[entry.stem] = {};
+    const groupCategory = (categoryMap) => {
+      const grouped = {};
+      for (const [bucketKey, value] of Object.entries(categoryMap)) {
+        for (const entry of value) {
+          if (!grouped[entry.stem]) {
+            grouped[entry.stem] = {};
+          }
+          if (!grouped[entry.stem][entry.type]) {
+            grouped[entry.stem][entry.type] = [];
+          }
+          grouped[entry.stem][entry.type].push(entry);
+          entry['key'] = bucketKey;
         }
-        if (!grouped[entry.stem][entry.type]) {
-          grouped[entry.stem][entry.type] = [];
-        }
-        grouped[entry.stem][entry.type].push(entry);
-        entry['key'] = key
       }
+      return grouped;
+    };
+
+    if (map && (map.regular || map.irregular)) {
+      return {
+        regular: groupCategory(map.regular || {}),
+        irregular: groupCategory(map.irregular || {})
+      };
     }
-    return grouped;
+    return groupCategory(map);
   }
 }
 export const irregulars = {
@@ -1720,20 +1758,15 @@ export const searching = {
         verbSuffix: matchtype2.affixChecker(initObj.keyword, DICTIONARY[IDS.WORDS.V].SUFFIXES.MATCHES, false) || []
       }
     }
+
     console.log('typeMap |', typeMap);//make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
+
     if (DICTIONARY.ALL_WORDS.MAP[initObj.keyword]?.available?.length > 0) searching.types.matchtype1(initObj)// type 1
     else if (Object.values(typeMap.type2).some(matches => matches.length > 0)) searching.types.matchtype2(initObj, typeMap);//type 2
+
     sessionStorage.setItem('initObj', JSON.stringify(initObj));
-    const redirect = (initObj) => {
-      initObj.results.matchtype1.length > 0
-        ? window.location.href = '/pages/dictionary/results/matchtype-1.html'
-        : Object.values(initObj.results.matchtype2).length > 0
-          ? window.location.href = '/pages/dictionary/results/matchtype-2.html'
-          : Object.values(initObj.results.matchtype3).length > 0
-            ? window.location.href = '/pages/dictionary/results/matchtype-3.html'
-            : console.warn('err')
-    }
-    redirect(initObj);
+
+    searching.redirect(initObj);
   },
   types: {//make each type a seperate entry in the export?
     matchtype1: (initObj) => {
@@ -1777,5 +1810,16 @@ export const searching = {
         searching.search({ input })
       }
     });
+  },
+  redirect: (initObj) => {
+    const hasMatchtype2Results = (!!initObj.results.matchtype2?.regular || false) || (!!initObj.results.matchtype2?.irregular || false);
+    
+    initObj.results.matchtype1.length > 0
+      ? window.location.href = '/pages/dictionary/results/matchtype-1.html'
+      : hasMatchtype2Results
+        ? window.location.href = '/pages/dictionary/results/matchtype-2.html'
+        : Object.values(initObj.results.matchtype3).length > 0
+          ? window.location.href = '/pages/dictionary/results/matchtype-3.html'
+          : console.warn('err')
   }
 }

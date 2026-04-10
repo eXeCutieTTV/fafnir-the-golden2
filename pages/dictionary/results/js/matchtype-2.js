@@ -13,7 +13,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     first: true,
     colIndex: 0
   }
-  for (const [stem, value] of Object.entries(initObj.results.matchtype2)) {
+  for (const [stem, value] of Object.entries(initObj.results.matchtype2.regular)) {
     for (const [wordclass, value2] of Object.entries(value)) {
       for (const entry of value2) {
         const typeKey =
