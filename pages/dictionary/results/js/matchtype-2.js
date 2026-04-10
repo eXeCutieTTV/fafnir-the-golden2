@@ -167,3 +167,4 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
       }
     } else affixFinder(word, affixMatch, isPrefix);
 */ //not even here yet tbh
+//variants searching
