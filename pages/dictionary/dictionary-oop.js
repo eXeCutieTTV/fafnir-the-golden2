@@ -106,13 +106,7 @@ export const matchtype2 = {
         }) => {
           //console.log(result)
           for (const possibility of dictionaryBased.findStemFromShort(result.stem)) {
-            console.log(
-              { possibility },
-              !allowed.includes(possibility.type),
-              !DICTIONARY.ALL_WORDS.MAP[possibility.text],
-              possibility.type,
-              allowed,
-              result)
+
             if (!allowed.includes(possibility.type)) continue;
             if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
             if (isNorADJ) {
@@ -1707,7 +1701,6 @@ export const searching = {
       }
     }
 
-    console.log('keyword |', initObj.keyword);
     if (input && input.value.trim() !== '') { //clear searchFLD
       input.value = '';
       input.blur();
@@ -1732,10 +1725,12 @@ export const searching = {
       }
     }
 
-    console.log('typeMap |', typeMap);//make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
+    initObj.results.matchtype3 = typeMap.irregulars;
 
     if (DICTIONARY.ALL_WORDS.MAP[initObj.keyword]?.available?.length > 0) searching.types.matchtype1(initObj)// type 1
     else if (Object.values(typeMap.type2).some(matches => matches.length > 0)) searching.types.matchtype2(initObj, typeMap);//type 2
+
+    console.log({ typeMap, initObj });//make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
 
     sessionStorage.setItem('initObj', JSON.stringify(initObj));
 
@@ -1789,7 +1784,7 @@ export const searching = {
       ? window.location.href = '/pages/dictionary/results/matchtype-1.html'
       : Object.values(initObj.results.matchtype2).length > 0
         ? window.location.href = '/pages/dictionary/results/matchtype-2.html'
-        : Object.values(initObj.results.matchtype3).length > 0
+        : Object.values(initObj.results.matchtype3).some(p => p.length > 0)
           ? window.location.href = '/pages/dictionary/results/matchtype-3.html'
           : console.warn('err')
   }
