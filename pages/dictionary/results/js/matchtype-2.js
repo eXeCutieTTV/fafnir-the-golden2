@@ -9,6 +9,8 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
 
   const initObj = JSON.parse(sessionStorage.getItem('initObj'));
   console.log('initObj', initObj);
+  const a = oop.irregulars.determiner('tōq̇');
+  console.log(a)
   const temp = {
     first: true,
     colIndex: 0
@@ -136,5 +138,10 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
   }
 });
 //highlight the cell that shows the current declension (for stem case^^)
-//click cell in word col to search for that stem
-//search frompage
+/*
+    if (affixMatch.type === IDS.OTHER.ML) {
+      for (const entry of affixMatch.variants) {
+        affixFinder(word, entry, isPrefix)
+      }
+    } else affixFinder(word, affixMatch, isPrefix);
+*/ //not even here yet tbh
