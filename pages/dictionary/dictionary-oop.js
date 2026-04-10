@@ -1758,14 +1758,24 @@ export const searching = {
       }
     }
     console.log('typeMap |', typeMap);//make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
-    if (DICTIONARY.ALL_WORDS.MAP[initObj.keyword]?.available?.length > 0) { // type 1
+    if (DICTIONARY.ALL_WORDS.MAP[initObj.keyword]?.available?.length > 0) searching.types.matchtype1(initObj)// type 1
+    else if (Object.values(typeMap.type2).some(matches => matches.length > 0)) searching.types.matchtype2(initObj, typeMap);//type 2
+    sessionStorage.setItem('initObj', JSON.stringify(initObj));
+    const redirect = (initObj) => {
+      initObj.results.matchtype1.length > 0
+        ? window.location.href = '/pages/dictionary/results/matchtype-1.html'
+        : Object.values(initObj.results.matchtype2).length > 0
+          ? window.location.href = '/pages/dictionary/results/matchtype-2.html'
+          : Object.values(initObj.results.matchtype3).length > 0
+            ? window.location.href = '/pages/dictionary/results/matchtype-3.html'
+            : null
+    }
+    redirect(initObj);
+  },
+  types: {//make each type a seperate entry in the export?
+    matchtype1: (initObj) => {
       initObj.matchType = 1;
-
       console.log('-----type1-----');
-
-      const resultMap = DICTIONARY.ALL_WORDS.MAP[initObj.keyword];
-
-      console.log('resultMap|', resultMap);
 
       const temp = Object.values(IDS.WORDS);
       for (const wordclass of temp) {
@@ -1774,9 +1784,8 @@ export const searching = {
           : console.log('err for', wordclass)
       }
       console.log(initObj);
-    } else if (//type 2
-      Object.values(typeMap.type2).some(matches => matches.length > 0)
-    ) {
+    },
+    matchtype2: (initObj, typeMap) => {
       console.log('-----type2-----');
       initObj.matchType = 2;
       const checkerMap = {
@@ -1789,21 +1798,10 @@ export const searching = {
         'adjSuffix-...': matchtype2.declensionFinder(typeMap.type2.adjSuffix, false),
         'detSuffix': matchtype2.declensionFinder(typeMap.type2.detSuffix, false)
       }
-      console.log('checkerMap', checkerMap);
       initObj.results.matchtype2 = matchtype2.sortByEntry(matchtype2.flatten(checkerMap));
-      console.log('initObj', initObj);
-      console.log('results', initObj.results.matchtype2);
-    }
-    sessionStorage.setItem('initObj', JSON.stringify(initObj));
-    initObj.results.matchtype1.length > 0
-      ? window.location.href = '/pages/dictionary/results/matchtype-1.html'
-      : Object.values(initObj.results.matchtype2).length > 0
-        ? window.location.href = '/pages/dictionary/results/matchtype-2.html'
-        : null
-  },
-  types: {//make each type a seperate entry in the export?
-    matchtype1: () => { },
-    matchtype2: () => { },
+
+      console.log({ checkerMap, initObj });
+    },
     matchtype3: () => { }
   },
   setup: (input, button) => {

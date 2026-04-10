@@ -23,7 +23,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
 
     oop.htmlEditing.insertTr(
       document.getElementById('tableTbody'), `
-      <td>${result.text} (${(result.type + ' ' + result?.declension).trim()})</td>
+      <td>${result.text} (${(result.type + ' ' + (result?.declension || '')).trim()})</td>
       <td>${result.type === IDS.WORDS.N
       ? Object.entries(result.genders)
         .map(([k, v]) => `${k}: ${v}`)
