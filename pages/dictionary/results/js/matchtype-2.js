@@ -37,11 +37,12 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
 
                 const html = `
                   <td class="${id}" style="${border}">${dicEntry.text} (${dicEntry.type}):</td>
-                  <td colspan="2" style="${border} text-align:left;">${dicEntry.type === IDS.WORDS.N
+                  <td style="${border} text-align:left;">${dicEntry.type === IDS.WORDS.N
                     ? Object.entries(dicEntry.genders)
                       .map(([k, v]) => `${k}: ${v}`)
                       .join('; ')
                     : dicEntry.definition}</td>
+                  <td style="${border} text-align:left;">${dicEntry.usage_notes || '...'}</td>
                   <td style="${border} user-select:none; cursor: pointer;"
                       data-wordclass="${dicEntry.type}"
                       data-defrow="true"
@@ -61,7 +62,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                   word: entry.stemReal,
                   ...(dicEntry?.declension && { declension: dicEntry.declension })
                 });
-                
+
                 document.getElementsByClassName(id)[0].addEventListener('click', () => {
                   oop.searching.search({ word: dicEntry.text });
                 });
