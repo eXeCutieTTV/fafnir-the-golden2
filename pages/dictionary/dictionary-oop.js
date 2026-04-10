@@ -47,6 +47,8 @@ export const matchtype2 = {
         case IDS.WORDS.DET:
         case IDS.WORDS.N:
         case IDS.WORDS.V:
+          //tempMap.affix = (affixMatch.type === IDS.WORDS.PART || affixMatch.type === IDS.WORDS.PP) ? affixMatch.text : appliedOrUnapplied(affixMatch.variants[0], affixMatch.variants[1]);
+
           tempMap.affix = appliedOrUnapplied(affixMatch.variants[0], affixMatch.variants[1]);
 
           results.push({
@@ -55,7 +57,7 @@ export const matchtype2 = {
               ? word.slice(tempMap.affix.length)
               : word.slice(0, -tempMap.affix.length),
             type: affixMatch.type,
-            paths: affixMatch.paths
+            paths: /*(affixMatch.type === IDS.WORDS.PART || affixMatch.type === IDS.WORDS.PP) ? 'indecl' : */affixMatch.paths
           });
           break;
         case IDS.WORDS.PART:
@@ -98,12 +100,13 @@ export const matchtype2 = {
         pushPossibilities: ({
           result,
           bucket,
-          allowed = [IDS.WORDS.ADJ, IDS.WORDS.ADV, IDS.WORDS.AUX, IDS.WORDS.CON, IDS.WORDS.DET, IDS.WORDS.N, IDS.WORDS.PART, IDS.WORDS.PP, IDS.WORDS.V],//all are allowed per default, unless else is specified
+          allowed = Object.values(IDS.WORDS),//all are allowed per default, unless else is specified
           isNorADJ = false,
           NorADJraw = 0
         }) => {
           //console.log(result)
           for (const possibility of dictionaryBased.findStemFromShort(result.stem)) {
+            console.log({ possibility }, !allowed.includes(possibility.type), !DICTIONARY.ALL_WORDS.MAP[possibility.text], possibility.type === IDS.WORDS.V, allowed)
             if (!allowed.includes(possibility.type)) continue;
             if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
             if (isNorADJ) {
@@ -118,7 +121,7 @@ export const matchtype2 = {
 
             result.stemReal = possibility.text;
             result.type = possibility.type;
-            console.log(result)
+            console.log({ result });
             bucket.push(result);
           }
         }
@@ -583,15 +586,18 @@ export const matchtype2 = {
             const ppMap = {
               results: {
                 'ppPreifx-detRegular': [], //æzeloxtahyn
-                detIrregular: [], //æzetōq̇
-                [IDS.WORDS.N]: [],
-                [IDS.WORDS.ADJ]: [],
-                [IDS.WORDS.ADV]: [],
-                [IDS.WORDS.AUX]: [],
-                'ppPrefix-partSuffix': [],
-                'ppPrefix-partPrefix': [],
-                'ppPrefix-partPrefix-partSuffix': [],
-                'ppPrefix-auxprefix': []//<---
+                detIrregular: [], //æzetōq̇ //search works; onpage logic doesnt handle irregulars yet
+                [IDS.WORDS.N]: [], //æzeæklū
+                [IDS.WORDS.ADJ]: [], //æzeæklôħ
+                [IDS.WORDS.ADV]: [], //æzeax
+                [IDS.WORDS.AUX]: [], //æzelinæ
+                'ppPrefix-partSuffix': [], //æzeæklūān
+                'ppPrefix-partPrefix': [], //æzeiæklū
+                'ppPrefix-partPrefix-partSuffix': [], //æzeiæklūān
+                'ppPrefix-auxprefix': [], //æzexenlinæ
+                'ppPrefix-verbPrefix': [], //æzexenæf
+                'ppPrefix-verbSuffix': [], //æzeæfur
+                'ppPrefix-verbPrefix-verbSuffix': [] //æzexenæfur
               },
               stemChecker: {
                 detRegular: DICTIONARY[IDS.WORDS.DET].MAP[entry.tempStem] || {},
@@ -604,7 +610,9 @@ export const matchtype2 = {
               affixChecker: {
                 partSuffix: matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, false) || [],
                 partPrefix: matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PART].MAP, true) || [],
-                auxPrefix: matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.V].MAP, true) || []
+                auxPrefix: matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.V].PREFIXES.MATCHES, true) || [],
+                verbPrefix: matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.V].PREFIXES.MATCHES, true) || [],
+                verbSuffix: matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.V].SUFFIXES.MATCHES, false) || []
               },
               functions: {
                 makePPResult: (raws, irregular = null) => {
@@ -684,6 +692,64 @@ export const matchtype2 = {
                     bucket: isAux ? ppMap.results[IDS.WORDS.AUX] : ppMap.results[IDS.WORDS.ADV],
                     allowed: isAux ? [IDS.WORDS.AUX] : [IDS.WORDS.ADV]
                   });
+                },
+                verbResults: (isPrefix) => {
+                  for (const entry2 of isPrefix ? ppMap.affixChecker.verbPrefix : ppMap.affixChecker.verbSuffix) {
+                    const result = localHelperMap.functions.makeBaseResult({
+                      raws: [entry, entry2],
+                      affixes: {
+                        preposition: {
+                          paths: entry.paths,
+                          preposition: entry.affix
+                        },
+                        ...(isPrefix && ({
+                          prefix: {
+                            paths: entry2.paths,
+                            prefix: entry2.affix
+                          }
+                        })),
+                        ...(!isPrefix && ({
+                          suffix: {
+                            paths: entry2.paths,
+                            suffix: entry2.affix
+                          }
+                        }))
+                      },
+                      stem: entry2.tempStem
+                    });
+
+                    localHelperMap.functions.pushPossibilities({
+                      result,
+                      bucket: isPrefix ? ppMap.results['ppPrefix-verbPrefix'] : ppMap.results['ppPrefix-verbSuffix'],
+                      allowed: [IDS.WORDS.V]
+                    });
+                    if (!isPrefix) continue;//to prevent double results
+                    for (const entry3 of (matchtype2.affixChecker(entry2.tempStem, DICTIONARY[IDS.WORDS.V].SUFFIXES.MATCHES, false) || [])) {
+                      const result = localHelperMap.functions.makeBaseResult({
+                        raws: [entry, entry2, entry3],
+                        affixes: {
+                          preposition: {
+                            paths: entry.paths,
+                            preposition: entry.affix
+                          },
+                          prefix: {
+                            paths: entry2.paths,
+                            prefix: entry2.affix
+                          },
+                          suffix: {
+                            paths: entry3.paths,
+                            suffix: entry3.affix
+                          }
+                        },
+                        stem: entry3.tempStem
+                      });
+                      localHelperMap.functions.pushPossibilities({
+                        result,
+                        bucket: ppMap.results['ppPrefix-verbPrefix-verbSuffix'],
+                        allowed: [IDS.WORDS.V]
+                      });
+                    }
+                  }
                 }
               }
             }
@@ -698,7 +764,7 @@ export const matchtype2 = {
                   path: entry2.path,
                   type: entry2.type
                 }
-              );//æzetōq̇
+              );
               //result.state = 'irregular';
               if (!result) continue;
               if (!DICTIONARY[IDS.WORDS.DET].IRREGULARS.fetch(entry.tempStem)[0] || DICTIONARY[IDS.WORDS.DET].IRREGULARS.fetch(entry.tempStem)[0].text !== entry.tempStem) continue;
@@ -760,6 +826,11 @@ export const matchtype2 = {
             if (Object.values(ppMap.stemChecker[IDS.WORDS.ADV]).length > 0) ppMap.functions.advOrAuxResults(false);
             if (Object.values(ppMap.stemChecker[IDS.WORDS.AUX]).length > 0) ppMap.functions.advOrAuxResults(true);
 
+            //verb cases
+            if (ppMap.affixChecker.verbPrefix.length > 0) ppMap.functions.verbResults(true);
+            if (ppMap.affixChecker.verbSuffix.length > 0) ppMap.functions.verbResults(false);
+
+
             if (Object.values(ppMap.results).some(arr => arr.length > 0)) localHelperMap.results.push(ppMap.results);
           }
           break;
@@ -767,12 +838,12 @@ export const matchtype2 = {
           {
             const adjMap = {
               results: {
-                adjSuffix: [],//
-                'adjSuffix-ppPrefix': [],//
-                'adjSuffix-partSuffix': [],//
-                'adjSuffix-partSuffix-ppPrefix': [],//
-                'adjSuffix-partPrefix-ppPrefix': [],//
-                'adjSuffix-partPrefix-partSuffix-ppPrefix': []//
+                adjSuffix: [], //æklôħrk
+                'adjSuffix-ppPrefix': [], //æzeæklôħrk
+                'adjSuffix-partSuffix': [], //æklôħānrk
+                'adjSuffix-partSuffix-ppPrefix': [], //æzeæklôħānrk
+                'adjSuffix-partPrefix-ppPrefix': [], //æzeiæklôħrk
+                'adjSuffix-partPrefix-partSuffix-ppPrefix': [] //æzeiæklôħānrk
               },
               affixChecker: {
                 'adjSuffix-ppPrefix': matchtype2.affixChecker(entry.tempStem, DICTIONARY[IDS.WORDS.PP].MAP, true) || [],
@@ -913,14 +984,14 @@ export const matchtype2 = {
                   raws: [entry, entry2],
                   affixes: {
                     suffix: {
-                      paths: entry2.paths,
-                      suffix: entry2.affix
-                    },
-                    particle: {
                       paths: entry.paths,
-                      particle: entry.affix,
+                      suffix: entry.affix
+                    },
+                    particle: [{
+                      paths: entry2.paths,
+                      particle: entry2.affix,
                       state: 'suffix'
-                    }
+                    }]
                   },
                   stem: entry2.tempStem
                 });
@@ -1620,7 +1691,8 @@ export const searching = {
           : '',
       results: {
         matchtype1: [],
-        matchtype2: []
+        matchtype2: {},
+        matchtype3: []
       }
     }
 
@@ -1659,7 +1731,7 @@ export const searching = {
           ? window.location.href = '/pages/dictionary/results/matchtype-2.html'
           : Object.values(initObj.results.matchtype3).length > 0
             ? window.location.href = '/pages/dictionary/results/matchtype-3.html'
-            : null
+            : console.warn('err')
     }
     redirect(initObj);
   },

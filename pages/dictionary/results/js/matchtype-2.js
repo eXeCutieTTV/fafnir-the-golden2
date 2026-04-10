@@ -9,8 +9,6 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
 
   const initObj = JSON.parse(sessionStorage.getItem('initObj'));
   console.log('initObj', initObj);
-  const a = oop.irregulars.determiner('tōq̇');
-  console.log(a)
   const temp = {
     first: true,
     colIndex: 0
