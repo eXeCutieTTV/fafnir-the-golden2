@@ -106,7 +106,13 @@ export const matchtype2 = {
         }) => {
           //console.log(result)
           for (const possibility of dictionaryBased.findStemFromShort(result.stem)) {
-            console.log({ possibility }, !allowed.includes(possibility.type), !DICTIONARY.ALL_WORDS.MAP[possibility.text], possibility.type === IDS.WORDS.V, allowed)
+            console.log(
+              { possibility },
+              !allowed.includes(possibility.type),
+              !DICTIONARY.ALL_WORDS.MAP[possibility.text],
+              possibility.type,
+              allowed,
+              result)
             if (!allowed.includes(possibility.type)) continue;
             if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
             if (isNorADJ) {
@@ -757,18 +763,22 @@ export const matchtype2 = {
 
             // --- Irregular determiners ---
             for (const entry2 of ppMap.stemChecker.detIrregular) {
-              const result = ppMap.functions.makePPResult(
-                [entry, entry2],
-                {
-                  stem: entry.tempStem,
-                  path: entry2.path,
-                  type: entry2.type
+              const result = localHelperMap.functions.makeBaseResult({
+                raws: [entry, entry2],
+                stem: entry.tempStem,
+                affixes: {
+                  preposition: {
+                    preposition: entry.affix,
+                    paths: entry.paths
+                  },
+                  irregular: {
+                    path: entry2.path,
+                    type: entry2.type
+                  }
                 }
-              );
-              //result.state = 'irregular';
-              if (!result) continue;
-              if (!DICTIONARY[IDS.WORDS.DET].IRREGULARS.fetch(entry.tempStem)[0] || DICTIONARY[IDS.WORDS.DET].IRREGULARS.fetch(entry.tempStem)[0].text !== entry.tempStem) continue;
+              });
               result.type = IDS.WORDS.DET;
+              result.stemReal = result.stem;
               ppMap.results.detIrregular.push(result);
             }
 

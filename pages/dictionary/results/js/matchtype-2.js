@@ -21,14 +21,37 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
           IDS.WORDS[entry.type.slice(0, 1).toUpperCase()];
 
         const innerReferenceMap = {
-          dicEntry: DICTIONARY[typeKey]?.MAP?.[entry.stemReal],
+          dicEntry: entry?.affixes?.irregular ? entry.raws[1].word : DICTIONARY[typeKey]?.MAP?.[entry.stemReal],
           affixesStr: oop.htmlEditing.affixesStr(entry.affixes),
           pathsStrs: oop.htmlEditing.pathStr(entry.affixes, wordclass),
           functions: {
             defRow: ({
               dicEntry,
-              id
+              id,
+              isIrregular = false
             }) => {
+              if (isIrregular) {
+                console.log('hey')
+                const border = temp.first ? 'border-top:solid 1px black;' : '';
+                temp.first = false;
+
+                const html = `
+                  <td class="${id}" style="${border}">${dicEntry.text} (${dicEntry.type}):</td>
+                  <td style="${border} text-align:left;">${dicEntry.definition.split(', ')[0]}</td>
+                  <td style="${border} text-align:left;">${dicEntry.definition.split(', ')[1] + ', ' + dicEntry.definition.split(', ')[2]}</td>
+                  <td style="${border} user-select:none; cursor: pointer;"
+                      data-wordclass="${dicEntry.type}"
+                      data-defrow="true"
+                      data-colindex="${temp.colIndex++}"
+                      class="${id}">stem</td>`;
+
+                oop.htmlEditing.insertTr(
+                  document.getElementById('tableTbody'),
+                  html,
+                  false
+                );
+                return;
+              }
               temp[dicEntry.text] ??= {};
 
               if (!temp[dicEntry.text][dicEntry.type]) {
@@ -112,8 +135,9 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
 
           // --- Definition row (only once per type) ---
           innerReferenceMap.functions.defRow({
-            dicEntry: DICTIONARY[wordclass].MAP[stem],
+            dicEntry: DICTIONARY[wordclass].MAP[stem] || innerReferenceMap.dicEntry,
             id: stem,
+            isIrregular: Boolean(entry?.affixes?.irregular)
           });
 
           if (entry.affixes?.preposition?.preposition || false) {
