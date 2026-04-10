@@ -1812,11 +1812,9 @@ export const searching = {
     });
   },
   redirect: (initObj) => {
-    const hasMatchtype2Results = (!!initObj.results.matchtype2?.regular || false) || (!!initObj.results.matchtype2?.irregular || false);
-    
     initObj.results.matchtype1.length > 0
       ? window.location.href = '/pages/dictionary/results/matchtype-1.html'
-      : hasMatchtype2Results
+      : Object.values(initObj.results.matchtype2).some(obj => Object.keys(obj).length > 0)
         ? window.location.href = '/pages/dictionary/results/matchtype-2.html'
         : Object.values(initObj.results.matchtype3).length > 0
           ? window.location.href = '/pages/dictionary/results/matchtype-3.html'
