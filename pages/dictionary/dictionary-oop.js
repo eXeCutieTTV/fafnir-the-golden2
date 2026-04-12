@@ -105,13 +105,13 @@ export const matchtype2 = {
           NorADJraw = 0
         }) => {
 
-          function parse(result, bucket, vForm = false) {
+          function parse({ result, bucket, possibility, vForm = false }) {
             result.stemReal = vForm ? searching.isVForm(result.stem).result.text : possibility.text;
             result.type = vForm ? IDS.WORDS.V : possibility.type;
             console.log({ result });
             bucket.push(result);
           }
-          if (Object.values(searching.isVForm(result.stem)).length > 0) parse(result, bucket, true);
+          if (Object.values(searching.isVForm(result.stem)).length > 0) parse({ result, bucket, vForm: true });
 
           for (const possibility of dictionaryBased.findStemFromShort(result.stem)) {
 
@@ -127,7 +127,7 @@ export const matchtype2 = {
               if (!legal) continue;
             }
 
-            parse(result, bucket);
+            parse({ result, bucket, possibility });
           }
         }
       }
