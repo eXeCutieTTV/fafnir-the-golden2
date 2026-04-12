@@ -1251,8 +1251,23 @@ export const htmlEditing = {
               htmlEditing.tables.noun(declension, 'Recessive', wrapperWrapper[1], word, stem);
             },
             [IDS.WORDS.V]: (word, hasPrefix = true, hasSuffix = true) => {
-              hasPrefix ? htmlEditing.tables.verb(true, word, wrapperWrapper[1]) : null;
-              hasSuffix ? htmlEditing.tables.verb(false, word, wrapperWrapper[2]) : null;
+              function loadTables(word, hasPrefix, hasSuffix) {
+                hasPrefix ? htmlEditing.tables.verb(true, word, wrapperWrapper[1]) : null;
+                hasSuffix ? htmlEditing.tables.verb(false, word, wrapperWrapper[2]) : null;
+              }
+
+              loadTables(word, hasPrefix, hasSuffix);
+              referenceMap.functions.tables.verbForms();
+
+              // Use event delegation on the parent to handle clicks on .verbForms elements
+              const loadableTable = document.getElementById('loadableTable');
+              loadableTable.addEventListener('click', (e) => {
+                if (e.target.classList.contains('verbForms')) {
+                  referenceMap.functions.misc.clearHtml();
+                  loadTables(e.target.textContent, hasPrefix, hasSuffix);
+                  referenceMap.functions.tables.verbForms();
+                }
+              });
             },
             [IDS.WORDS.DET]: () => {
               htmlEditing.tables.determiner(wrapperWrapper[0], word);
@@ -1290,20 +1305,7 @@ export const htmlEditing = {
             referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.N]());
             break;
           case IDS.WORDS.V:
-            referenceMap.functions.misc.toggleLoad(() => {
-              referenceMap.functions.tables[IDS.WORDS.V](word);
-              referenceMap.functions.tables.verbForms();
-
-              // Use event delegation on the parent to handle clicks on .verbForms elements
-              const loadableTable = document.getElementById('loadableTable');
-              loadableTable.addEventListener('click', (e) => {
-                if (e.target.classList.contains('verbForms')) {
-                  referenceMap.functions.misc.clearHtml();
-                  referenceMap.functions.tables[IDS.WORDS.V](e.target.textContent);
-                  referenceMap.functions.tables.verbForms();
-                }
-              });
-            });
+            referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.V](word));
             break;
           case IDS.WORDS.DET:
             referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.DET]());
@@ -1334,20 +1336,7 @@ export const htmlEditing = {
       else if (hasPrefix && !hasSuffix) {
         if (wordClass === IDS.WORDS.V) {
           el.textContent = 'verb suffix table';
-          referenceMap.functions.misc.toggleLoad(() => {
-            referenceMap.functions.tables[IDS.WORDS.V](word, false, true);
-              referenceMap.functions.tables.verbForms();
-
-              // Use event delegation on the parent to handle clicks on .verbForms elements
-              const loadableTable = document.getElementById('loadableTable');
-              loadableTable.addEventListener('click', (e) => {
-                if (e.target.classList.contains('verbForms')) {
-                  referenceMap.functions.misc.clearHtml();
-                  referenceMap.functions.tables[IDS.WORDS.V](e.target.textContent, false, true);
-                  referenceMap.functions.tables.verbForms();
-                }
-              });
-          });
+          referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.V](word, false, true));
         } else {
           el.textContent = 'tables unavailable';
         }
@@ -1358,20 +1347,7 @@ export const htmlEditing = {
       else if (!hasPrefix && hasSuffix) {
         if (wordClass === IDS.WORDS.V) {
           el.textContent = 'verb prefix table';
-          referenceMap.functions.misc.toggleLoad(() => {
-            referenceMap.functions.tables[IDS.WORDS.V](word, true, false);
-              referenceMap.functions.tables.verbForms();
-
-              // Use event delegation on the parent to handle clicks on .verbForms elements
-              const loadableTable = document.getElementById('loadableTable');
-              loadableTable.addEventListener('click', (e) => {
-                if (e.target.classList.contains('verbForms')) {
-                  referenceMap.functions.misc.clearHtml();
-                  referenceMap.functions.tables[IDS.WORDS.V](e.target.textContent, true, false);
-                  referenceMap.functions.tables.verbForms();
-                }
-              });
-          });
+          referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.V](word, true, false));
         } else {
           el.textContent = 'tables unavailable';
         }
@@ -1387,7 +1363,7 @@ export const htmlEditing = {
 
           case IDS.WORDS.V:
             el.textContent = 'verb tables';
-            referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.V]());
+            referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.V](word));
             break;
 
           default:
