@@ -1802,12 +1802,11 @@ export const searching = {
 
       if (Object.values(searching.isVForm(initObj.keyword)).length > 0) { // verb forms checker
         initObj.results.matchtype1.push(searching.isVForm(initObj.keyword));
-        console.log(initObj);
-        return; //idk if i can just return here? maybe?
       }
 
       const temp = Object.values(IDS.WORDS);
       for (const wordclass of temp) {
+        if (wordclass === IDS.WORDS.V) continue;
         DICTIONARY[wordclass]?.MAP?.[initObj.keyword]//'thox'
           ? initObj.results.matchtype1.push(DICTIONARY[wordclass]?.MAP?.[initObj.keyword])
           : console.log('err for', wordclass)
