@@ -1235,21 +1235,21 @@ export const htmlEditing = {
         // place keyword as prefix or suffix (you can change behavior per table)
       });
     },
-    pressableLoadTableButtons: ({ el, word, affixesStrValues = [], declension = 1, stem = word, verbForms = [] }) => {
+    pressableLoadTableButtons: ({ el, word, affixesStrValues = [], declension = 1, stem = word, verbForms = [], MDEntry = {} }) => {
       const wrapperWrapper = document.getElementById('loadableTable').children;
       affixesStrValues.length > 0 ? console.log(affixesStrValues) : null
 
       const wordClass = el.dataset.wordclass;
       const hasPrefix = affixesStrValues[2] !== 'ø';
       const hasSuffix = affixesStrValues[4] !== 'ø';
-
+      
       const referenceMap = {
         consts: {},
         functions: {
           tables: {
             [IDS.WORDS.N]: () => {//same indexing for oop.htmlEditin.tables[i] etc
-              htmlEditing.tables.noun(declension, 'Directive', wrapperWrapper[0], word, stem);
-              htmlEditing.tables.noun(declension, 'Recessive', wrapperWrapper[1], word, stem);
+              htmlEditing.tables.noun({ declension, mood: 'Directive', wrapper: wrapperWrapper[0], word, stem, dicEntry: MDEntry });
+              htmlEditing.tables.noun({ declension, mood: 'Recessive', wrapper: wrapperWrapper[1], word, stem, dicEntry: MDEntry });
             },
             [IDS.WORDS.V]: (word, hasPrefix = true, hasSuffix = true) => {
               function loadTables(word, hasPrefix, hasSuffix) {
@@ -1452,7 +1452,7 @@ export const htmlEditing = {
       htmlEditing.createDivById('', wrapper, html);
       htmlEditing.tables.populate(word, wrapper, isPrefix);
     },
-    noun: (declension, mood, wrapper, keyword, stem = keyword) => {
+    noun: ({ declension, mood, wrapper, keyword, stem = keyword, dicEntry = {}/*for MD*/ }) => {
       const table = document.createElement('table');
 
       table.id = `Noun-Table-${mood}`;
@@ -1470,7 +1470,9 @@ export const htmlEditing = {
       table.appendChild(thead);
 
       //rows
-      for (const [gender, def] of Object.entries(DICTIONARY[IDS.WORDS.N].MAP[stem].genders)) {
+      const entry = Object.values(dicEntry).length > 0 ? dicEntry : DICTIONARY[IDS.WORDS.N].MAP[stem];
+      
+      for (const [gender, def] of Object.entries(entry.genders)) {
         const trd = document.createElement('tr');
         const rowth = document.createElement('th');
         rowth.textContent = gender;
@@ -1792,7 +1794,7 @@ export const searching = {
 
     sessionStorage.setItem('initObj', JSON.stringify(initObj));
 
-    //searching.redirect(initObj);
+    searching.redirect(initObj);
   },
   types: {//make each type a seperate entry in the export?
     matchtype1: (initObj) => {

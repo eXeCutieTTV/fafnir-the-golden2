@@ -75,7 +75,8 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
       oop.htmlEditing.tables.pressableLoadTableButtons({
         el: document.getElementById(id),
         word: initObj.keyword,
-        ...(result?.declension && { declension: result.declension })
+        ...(result?.declension && { declension: result.declension }),
+        ...(oop.searching.isMD(result.text) && { MDEntry: result })
       });
     }
 
