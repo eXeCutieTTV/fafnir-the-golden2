@@ -21,9 +21,10 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
           IDS.WORDS[entry.type.slice(0, 1).toUpperCase()];
 
         const innerReferenceMap = {
+          verbForms: oop.searching.isVForm(entry.stem),
           dicEntry: entry?.affixes?.irregular ? entry.raws[1].word : DICTIONARY[typeKey]?.MAP?.[entry.stemReal],
           affixesStr: oop.htmlEditing.affixesStr(entry.affixes),
-          pathsStrs: oop.htmlEditing.pathStr(entry.affixes, wordclass),
+          pathsStrs: oop.htmlEditing.pathStr(entry.affixes, wordclass, oop.searching.isVForm(entry.stem).form),
           functions: {
             defRow: ({
               dicEntry,

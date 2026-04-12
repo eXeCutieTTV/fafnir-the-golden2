@@ -104,7 +104,15 @@ export const matchtype2 = {
           isNorADJ = false,
           NorADJraw = 0
         }) => {
-          //console.log(result)
+
+          function parse(result, bucket, vForm = false) {
+            result.stemReal = vForm ? searching.isVForm(result.stem).result.text : possibility.text;
+            result.type = vForm ? IDS.WORDS.V : possibility.type;
+            console.log({ result });
+            bucket.push(result);
+          }
+          if (Object.values(searching.isVForm(result.stem)).length > 0) parse(result, bucket, true);
+
           for (const possibility of dictionaryBased.findStemFromShort(result.stem)) {
 
             if (!allowed.includes(possibility.type)) continue;
@@ -119,10 +127,7 @@ export const matchtype2 = {
               if (!legal) continue;
             }
 
-            result.stemReal = possibility.text;
-            result.type = possibility.type;
-            console.log({ result });
-            bucket.push(result);
+            parse(result, bucket);
           }
         }
       }
@@ -351,6 +356,9 @@ export const matchtype2 = {
                 ) || []
               }
             }
+
+            //console.log({ verbMap })
+
             if (verbMap.affixChecker.verbSuffix.length > 0) {
               for (const entry2 of verbMap.affixChecker.verbSuffix) {
                 const result = localHelperMap.functions.makeBaseResult({
@@ -401,6 +409,7 @@ export const matchtype2 = {
                 },
                 stem: entry.tempStem
               });
+              console.log(result)
               localHelperMap.functions.pushPossibilities({
                 result,
                 bucket: verbMap.results['verbSuffix'],
@@ -1610,7 +1619,7 @@ export const htmlEditing = {
       values
     };
   },
-  pathStr: (affixesObject, wordclass) => {
+  pathStr: (affixesObject, wordclass, verbForms = []) => {
     const { prefix, suffix, preposition, particle } = affixesObject;
     const tempMap = {
       functions: {
@@ -1621,9 +1630,11 @@ export const htmlEditing = {
             case IDS.WORDS.ADJ:
               title = `case: ${path[0] || 'ø'}\ngender: ${path[1] || 'ø'}\nnumber: ${path[2] || 'ø'}\ndeclension: ${path[3] || 'ø'}`;
               break;
-            case IDS.WORDS.V:
             case IDS.WORDS.AUX:
               title = `person: ${path[0] || 'ø'}\nnumber: ${path[1] || 'ø'}\ngender: ${path[2] || 'ø'}`;
+              break;
+            case IDS.WORDS.V:
+              title = `person: ${path[0] || 'ø'}\nnumber: ${path[1] || 'ø'}\ngender: ${path[2] || 'ø'}\naspect: ${path[3] || 'ø'}\ntense: ${path[4] || 'ø'}`;
               break;
           }
           return title;
@@ -1639,15 +1650,15 @@ export const htmlEditing = {
       },
       results: []
     }
-
+    //console.log({ verbForms })
     for (const prefix1 of tempMap.paths.prefix || [[]]) {
       for (const suffix1 of tempMap.paths.suffix || [[]]) {
         const tempStrs = {
           preposition: tempMap.paths.preposition,
           particlePrefix: tempMap.paths.particle?.prefix || 'ø',
-          prefix: prefix1.length > 0 ? prefix1.join(', ') : 'ø',
+          prefix: prefix1.length > 0 ? (prefix1.join(', ') + ', ' + verbForms.join(', ')) : 'ø',
           particleSuffix: tempMap.paths.particle?.suffix || 'ø',
-          suffix: suffix1.length > 0 ? suffix1.join(', ') : 'ø'
+          suffix: suffix1.length > 0 ? (suffix1.join(', ') + ', ' + verbForms.join(', ')) : 'ø'
         }
 
         const title = Object.entries(tempStrs)
@@ -1659,8 +1670,8 @@ export const htmlEditing = {
         const html = text
           .split(' | ')
           .map((part, i) => {
-            if (i === 2 && prefix) return `<span style="cursor: help;" title="${tempMap.functions.title(wordclass, prefix1)}">${part}</span>`;
-            if (i === 4 && suffix) return `<span style="cursor: help;" title="${tempMap.functions.title(wordclass, suffix1)}">${part}</span>`;
+            if (i === 2 && prefix) return `<span style="cursor: help;" title="${tempMap.functions.title(wordclass, prefix1.concat(verbForms))}">${part}</span>`;
+            if (i === 4 && suffix) return `<span style="cursor: help;" title="${tempMap.functions.title(wordclass, suffix1.concat(verbForms))}">${part}</span>`;
             return part;
           })
           .join(' | ');
