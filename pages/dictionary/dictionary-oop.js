@@ -1758,8 +1758,6 @@ export const searching = {
       }
     }
 
-    //const a = isVForm(initObj.keyword)
-    //console.log(a)
     if (input && input.value.trim() !== '') { //clear searchFLD
       input.value = '';
       input.blur();
@@ -1803,13 +1801,14 @@ export const searching = {
       if (Object.values(searching.isVForm(initObj.keyword)).length > 0) { // verb forms checker
         initObj.results.matchtype1.push(searching.isVForm(initObj.keyword));
       }
+      for (const entry of searching.isMD(initObj.keyword)) initObj.results.matchtype1.push(entry);
 
-      const temp = Object.values(IDS.WORDS);
-      for (const wordclass of temp) {
+      for (const wordclass of Object.values(IDS.WORDS)) {
         if (wordclass === IDS.WORDS.V) continue;
-        DICTIONARY[wordclass]?.MAP?.[initObj.keyword]//'thox'
+        if (Object.keys(DICTIONARY[IDS.WORDS.N]?.MAP[initObj.keyword]).includes('values')) continue;
+        DICTIONARY[wordclass]?.MAP?.[initObj.keyword]//'thox' //'axa'
           ? initObj.results.matchtype1.push(DICTIONARY[wordclass]?.MAP?.[initObj.keyword])
-          : console.log('err for', wordclass)
+          : null//console.log('err for', wordclass)
       }
       console.log(initObj);
     },
@@ -1862,5 +1861,14 @@ export const searching = {
       if (forms[3] === word) return { result, form: [IDS.ASPECT.G, IDS.TENSE.P] }
     }
     return {};
+  },
+  isMD: (word) => {
+    const results = []
+    if (DICTIONARY.ALL_WORDS.MAP[word].type === IDS.OTHER.MD) {
+      for (const entry of Object.values(DICTIONARY.ALL_WORDS.MAP[word].values)) {
+        results.push(entry);
+      }
+    }
+    return results || []
   }
 }
