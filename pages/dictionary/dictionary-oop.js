@@ -119,7 +119,8 @@ export const matchtype2 = {
             if (!DICTIONARY.ALL_WORDS.MAP[possibility.text]) continue;
             if (isNorADJ) {
               if (!(possibility.type === IDS.WORDS.N || possibility.type === IDS.WORDS.ADJ)) continue;
-              //if (result.raws[0].paths === 'indecl') continue;
+              //console.log(possibility)
+
               // Check declension legality
               const legal = result.raws[NorADJraw].paths.some(
                 path => path[3] === possibility.declension
@@ -1791,7 +1792,7 @@ export const searching = {
 
     sessionStorage.setItem('initObj', JSON.stringify(initObj));
 
-    searching.redirect(initObj);
+    //searching.redirect(initObj);
   },
   types: {//make each type a seperate entry in the export?
     matchtype1: (initObj) => {

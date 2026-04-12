@@ -13,6 +13,57 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     first: true,
     colIndex: 0
   }
+
+  function getPathVariants({ affixes, wordclass, verbForms = [] }) {
+    const renderedPaths = oop.htmlEditing.pathStr(affixes, wordclass, verbForms);
+    const prefixPaths = affixes?.prefix?.paths || [[]];
+    const suffixPaths = affixes?.suffix?.paths || [[]];
+    const variants = [];
+    let renderedIndex = 0;
+
+    for (const prefixPath of prefixPaths) {
+      for (const suffixPath of suffixPaths) {
+        variants.push({
+          ...renderedPaths[renderedIndex++],
+          prefixPath,
+          suffixPath
+        });
+      }
+    }
+
+    return variants;
+  }
+
+  function expandDictionaryEntries(dicEntry) {
+    if (!dicEntry) return [];
+    if (dicEntry?.type === IDS.OTHER.MD || dicEntry?.values) return Object.values(dicEntry.values || {});
+    return [dicEntry];
+  }
+
+  function resolveDictionaryEntries({ stemReal, wordclass, pathVariant, fallbackEntry }) {
+    if (fallbackEntry?.affixes?.irregular) return [fallbackEntry.raws[1].word];
+
+    const typeKey =
+      IDS.WORDS[wordclass?.slice(0, 3).toUpperCase()] ??
+      IDS.WORDS[wordclass?.slice(0, 1).toUpperCase()];
+    const candidateEntries = expandDictionaryEntries(
+      DICTIONARY[typeKey]?.MAP?.[stemReal]
+    );
+
+    if (!(wordclass === IDS.WORDS.N || wordclass === IDS.WORDS.ADJ)) {
+      return candidateEntries.length > 0 ? candidateEntries : expandDictionaryEntries(fallbackEntry);
+    }
+
+    const suffixDeclension = pathVariant?.suffixPath?.[3];
+    const matchingEntries = suffixDeclension
+      ? candidateEntries.filter(candidate => candidate?.declension === suffixDeclension)
+      : candidateEntries;
+
+    if (matchingEntries.length > 0) return matchingEntries;
+    if (candidateEntries.length > 0) return candidateEntries;
+    return expandDictionaryEntries(fallbackEntry);
+  }
+
   for (const [stem, value] of Object.entries(initObj.results.matchtype2)) {
     for (const [wordclass, value2] of Object.entries(value)) {
       for (const entry of value2) {
@@ -22,9 +73,14 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
 
         const innerReferenceMap = {
           verbForms: oop.searching.isVForm(entry.stem),
+          MD: oop.searching.isMD(entry.stem),
           dicEntry: entry?.affixes?.irregular ? entry.raws[1].word : DICTIONARY[typeKey]?.MAP?.[entry.stemReal],
           affixesStr: oop.htmlEditing.affixesStr(entry.affixes),
-          pathsStrs: oop.htmlEditing.pathStr(entry.affixes, wordclass, oop.searching.isVForm(entry.stem).form),
+          pathVariants: getPathVariants({
+            affixes: entry.affixes,
+            wordclass,
+            verbForms: oop.searching.isVForm(entry.stem).form
+          }),
           functions: {
             defRow: ({
               dicEntry,
@@ -55,12 +111,13 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
               }
               temp[dicEntry.text] ??= {};
 
-              if (!temp[dicEntry.text][dicEntry.type]) {
+              const entryKey = [dicEntry.type, dicEntry.declension || 'nodecl'].join('__');
+              if (!temp[dicEntry.text][entryKey]) {
                 const border = temp.first ? 'border-top:solid 1px black;' : '';
                 temp.first = false;
 
                 const html = `
-                  <td class="${id}" style="${border}">${dicEntry.text} (${dicEntry.type}):</td>
+                  <td class="${id}" style="${border}">${dicEntry.text} (${(dicEntry.type + ' ' + dicEntry?.declension || '').trim()}):</td>
                   <td style="${border} text-align:left;">${dicEntry.type === IDS.WORDS.N
                     ? Object.entries(dicEntry.genders)
                       .map(([k, v]) => `${k}: ${v}`)
@@ -73,7 +130,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                       data-colindex="${temp.colIndex++}"
                       class="${id}">stem</td>`;
 
-                temp[dicEntry.text][dicEntry.type] = html;
+                temp[dicEntry.text][entryKey] = html;
 
                 oop.htmlEditing.insertTr(
                   document.getElementById('tableTbody'),
@@ -85,7 +142,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                   el: document.getElementsByClassName(id)[1],
                   word: entry.stemReal,
                   ...(dicEntry?.declension && { declension: dicEntry.declension }),
-                  verbForms: innerReferenceMap.dicEntry.splitForms()
+                  verbForms: innerReferenceMap.verbForms.length > 0 ? innerReferenceMap.dicEntry.splitForms() : []
                 });
 
                 document.getElementsByClassName(id)[0].addEventListener('click', () => {
@@ -95,68 +152,75 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
             }
           }
         }
-        for (const pathStr of innerReferenceMap.pathsStrs) {
-          const ids = {
-            row: `${initObj.keyword}, ${pathStr.text}, ${temp.colIndex}`,
-            defRow: `${entry.stemReal}`
-          }
-          console.log({
-            pathStr,
-            affixesStr: innerReferenceMap.affixesStr,
-            ids,
-            dicEntry: innerReferenceMap.dicEntry,
-            entry,
-            typeKey,
-            innerReferenceMap
+        for (const pathVariant of innerReferenceMap.pathVariants) {
+          const resolvedEntries = resolveDictionaryEntries({
+            stemReal: entry.stemReal,
+            wordclass,
+            pathVariant,
+            fallbackEntry: innerReferenceMap.dicEntry
           });
 
+          for (const resolvedEntry of resolvedEntries) {
+            const ids = {
+              row: `${initObj.keyword}, ${pathVariant.text}, ${resolvedEntry.declension || 'nodecl'}, ${temp.colIndex}`,
+              defRow: `${entry.stemReal}`
+            }
+            console.log({
+              pathVariant,
+              affixesStr: innerReferenceMap.affixesStr,
+              ids,
+              dicEntry: resolvedEntry,
+              entry,
+              typeKey,
+              innerReferenceMap
+            });
 
-          // --- Main rows --- //make single function for addrow? and have param for isDefRow?
-          oop.htmlEditing.insertTr(
-            document.getElementById('tableTbody'), `
-            <td class="${ids.row}">${initObj.keyword} (${entry.type})</td>
+
+            // --- Main rows --- //make single function for addrow? and have param for isDefRow?
+            innerReferenceMap.functions.defRow({
+              dicEntry: resolvedEntry,
+              id: `${stem}-${resolvedEntry.declension || 'nodecl'}`,
+              isIrregular: Boolean(entry?.affixes?.irregular)
+            });
+
+            oop.htmlEditing.insertTr(
+              document.getElementById('tableTbody'), `
+            <td class="${ids.row}">${initObj.keyword} (${[entry.type, resolvedEntry.declension].filter(Boolean).join(' ')})</td>
             <td>${innerReferenceMap.affixesStr.html}</td>
-            <td>${pathStr.html}</td>
+            <td>${pathVariant.html}</td>
             <td data-key="${entry.key.replace("-...", "")}"
-                data-wordclass="${innerReferenceMap.dicEntry.type}"
+                data-wordclass="${resolvedEntry.type}"
                 data-colindex="${temp.colIndex++}"
                 class="${ids.row}"
                 style="user-select: none; cursor: pointer;">temp</td>`
-          );
-          oop.htmlEditing.tables.pressableLoadTableButtons({
-            el: document.getElementsByClassName(ids.row)[1],
-            word: initObj.keyword,
-            affixesStrValues: innerReferenceMap.affixesStr.values,
-            stem: entry.stemReal,
-            ...(innerReferenceMap.dicEntry.declension && { declension: innerReferenceMap.dicEntry.declension }),
-            verbForms: innerReferenceMap.dicEntry.splitForms()
-          });
-
-          document.getElementsByClassName(ids.row)[0].addEventListener('click', () => {
-            //oop.searching.search({ word: initObj.keyword });
-          });
-
-
-          // --- Definition row (only once per type) ---
-          innerReferenceMap.functions.defRow({
-            dicEntry: DICTIONARY[wordclass].MAP[stem] || innerReferenceMap.dicEntry,
-            id: stem,
-            isIrregular: Boolean(entry?.affixes?.irregular)
-          });
-
-          if (entry.affixes?.preposition?.preposition || false) {
-            innerReferenceMap.functions.defRow({
-              dicEntry: DICTIONARY[IDS.WORDS.PP].MAP[entry.affixes?.preposition?.preposition],
-              id: entry.affixes?.preposition?.preposition,
+            );
+            oop.htmlEditing.tables.pressableLoadTableButtons({
+              el: document.getElementsByClassName(ids.row)[1],
+              word: initObj.keyword,
+              affixesStrValues: innerReferenceMap.affixesStr.values,
+              stem: entry.stemReal,
+              ...(resolvedEntry.declension && { declension: resolvedEntry.declension }),
+              verbForms: innerReferenceMap.verbForms.length > 0 ? resolvedEntry.splitForms() : []
             });
-          }
 
-          for (const part of entry.affixes?.particle || [{}]) {
-            if (!Object.values(part).length > 0) continue;
-            innerReferenceMap.functions.defRow({
-              dicEntry: DICTIONARY[IDS.WORDS.PART].MAP[part.particle],
-              id: part.particle,
+            document.getElementsByClassName(ids.row)[0].addEventListener('click', () => {
+              //oop.searching.search({ word: initObj.keyword });
             });
+
+            if (entry.affixes?.preposition?.preposition || false) {
+              innerReferenceMap.functions.defRow({
+                dicEntry: DICTIONARY[IDS.WORDS.PP].MAP[entry.affixes?.preposition?.preposition],
+                id: entry.affixes?.preposition?.preposition,
+              });
+            }
+
+            for (const part of entry.affixes?.particle || [{}]) {
+              if (!Object.values(part).length > 0) continue;
+              innerReferenceMap.functions.defRow({
+                dicEntry: DICTIONARY[IDS.WORDS.PART].MAP[part.particle],
+                id: part.particle,
+              });
+            }
           }
         }
       }
