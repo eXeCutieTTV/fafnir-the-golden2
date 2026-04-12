@@ -1234,7 +1234,7 @@ export const htmlEditing = {
         // place keyword as prefix or suffix (you can change behavior per table)
       });
     },
-    pressableLoadTableButtons: ({ el, word, affixesStrValues = [], declension = 1, stem = word }) => {
+    pressableLoadTableButtons: ({ el, word, affixesStrValues = [], declension = 1, stem = word, verbForms = [] }) => {
       const wrapperWrapper = document.getElementById('loadableTable').children;
       affixesStrValues.length > 0 ? console.log(affixesStrValues) : null
 
@@ -1250,9 +1250,9 @@ export const htmlEditing = {
               htmlEditing.tables.noun(declension, 'Directive', wrapperWrapper[0], word, stem);
               htmlEditing.tables.noun(declension, 'Recessive', wrapperWrapper[1], word, stem);
             },
-            [IDS.WORDS.V]: (hasPrefix = true, hasSuffix = true) => {
-              hasPrefix ? htmlEditing.tables.verb(true, word, wrapperWrapper[0]) : null;
-              hasSuffix ? htmlEditing.tables.verb(false, word, wrapperWrapper[1]) : null;
+            [IDS.WORDS.V]: (word, hasPrefix = true, hasSuffix = true) => {
+              hasPrefix ? htmlEditing.tables.verb(true, word, wrapperWrapper[1]) : null;
+              hasSuffix ? htmlEditing.tables.verb(false, word, wrapperWrapper[2]) : null;
             },
             [IDS.WORDS.DET]: () => {
               htmlEditing.tables.determiner(wrapperWrapper[0], word);
@@ -1260,6 +1260,9 @@ export const htmlEditing = {
             [IDS.WORDS.ADJ]: () => {
               htmlEditing.tables.adjective(declension, 'Directive', wrapperWrapper[0], word, stem);
               htmlEditing.tables.adjective(declension, 'Recessive', wrapperWrapper[1], word, stem);
+            },
+            verbForms: () => {
+              htmlEditing.tables.verbForms(verbForms, wrapperWrapper[0]);
             }
           },
           misc: {
@@ -1287,7 +1290,20 @@ export const htmlEditing = {
             referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.N]());
             break;
           case IDS.WORDS.V:
-            referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.V]());
+            referenceMap.functions.misc.toggleLoad(() => {
+              referenceMap.functions.tables[IDS.WORDS.V](word);
+              referenceMap.functions.tables.verbForms();
+
+              // Use event delegation on the parent to handle clicks on .verbForms elements
+              const loadableTable = document.getElementById('loadableTable');
+              loadableTable.addEventListener('click', (e) => {
+                if (e.target.classList.contains('verbForms')) {
+                  referenceMap.functions.misc.clearHtml();
+                  referenceMap.functions.tables[IDS.WORDS.V](e.target.textContent);
+                  referenceMap.functions.tables.verbForms();
+                }
+              });
+            });
             break;
           case IDS.WORDS.DET:
             referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.DET]());
@@ -1318,7 +1334,20 @@ export const htmlEditing = {
       else if (hasPrefix && !hasSuffix) {
         if (wordClass === IDS.WORDS.V) {
           el.textContent = 'verb suffix table';
-          referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.V](false, true));
+          referenceMap.functions.misc.toggleLoad(() => {
+            referenceMap.functions.tables[IDS.WORDS.V](word, false, true);
+              referenceMap.functions.tables.verbForms();
+
+              // Use event delegation on the parent to handle clicks on .verbForms elements
+              const loadableTable = document.getElementById('loadableTable');
+              loadableTable.addEventListener('click', (e) => {
+                if (e.target.classList.contains('verbForms')) {
+                  referenceMap.functions.misc.clearHtml();
+                  referenceMap.functions.tables[IDS.WORDS.V](e.target.textContent, false, true);
+                  referenceMap.functions.tables.verbForms();
+                }
+              });
+          });
         } else {
           el.textContent = 'tables unavailable';
         }
@@ -1329,7 +1358,20 @@ export const htmlEditing = {
       else if (!hasPrefix && hasSuffix) {
         if (wordClass === IDS.WORDS.V) {
           el.textContent = 'verb prefix table';
-          referenceMap.functions.misc.toggleLoad(() => referenceMap.functions.tables[IDS.WORDS.V](true, false));
+          referenceMap.functions.misc.toggleLoad(() => {
+            referenceMap.functions.tables[IDS.WORDS.V](word, true, false);
+              referenceMap.functions.tables.verbForms();
+
+              // Use event delegation on the parent to handle clicks on .verbForms elements
+              const loadableTable = document.getElementById('loadableTable');
+              loadableTable.addEventListener('click', (e) => {
+                if (e.target.classList.contains('verbForms')) {
+                  referenceMap.functions.misc.clearHtml();
+                  referenceMap.functions.tables[IDS.WORDS.V](e.target.textContent, true, false);
+                  referenceMap.functions.tables.verbForms();
+                }
+              });
+          });
         } else {
           el.textContent = 'tables unavailable';
         }
@@ -1374,7 +1416,7 @@ export const htmlEditing = {
       }
 
       const html = `
-        <table id="Verb-Table-${isPrefix ? 'Prefix' : 'Suffix'}" style="margin-bottom: 10px;">
+        <table id="Verb-Table-${isPrefix ? 'Prefix' : 'Suffix'}" style="margin-top: 10px;">
             <thead>
                 <tr>
                     <th colSpan = 2>${affixStateMap[isPrefix][0]}</th>
@@ -1589,6 +1631,34 @@ export const htmlEditing = {
       `;
       htmlEditing.createDivById('', wrapper, html);
       htmlEditing.tables.populate(keyword, wrapper);
+    },
+    verbForms: (formArr, wrapper) => {
+      if (!formArr.length > 0) { console.warn('err'); return }
+      const html = `
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>${IDS.TENSE.NP}</th>
+            <th>${IDS.TENSE.P}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>${IDS.ASPECT.E}</th>
+            <td style="cursor: pointer; user-select:none" class="verbForms">${formArr[0]}</td>
+            <td style="cursor: pointer; user-select:none" class="verbForms">${formArr[1]}</td>
+          </tr>
+          <tr>
+            <th>${IDS.ASPECT.G}</th>
+            <td style="cursor: pointer; user-select:none" class="verbForms">${formArr[2]}</td>
+            <td style="cursor: pointer; user-select:none" class="verbForms">${formArr[3]}</td>
+          </tr>
+        </tbody>
+      </table>`;
+      const div = document.createElement('div');
+      div.innerHTML = html;
+      wrapper.appendChild(div);
     }
   },
   affixesStr: (affixesObject) => {

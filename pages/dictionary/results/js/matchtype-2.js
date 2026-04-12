@@ -84,7 +84,8 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                 oop.htmlEditing.tables.pressableLoadTableButtons({
                   el: document.getElementsByClassName(id)[1],
                   word: entry.stemReal,
-                  ...(dicEntry?.declension && { declension: dicEntry.declension })
+                  ...(dicEntry?.declension && { declension: dicEntry.declension }),
+                  verbForms: innerReferenceMap.dicEntry.splitForms()
                 });
 
                 document.getElementsByClassName(id)[0].addEventListener('click', () => {
@@ -105,7 +106,8 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
             ids,
             dicEntry: innerReferenceMap.dicEntry,
             entry,
-            typeKey
+            typeKey,
+            innerReferenceMap
           });
 
 
@@ -126,11 +128,12 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
             word: initObj.keyword,
             affixesStrValues: innerReferenceMap.affixesStr.values,
             stem: entry.stemReal,
-            ...(innerReferenceMap.dicEntry.declension && { declension: innerReferenceMap.dicEntry.declension })
+            ...(innerReferenceMap.dicEntry.declension && { declension: innerReferenceMap.dicEntry.declension }),
+            verbForms: innerReferenceMap.dicEntry.splitForms()
           });
 
           document.getElementsByClassName(ids.row)[0].addEventListener('click', () => {
-            oop.searching.search({ word: initObj.keyword });
+            //oop.searching.search({ word: initObj.keyword });
           });
 
 
