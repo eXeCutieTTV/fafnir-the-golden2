@@ -1701,6 +1701,8 @@ export const searching = {
       }
     }
 
+    //const a = isVForm(initObj.keyword)
+    //console.log(a)
     if (input && input.value.trim() !== '') { //clear searchFLD
       input.value = '';
       input.blur();
@@ -1727,7 +1729,7 @@ export const searching = {
 
     initObj.results.matchtype3 = typeMap.irregulars;
 
-    if (DICTIONARY.ALL_WORDS.MAP[initObj.keyword]?.available?.length > 0) searching.types.matchtype1(initObj)// type 1
+    if (DICTIONARY.ALL_WORDS.MAP[initObj.keyword]?.available?.length > 0 || Object.values(searching.isVForm(initObj.keyword)).length > 0) searching.types.matchtype1(initObj)// type 1
     else if (Object.values(typeMap.type2).some(matches => matches.length > 0)) searching.types.matchtype2(initObj, typeMap);//type 2
 
     console.log({ typeMap, initObj });//make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
@@ -1740,6 +1742,11 @@ export const searching = {
     matchtype1: (initObj) => {
       initObj.matchType = 1;
       console.log('-----type1-----');
+
+      if (Object.values(searching.isVForm(initObj.keyword)).length > 0) { // verb forms checker
+        initObj.results.matchtype1.push(searching.isVForm(initObj.keyword));
+        console.log(initObj);
+      }
 
       const temp = Object.values(IDS.WORDS);
       for (const wordclass of temp) {
@@ -1787,5 +1794,16 @@ export const searching = {
         : Object.values(initObj.results.matchtype3).some(p => p.length > 0)
           ? window.location.href = '/pages/dictionary/results/matchtype-3.html'
           : console.warn('err')
+  },
+  isVForm: (word) => {
+    for (const result of DICTIONARY.fuzzyFetchByWord(word)) {
+      if (result.type !== IDS.WORDS.V) continue;
+      const forms = result.splitForms() ?? [];
+      if (forms[0] === word) return { result, form: [IDS.ASPECT.E, IDS.TENSE.NP] }
+      if (forms[1] === word) return { result, form: [IDS.ASPECT.E, IDS.TENSE.P] }
+      if (forms[2] === word) return { result, form: [IDS.ASPECT.G, IDS.TENSE.NP] }
+      if (forms[3] === word) return { result, form: [IDS.ASPECT.G, IDS.TENSE.P] }
+    }
+    return {};
   }
 }
