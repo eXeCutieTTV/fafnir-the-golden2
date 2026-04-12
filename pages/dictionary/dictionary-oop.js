@@ -1870,5 +1870,12 @@ export const searching = {
       }
     }
     return results || []
+  },//move vForm and MD into dictioanrybased
+  isElative: (word) => {
+    const wordclasses = [IDS.WORDS.ADJ, IDS.WORDS.ADV]
+    for (const wordclass of wordclasses) {
+      const forms = DICTIONARY[wordclass].MAP[word].splitForms();
+      console.log(forms);
+    }
   }
 }
