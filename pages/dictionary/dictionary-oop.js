@@ -1258,7 +1258,7 @@ export const htmlEditing = {
               }
 
               loadTables(word, hasPrefix, hasSuffix);
-              referenceMap.functions.tables.verbForms();
+              htmlEditing.tables.verbForms(verbForms, wrapperWrapper[0]);
 
               // Use event delegation on the parent to handle clicks on .verbForms elements
               const loadableTable = document.getElementById('loadableTable');
@@ -1266,7 +1266,7 @@ export const htmlEditing = {
                 if (e.target.classList.contains('verbForms')) {
                   referenceMap.functions.misc.clearHtml();
                   loadTables(e.target.textContent, hasPrefix, hasSuffix);
-                  referenceMap.functions.tables.verbForms();
+                  htmlEditing.tables.verbForms(verbForms, wrapperWrapper[0]);
                 }
               });
             },
@@ -1276,9 +1276,6 @@ export const htmlEditing = {
             [IDS.WORDS.ADJ]: () => {
               htmlEditing.tables.adjective(declension, 'Directive', wrapperWrapper[0], word, stem);
               htmlEditing.tables.adjective(declension, 'Recessive', wrapperWrapper[1], word, stem);
-            },
-            verbForms: () => {
-              htmlEditing.tables.verbForms(verbForms, wrapperWrapper[0]);
             }
           },
           misc: {
