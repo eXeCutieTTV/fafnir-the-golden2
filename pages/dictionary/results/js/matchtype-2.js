@@ -85,7 +85,8 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
             defRow: ({
               dicEntry,
               id,
-              isIrregular = false
+              isIrregular = false,
+              MDEntry = {}
             }) => {
               if (isIrregular) {
                 console.log('hey')
@@ -142,7 +143,8 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                   el: document.getElementsByClassName(id)[1],
                   word: entry.stemReal,
                   ...(dicEntry?.declension && { declension: dicEntry.declension }),
-                  verbForms: innerReferenceMap.verbForms.length > 0 ? innerReferenceMap.dicEntry.splitForms() : []
+                  verbForms: innerReferenceMap.verbForms.length > 0 ? innerReferenceMap.dicEntry.splitForms() : [],
+                  ...(innerReferenceMap.MD.length > 0 && { MDEntry })
                 });
 
                 document.getElementsByClassName(id)[0].addEventListener('click', () => {
@@ -172,7 +174,9 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
               dicEntry: resolvedEntry,
               entry,
               typeKey,
-              innerReferenceMap
+              innerReferenceMap,
+              resolvedEntry,
+              resolvedEntries
             });
 
 
@@ -180,19 +184,20 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
             innerReferenceMap.functions.defRow({
               dicEntry: resolvedEntry,
               id: `${stem}-${resolvedEntry.declension || 'nodecl'}`,
-              isIrregular: Boolean(entry?.affixes?.irregular)
+              isIrregular: Boolean(entry?.affixes?.irregular),
+              MDEntry: resolvedEntry
             });
 
             oop.htmlEditing.insertTr(
               document.getElementById('tableTbody'), `
-            <td class="${ids.row}">${initObj.keyword} (${[entry.type, resolvedEntry.declension].filter(Boolean).join(' ')})</td>
-            <td>${innerReferenceMap.affixesStr.html}</td>
-            <td>${pathVariant.html}</td>
-            <td data-key="${entry.key.replace("-...", "")}"
-                data-wordclass="${resolvedEntry.type}"
-                data-colindex="${temp.colIndex++}"
-                class="${ids.row}"
-                style="user-select: none; cursor: pointer;">temp</td>`
+                <td class="${ids.row}">${initObj.keyword} (${[entry.type, resolvedEntry.declension].filter(Boolean).join(' ')})</td>
+                <td>${innerReferenceMap.affixesStr.html}</td>
+                <td>${pathVariant.html}</td>
+                <td data-key="${entry.key.replace("-...", "")}"
+                    data-wordclass="${resolvedEntry.type}"
+                    data-colindex="${temp.colIndex++}"
+                    class="${ids.row}"
+                    style="user-select: none; cursor: pointer;">temp</td>`
             );
             oop.htmlEditing.tables.pressableLoadTableButtons({
               el: document.getElementsByClassName(ids.row)[1],

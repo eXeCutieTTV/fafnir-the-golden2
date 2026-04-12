@@ -1242,7 +1242,7 @@ export const htmlEditing = {
       const wordClass = el.dataset.wordclass;
       const hasPrefix = affixesStrValues[2] !== 'ø';
       const hasSuffix = affixesStrValues[4] !== 'ø';
-      
+
       const referenceMap = {
         consts: {},
         functions: {
@@ -1468,7 +1468,7 @@ export const htmlEditing = {
 
       //rows
       const entry = Object.values(dicEntry).length > 0 ? dicEntry : DICTIONARY[IDS.WORDS.N].MAP[stem];
-      
+      //console.log({ entry, dicEntry })
       for (const [gender, def] of Object.entries(entry.genders)) {
         const trd = document.createElement('tr');
         const rowth = document.createElement('th');
