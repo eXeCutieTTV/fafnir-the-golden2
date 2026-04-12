@@ -232,12 +232,5 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     }
   }
 });
-//highlight the cell that shows the current declension (for stem case^^)
-/*
-    if (affixMatch.type === IDS.OTHER.ML) {
-      for (const entry of affixMatch.variants) {
-        affixFinder(word, entry, isPrefix)
-      }
-    } else affixFinder(word, affixMatch, isPrefix);
-*/ //not even here yet tbh
-//variants searching
+//forms for adj and adv
+//pron/lur etc
