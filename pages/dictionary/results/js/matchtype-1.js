@@ -19,14 +19,13 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
 
   function normalizeResult(result) { return result?.form?.length > 0 ? result.result : result; }
 
-  function isVerbLike(entry) {
+  function isVerbLike(entry) { //bool
     return entry?.type === IDS.WORDS.V
-      || entry?.type === IDS.WORDS.AUX
       || Array.isArray(entry?.vforms)
       || typeof entry?.splitForms === 'function';
   }
 
-  function getVerbFormsHtml(entry, matchedForm = []) {
+  function getVerbFormsHtml(entry, matchedForm = []) { //html
     if (!isVerbLike(entry)) return '<td>...</td>';
 
     const forms = Array.isArray(entry?.vforms) && entry.vforms.length > 0
@@ -42,7 +41,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     return `<td>${parts.join('<br>') || '...'}</td>`;
   }
 
-  const hasVerbFormsColumn = initObj.results.matchtype1
+  const hasVerbFormsColumn = initObj.results.matchtype1 //bool
     .some(result => isVerbLike(normalizeResult(result)));
 
   if (hasVerbFormsColumn) verbFormsHeader.style.display = '';
@@ -54,11 +53,11 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     function renderRow(result) {
       console.log({ result })
 
-      const id = `${result.text}_${result.type}_${result?.declension}`.trim();
+      const id = `${initObj.keyword}_${result.type}_${result?.declension}`.trim();
 
       oop.htmlEditing.insertTr(
         document.getElementById('tableTbody'), `
-      <td>${result.text} (${(result.type + ' ' + (result?.declension || '')).trim()})</td>
+      <td>${initObj.keyword} (${(result.type + ' ' + (result?.declension || '')).trim()})</td>
       <td>${result.type === IDS.WORDS.N
         ? Object.entries(result.genders)
           .map(([k, v]) => `${k}: ${v}`)
@@ -75,7 +74,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
 
       oop.htmlEditing.tables.pressableLoadTableButtons({
         el: document.getElementById(id),
-        word: result.text,
+        word: initObj.keyword,
         ...(result?.declension && { declension: result.declension })
       });
     }
