@@ -1803,6 +1803,7 @@ export const searching = {
       if (Object.values(searching.isVForm(initObj.keyword)).length > 0) { // verb forms checker
         initObj.results.matchtype1.push(searching.isVForm(initObj.keyword));
         console.log(initObj);
+        return; //idk if i can just return here? maybe?
       }
 
       const temp = Object.values(IDS.WORDS);
