@@ -70,9 +70,15 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
           .join('; ')
         : result.definition}</td>
       <td>${result.usage_notes || '...'}</td>
-      ${hasVerbFormsColumn ? getVerbFormsHtml(result, normalizedResult.form || []) : ''}
-      ${isADJorADV ? `<td><div style="cursor: help;" title="form: ${normalizedResult.form.join(', ')}\ndeclension: ${result?.declension}">${(normalizedResult.form).concat([result?.declension]).join(', ')}</div></td>` : ''}
-      ${entry.type === IDS.WORDS.N ? `<td><div style="cursor: help;" title="declension: ${result?.declension}">${result?.declension}</div></td>` : ''}
+      ${[
+        hasVerbFormsColumn && getVerbFormsHtml(result, normalizedResult.form || []),
+        isADJorADV && `<td><div style="cursor: help;" title="form: ${normalizedResult.form.join(', ')}\ndeclension: ${result?.declension}">${normalizedResult.form.concat([result?.declension]).join(', ')}</div></td>`,
+        entry.type === IDS.WORDS.N && `<td><div style="cursor: help;" title="declension: ${result?.declension}">${result?.declension}</div></td>`
+      ]
+        .filter(Boolean)
+        .join('') || '<td>...</td>'
+      }
+
       <td data-defrow="true"
           data-wordclass="${result.type}"
           data-colindex="${state.colIndex++}"
