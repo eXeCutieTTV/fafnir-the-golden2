@@ -1784,7 +1784,7 @@ export const searching = {
 
     initObj.results.matchtype3 = typeMap.irregulars;
 
-    if (DICTIONARY.ALL_WORDS.MAP[initObj.keyword]?.available?.length > 0 || Object.values(searching.isVForm(initObj.keyword)).length > 0) searching.types.matchtype1(initObj)// type 1
+    if (DICTIONARY.ALL_WORDS.MAP[initObj.keyword]?.available?.length > 0 || Object.values(searching.isVForm(initObj.keyword)).length > 0 || Object.values(searching.isElative(initObj.keyword)).length > 0) searching.types.matchtype1(initObj)// type 1
     else if (Object.values(typeMap.type2).some(matches => matches.length > 0)) searching.types.matchtype2(initObj, typeMap);//type 2
 
     console.log({ typeMap, initObj });//make it such, that this part of the search function doesnt create or manipulate ANY html - it just evaluates which results are available based on the input string.
@@ -1801,11 +1801,16 @@ export const searching = {
       if (Object.values(searching.isVForm(initObj.keyword)).length > 0) { // verb forms checker
         initObj.results.matchtype1.push(searching.isVForm(initObj.keyword));
       }
+      if (Object.values(searching.isElative(initObj.keyword)).length > 0) { // elative checker
+        initObj.results.matchtype1.push(searching.isElative(initObj.keyword));
+      }
       for (const entry of searching.isMD(initObj.keyword)) initObj.results.matchtype1.push(entry);
 
       for (const wordclass of Object.values(IDS.WORDS)) {
-        if (wordclass === IDS.WORDS.V) continue;
-        if (Object.keys(DICTIONARY[IDS.WORDS.N]?.MAP[initObj.keyword]).includes('values')) continue;
+        if ([IDS.WORDS.ADJ, IDS.WORDS.ADV, IDS.WORDS.V].includes(wordclass)) continue;
+
+        const isMD = DICTIONARY[IDS.WORDS.N]?.MAP[initObj.keyword] ? Object.keys(DICTIONARY[IDS.WORDS.N]?.MAP[initObj.keyword]) : [];
+        if (isMD.includes('values')) continue;
         DICTIONARY[wordclass]?.MAP?.[initObj.keyword]//'thox' //'axa'
           ? initObj.results.matchtype1.push(DICTIONARY[wordclass]?.MAP?.[initObj.keyword])
           : null//console.log('err for', wordclass)
@@ -1864,7 +1869,7 @@ export const searching = {
   },
   isMD: (word) => {
     const results = []
-    if (DICTIONARY.ALL_WORDS.MAP[word].type === IDS.OTHER.MD) {
+    if (DICTIONARY.ALL_WORDS.MAP[word]?.type === IDS.OTHER.MD) {
       for (const entry of Object.values(DICTIONARY.ALL_WORDS.MAP[word].values)) {
         results.push(entry);
       }
@@ -1872,10 +1877,12 @@ export const searching = {
     return results || []
   },//move vForm and MD into dictioanrybased
   isElative: (word) => {
-    const wordclasses = [IDS.WORDS.ADJ, IDS.WORDS.ADV]
-    for (const wordclass of wordclasses) {
-      const forms = DICTIONARY[wordclass].MAP[word].splitForms();
-      console.log(forms);
+    for (const result of DICTIONARY.fuzzyFetchByWord(word)) {
+      const forms = result.splitForms() ?? [];
+      //console.log(forms);
+      if (forms[0] === word) return { result, form: [IDS.FORMS.R] }
+      if (forms[1] === word) return { result, form: [IDS.FORMS.E] }
     }
+    return {};
   }
 }

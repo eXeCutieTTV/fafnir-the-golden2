@@ -44,11 +44,17 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
   const hasVerbFormsColumn = initObj.results.matchtype1 //bool
     .some(result => isVerbLike(normalizeResult(result)));
 
-  if (hasVerbFormsColumn) verbFormsHeader.style.display = '';
+  displayMorphCol(hasVerbFormsColumn);
+  function displayMorphCol(conditional) {
+    if (conditional) verbFormsHeader.style.display = '';
+  }
 
   for (const result of initObj.results.matchtype1) {
     const normalizedResult = result?.form?.length > 0 ? result : { result, form: [] };
     const entry = normalizedResult.result;
+
+    const isADJorADV = [IDS.WORDS.ADJ, IDS.WORDS.ADV].includes(entry.type);
+    displayMorphCol(isADJorADV);
 
     function renderRow(result) {
       console.log({ result })
@@ -65,6 +71,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
         : result.definition}</td>
       <td>${result.usage_notes || '...'}</td>
       ${hasVerbFormsColumn ? getVerbFormsHtml(result, normalizedResult.form || []) : ''}
+      ${isADJorADV ? `<td><div style="cursor: help;" title="form: ${normalizedResult.form.join(', ')}">${normalizedResult.form.join(', ')}</div></td>` : ''}
       <td data-defrow="true"
           data-wordclass="${result.type}"
           data-colindex="${state.colIndex++}"
