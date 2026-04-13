@@ -1921,6 +1921,7 @@ export const searching = {
   },//move vForm and MD into dictioanrybased
   isElative: (word) => {
     for (const result of DICTIONARY.fuzzyFetchByWord(word)) {
+      if (!([IDS.WORDS.ADJ, IDS.WORDS.ADV].includes(result.type))) continue;
       const forms = result.splitForms() ?? [];
       //console.log(forms);
       if (forms[0] === word) return { result, form: [IDS.FORMS.R] }
