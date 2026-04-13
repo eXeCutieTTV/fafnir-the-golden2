@@ -79,12 +79,13 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
           id="${id}"
           style="user-select:none; cursor: pointer;">temp</td>`
       );
-
+      console.log(normalizedResult)
       oop.htmlEditing.tables.pressableLoadTableButtons({
         el: document.getElementById(id),
         word: initObj.keyword,
         ...(result?.declension && { declension: result.declension }),
-        ...(oop.searching.isMD(result.text) && { MDEntry: result })
+        ...(oop.searching.isMD(result.text) && { MDEntry: result }),
+        adjForms: oop.searching.isElative(normalizedResult.result.text)?.form?.length > 0 ? [normalizedResult.result.text, normalizedResult.result.forms] : []
       });
     }
 
