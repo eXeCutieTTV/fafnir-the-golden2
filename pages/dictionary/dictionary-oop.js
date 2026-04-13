@@ -1243,7 +1243,7 @@ export const htmlEditing = {
     pressableLoadTableButtons: ({ el, word, affixesStrValues = [], declension, stem = word, verbForms = [], MDEntry = {}, adjForms = [] }) => {
       const wrapperWrapper = document.getElementById('loadableTable').children;
       affixesStrValues.length > 0 ? console.log(affixesStrValues) : null
-      console.log(adjForms)
+      //console.log(word, stem)
       const wordClass = el.dataset.wordclass;
       const hasPrefix = affixesStrValues[2] !== 'ø';
       const hasSuffix = affixesStrValues[4] !== 'ø';
@@ -1252,9 +1252,9 @@ export const htmlEditing = {
         consts: {},
         functions: {
           tables: {
-            [IDS.WORDS.N]: () => {//same indexing for oop.htmlEditin.tables[i] etc
-              htmlEditing.tables.noun({ declension, mood: 'Directive', wrapper: wrapperWrapper[0], word, stem, dicEntry: MDEntry });
-              htmlEditing.tables.noun({ declension, mood: 'Recessive', wrapper: wrapperWrapper[1], word, stem, dicEntry: MDEntry });
+            [IDS.WORDS.N]: () => {
+              htmlEditing.tables.noun({ declension, mood: 'Directive', wrapper: wrapperWrapper[0], keyword: word, stem, dicEntry: MDEntry });
+              htmlEditing.tables.noun({ declension, mood: 'Recessive', wrapper: wrapperWrapper[1], keyword: word, stem, dicEntry: MDEntry });
             },
             [IDS.WORDS.V]: (word, hasPrefix = true, hasSuffix = true) => {
               function loadTables(word, hasPrefix, hasSuffix) {
@@ -1523,7 +1523,7 @@ export const htmlEditing = {
       table.appendChild(tbody);
 
       wrapper.appendChild(table);
-
+      //console.log(keyword, stem)
       htmlEditing.tables.populate(keyword, table);
     },
     adjective: (declension, mood, wrapper, keyword, stem = keyword) => {
