@@ -1848,6 +1848,12 @@ export const searching = {
         initObj.results.matchtype1.push(searching.isElative(initObj.keyword));
       }
       for (const entry of searching.isMD(initObj.keyword)) initObj.results.matchtype1.push(entry);
+      if (DICTIONARY[IDS.WORDS.N].MAP[initObj.keyword].type === IDS.OTHER.MD) {
+        for (const value of Object.values(DICTIONARY[IDS.WORDS.N].MAP[initObj.keyword].values)) {
+          initObj.results.matchtype1.push(value);
+        }
+      }
+
 
       for (const wordclass of Object.values(IDS.WORDS)) {
         if ([IDS.WORDS.ADJ, IDS.WORDS.ADV, IDS.WORDS.V].includes(wordclass)) continue;
