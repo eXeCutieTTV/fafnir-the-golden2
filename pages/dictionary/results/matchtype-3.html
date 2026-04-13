@@ -11,7 +11,29 @@
 
 <body>
   <div id="bodyHtml"></div>
+  <script>getLocalHtml('../searchRibbon.html');</script>
+  <div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:12%">word</th>
+          <th>morphology</th>
+          <th>definition</th>
+        </tr>
+      </thead>
+      <tbody id="tableTbody">
+        <tr>
+        </tr>
+      </tbody>
+    </table>
+    <div id="loadableTable" style="margin-top:25px">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+  </div>
   <script>getLocalHtml('/tabbar/html.html')</script>
 </body>
+<script src="./js/matchtype-3.js" type="module"></script>
 
 </html>
