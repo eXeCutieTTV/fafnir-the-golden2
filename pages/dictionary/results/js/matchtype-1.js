@@ -57,7 +57,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     displayMorphCol(isADJorADV || entry.type === IDS.WORDS.N);
 
     function renderRow(result) {
-      console.log({ result })
+      //console.log({ result })
 
       const id = `${initObj.keyword}_${result.type}_${result?.declension}`.trim();
 
@@ -83,7 +83,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
           id="${id}"
           style="user-select:none; cursor: pointer;">temp</td>`
       );
-      console.log(normalizedResult,normalizedResult.result.type === IDS.WORDS.N,hasVerbFormsColumn)
+      //console.log(normalizedResult,normalizedResult.result.type === IDS.WORDS.N,hasVerbFormsColumn)
       oop.htmlEditing.tables.pressableLoadTableButtons({
         el: document.getElementById(id),
         word: initObj.keyword,
