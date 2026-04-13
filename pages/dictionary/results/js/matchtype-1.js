@@ -71,9 +71,9 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
         : result.definition}</td>
       <td>${result.usage_notes || '...'}</td>
       
-      ${hasVerbFormsColumn ? getVerbFormsHtml(result, normalizedResult.form || [])
+      ${normalizedResult.result.type === IDS.WORDS.N ? `<td><div style="cursor: help;" title="declension: ${result?.declension}">${result?.declension}</div></td>`
         : isADJorADV ? `<td><div style="cursor: help;" title="form: ${normalizedResult.form.join(', ')}\ndeclension: ${result?.declension}">${normalizedResult.form.concat([result?.declension]).join(', ')}</div></td>`
-          : entry.type === IDS.WORDS.N ? `<td><div style="cursor: help;" title="declension: ${result?.declension}">${result?.declension}</div></td>`
+          : hasVerbFormsColumn ? getVerbFormsHtml(result, normalizedResult.form || [])
             : '<td>...</td>'
       }
 
@@ -83,7 +83,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
           id="${id}"
           style="user-select:none; cursor: pointer;">temp</td>`
       );
-      console.log(normalizedResult)
+      console.log(normalizedResult,normalizedResult.result.type === IDS.WORDS.N,hasVerbFormsColumn)
       oop.htmlEditing.tables.pressableLoadTableButtons({
         el: document.getElementById(id),
         word: initObj.keyword,
