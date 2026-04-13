@@ -145,8 +145,9 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                   el: document.getElementsByClassName(id)[1],
                   word: entry.stemReal,
                   ...(dicEntry?.declension && { declension: dicEntry.declension }),
-                  verbForms: innerReferenceMap.verbForms.length > 0 ? innerReferenceMap.dicEntry.splitForms() : [],
-                  ...(innerReferenceMap.MD.length > 0 && { MDEntry })
+                  verbForms: innerReferenceMap.verbForms.length > 0 ? innerReferenceMap.dicEntry.splitForms() : [], //shouldnt it just be dicEntry.splitForms()? without innerreferencemap i mean
+                  ...(innerReferenceMap.MD.length > 0 && { MDEntry }),
+                  adjForms: innerReferenceMap.adjForms.form.length > 0 ? innerReferenceMap.dicEntry.splitForms() : []
                 });
 
                 document.getElementsByClassName(id)[0].addEventListener('click', () => {
@@ -178,7 +179,8 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
               typeKey,
               innerReferenceMap,
               resolvedEntry,
-              resolvedEntries
+              resolvedEntries,
+              adjForms: innerReferenceMap.adjForms
             });
 
 

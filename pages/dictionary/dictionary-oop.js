@@ -1240,10 +1240,10 @@ export const htmlEditing = {
         // place keyword as prefix or suffix (you can change behavior per table)
       });
     },
-    pressableLoadTableButtons: ({ el, word, affixesStrValues = [], declension = 1, stem = word, verbForms = [], MDEntry = {} }) => {
+    pressableLoadTableButtons: ({ el, word, affixesStrValues = [], declension, stem = word, verbForms = [], MDEntry = {}, adjForms = [] }) => {
       const wrapperWrapper = document.getElementById('loadableTable').children;
       affixesStrValues.length > 0 ? console.log(affixesStrValues) : null
-
+      console.log(adjForms)
       const wordClass = el.dataset.wordclass;
       const hasPrefix = affixesStrValues[2] !== 'ø';
       const hasSuffix = affixesStrValues[4] !== 'ø';
@@ -1279,8 +1279,23 @@ export const htmlEditing = {
               htmlEditing.tables.determiner(wrapperWrapper[0], word);
             },
             [IDS.WORDS.ADJ]: () => {
-              htmlEditing.tables.adjective(declension, 'Directive', wrapperWrapper[0], word, stem);
-              htmlEditing.tables.adjective(declension, 'Recessive', wrapperWrapper[1], word, stem);
+              function loadTables(word) {
+                htmlEditing.tables.adjective(declension, 'Directive', wrapperWrapper[1], word, stem);
+                htmlEditing.tables.adjective(declension, 'Recessive', wrapperWrapper[2], word, stem);
+              }
+
+              loadTables(word);
+              htmlEditing.tables.adjForms(adjForms, wrapperWrapper[0]);
+
+              // Use event delegation on the parent to handle clicks on .verbForms elements
+              const loadableTable = document.getElementById('loadableTable');
+              loadableTable.addEventListener('click', (e) => {
+                if (e.target.classList.contains('adjForms')) {
+                  referenceMap.functions.misc.clearHtml();
+                  loadTables(e.target.textContent);
+                  htmlEditing.tables.adjForms(adjForms, wrapperWrapper[0]);
+                }
+              });
             }
           },
           misc: {
@@ -1634,6 +1649,27 @@ export const htmlEditing = {
             <th>${IDS.ASPECT.G}</th>
             <td style="cursor: pointer; user-select:none" class="verbForms">${formArr[2]}</td>
             <td style="cursor: pointer; user-select:none" class="verbForms">${formArr[3]}</td>
+          </tr>
+        </tbody>
+      </table>`;
+      const div = document.createElement('div');
+      div.innerHTML = html;
+      wrapper.appendChild(div);
+    },
+    adjForms: (formArr, wrapper) => {
+      if (!formArr.length > 0) { console.warn('err'); return }
+      const html = `
+      <table style="margin-bottom:5px;">
+        <thead>
+          <tr>
+            <th>${IDS.FORMS.R}</th>
+            <th>${IDS.FORMS.E}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="cursor: pointer; user-select:none" class="adjForms">${formArr[0]}</td>
+            <td style="cursor: pointer; user-select:none" class="adjForms">${formArr[1]}</td>
           </tr>
         </tbody>
       </table>`;
