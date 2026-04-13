@@ -1902,6 +1902,7 @@ export const searching = {
   isVForm: (word) => {
     for (const result of DICTIONARY.fuzzyFetchByWord(word)) {
       if (result.type !== IDS.WORDS.V) continue;
+      if (result.text === 'lur') continue;
       const forms = result.splitForms() ?? [];
       if (forms[0] === word) return { result, form: [IDS.ASPECT.E, IDS.TENSE.NP] }
       if (forms[1] === word) return { result, form: [IDS.ASPECT.E, IDS.TENSE.P] }
