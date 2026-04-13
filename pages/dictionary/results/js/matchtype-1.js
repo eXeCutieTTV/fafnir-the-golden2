@@ -91,5 +91,5 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
 
     renderRow(entry);
   }
+  oop.searching.manualNavigationSetup(initObj, 1);
 });
-//verb tables include a single table, that displays forms?

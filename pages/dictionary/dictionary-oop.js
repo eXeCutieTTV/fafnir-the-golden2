@@ -1929,5 +1929,13 @@ export const searching = {
       if (forms[1] === word) return { result, form: [IDS.FORMS.E] }
     }
     return {};
+  },
+  manualNavigationSetup: (initObj, currentType) => {
+    const ths = document.getElementsByClassName('typenavigation');
+    //console.log(ths)
+    const results = initObj.results
+    if (results.matchtype1.length > 0 && currentType != 1) ths[0].style.display = 'block';
+    if (Object.values(results.matchtype2).length > 0 && currentType != 2) ths[1].style.display = 'block';
+    if (Object.values(results.matchtype3).some(p => p.length > 0) && currentType != 3) ths[2].style.display = 'block';
   }
 }

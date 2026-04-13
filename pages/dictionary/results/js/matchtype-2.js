@@ -235,6 +235,5 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
       }
     }
   }
+  oop.searching.manualNavigationSetup(initObj, 2);
 });
-//forms for adj and adv
-//pron/lur etc

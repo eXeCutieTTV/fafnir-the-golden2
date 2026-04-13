@@ -56,4 +56,5 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     );
   }
   if (Object.values(results.lur).length > 0) document.getElementById('loadableTable').style.display = 'block';
+  oop.searching.manualNavigationSetup(initObj, 3);
 });
