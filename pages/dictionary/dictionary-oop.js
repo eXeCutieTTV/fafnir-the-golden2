@@ -105,13 +105,18 @@ export const matchtype2 = {
           NorADJraw = 0
         }) => {
 
-          function parse({ result, bucket, possibility, vForm = false }) {
-            result.stemReal = vForm ? searching.isVForm(result.stem).result.text : possibility.text;
-            result.type = vForm ? IDS.WORDS.V : possibility.type;
+          function parse({ result, bucket, possibility, vForm = false, elative = false }) {
+            result.stemReal = vForm ? searching.isVForm(result.stem).result.text : elative ? searching.isElative(result.stem).result.text : possibility.text;
+            result.type = vForm ? IDS.WORDS.V : elative ? IDS.WORDS.ADJ : possibility.type;
             console.log({ result });
-            bucket.push(result);
+            elative
+              ? result.raws[NorADJraw].type === IDS.WORDS.ADJ
+                ? bucket.push(result)
+                : null
+              : bucket.push(result);
           }
           if (Object.values(searching.isVForm(result.stem)).length > 0) parse({ result, bucket, vForm: true });
+          if (Object.values(searching.isElative(result.stem)).length > 0) parse({ result, bucket, elative: true })
 
           for (const possibility of dictionaryBased.findStemFromShort(result.stem)) {
 
@@ -1665,7 +1670,7 @@ export const htmlEditing = {
       values
     };
   },
-  pathStr: (affixesObject, wordclass, verbForms = []) => {
+  pathStr: (affixesObject, wordclass, verbForms = [], adjForms = []) => {
     const { prefix, suffix, preposition, particle } = affixesObject;
     const tempMap = {
       functions: {
@@ -1673,8 +1678,10 @@ export const htmlEditing = {
           let title = '';
           switch (wordclass) {
             case IDS.WORDS.N:
-            case IDS.WORDS.ADJ:
               title = `case: ${path[0] || 'ø'}\ngender: ${path[1] || 'ø'}\nnumber: ${path[2] || 'ø'}\ndeclension: ${path[3] || 'ø'}`;
+              break;
+            case IDS.WORDS.ADJ:
+              title = `case: ${path[0] || 'ø'}\ngender: ${path[1] || 'ø'}\nnumber: ${path[2] || 'ø'}\ndeclension: ${path[3] || 'ø'}\nform: ${path[4] || 'ø'}`;
               break;
             case IDS.WORDS.AUX:
               title = `person: ${path[0] || 'ø'}\nnumber: ${path[1] || 'ø'}\ngender: ${path[2] || 'ø'}`;
@@ -1702,9 +1709,9 @@ export const htmlEditing = {
         const tempStrs = {
           preposition: tempMap.paths.preposition,
           particlePrefix: tempMap.paths.particle?.prefix || 'ø',
-          prefix: prefix1.length > 0 ? (prefix1.join(', ') + ', ' + verbForms.join(', ')) : 'ø',
+          prefix: (prefix1.length > 0 ? (prefix1.join(', ') + ', ' + verbForms.join(', ')) : 'ø').replace(/(?:,\s*)+$/, ''),
           particleSuffix: tempMap.paths.particle?.suffix || 'ø',
-          suffix: suffix1.length > 0 ? (suffix1.join(', ') + ', ' + verbForms.join(', ')) : 'ø'
+          suffix: (suffix1.length > 0 ? ((suffix1.join(', ') + ', ' + verbForms.join(', ')).replace(/(?:,\s*)+$/, '') + ', ' + adjForms.join(', ')) : 'ø').replace(/(?:,\s*)+$/, '')//regex removes trailing commas if they're there
         }
 
         const title = Object.entries(tempStrs)
@@ -1716,8 +1723,8 @@ export const htmlEditing = {
         const html = text
           .split(' | ')
           .map((part, i) => {
-            if (i === 2 && prefix) return `<span style="cursor: help;" title="${tempMap.functions.title(wordclass, prefix1.concat(verbForms))}">${part}</span>`;
-            if (i === 4 && suffix) return `<span style="cursor: help;" title="${tempMap.functions.title(wordclass, suffix1.concat(verbForms))}">${part}</span>`;
+            if (i === 2 && prefix) return `<span style="cursor: help;" title="${tempMap.functions.title(wordclass, prefix1.concat(verbForms).concat(adjForms))}">${part}</span>`;
+            if (i === 4 && suffix) return `<span style="cursor: help;" title="${tempMap.functions.title(wordclass, suffix1.concat(verbForms).concat(adjForms))}">${part}</span>`;
             return part;
           })
           .join(' | ');

@@ -14,8 +14,8 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     colIndex: 0
   }
 
-  function getPathVariants({ affixes, wordclass, verbForms = [] }) {
-    const renderedPaths = oop.htmlEditing.pathStr(affixes, wordclass, verbForms);
+  function getPathVariants({ affixes, wordclass, verbForms = [], adjForms = [] }) {
+    const renderedPaths = oop.htmlEditing.pathStr(affixes, wordclass, verbForms, adjForms);
     const prefixPaths = affixes?.prefix?.paths || [[]];
     const suffixPaths = affixes?.suffix?.paths || [[]];
     const variants = [];
@@ -74,12 +74,14 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
         const innerReferenceMap = {
           verbForms: oop.searching.isVForm(entry.stem),
           MD: oop.searching.isMD(entry.stem),
+          adjForms: oop.searching.isElative(entry.stem),
           dicEntry: entry?.affixes?.irregular ? entry.raws[1].word : DICTIONARY[typeKey]?.MAP?.[entry.stemReal],
           affixesStr: oop.htmlEditing.affixesStr(entry.affixes),
           pathVariants: getPathVariants({
             affixes: entry.affixes,
             wordclass,
-            verbForms: oop.searching.isVForm(entry.stem).form
+            verbForms: oop.searching.isVForm(entry.stem)?.form,
+            adjForms: oop.searching.isElative(entry.stem)?.form
           }),
           functions: {
             defRow: ({
