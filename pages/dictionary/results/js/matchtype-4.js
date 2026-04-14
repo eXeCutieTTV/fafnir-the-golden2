@@ -15,7 +15,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     //console.log(result.definition)
     oop.htmlEditing.insertTr(tbody, `
     <td>${result.text}</td>
-    <td>${result.type}</td>
+    <td>${result.type + ([IDS.WORDS.N, IDS.WORDS.ADJ].includes(result.type) ? ` (${result.declension})` : '')}</td>
     <td>${result.definition.replace(initObj.searched, `<strong>${initObj.searched}</strong>`)}</td>
     <td>${result.forms || '...'}</td>
     <td>${result.usage_notes || '...'}</td>`)
