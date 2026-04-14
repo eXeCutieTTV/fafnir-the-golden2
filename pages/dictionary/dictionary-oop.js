@@ -1946,13 +1946,14 @@ export const searching = {
         searching.search({ input })
       }
     });
-    document.getElementById('transcribeBtn').addEventListener('click', () => {
+    const transcribeBtn = document.getElementById('transcribeBtn');
+    if (!transcribeBtn) return;
+    transcribeBtn.addEventListener('click', () => {
       const current = localStorage.getItem('fontState') === "true";
       localStorage.setItem('fontState', (!current).toString());
 
       htmlEditing.transcribe(document);
     });
-
   },
   redirect: (initObj) => {
     initObj.results.matchtype1.length > 0
