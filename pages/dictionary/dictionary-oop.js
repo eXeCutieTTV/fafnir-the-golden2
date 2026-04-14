@@ -1269,9 +1269,9 @@ export const htmlEditing = {
                 [...wrapperWrapper].forEach(el => htmlEditing.transcribe(el));
               }
 
-              loadTables(word, hasPrefix, hasSuffix);
               htmlEditing.tables.verbForms(verbForms, wrapperWrapper[0]);
-              console.log(verbForms)
+              loadTables(word, hasPrefix, hasSuffix);
+              //console.log(verbForms)
 
               // Use event delegation on the parent to handle clicks on .verbForms elements
               const loadableTable = document.getElementById('loadableTable');
@@ -1294,8 +1294,8 @@ export const htmlEditing = {
                 [...wrapperWrapper].forEach(el => htmlEditing.transcribe(el));
               }
 
-              loadTables(word);
               htmlEditing.tables.adjForms(adjForms, wrapperWrapper[0]);
+              loadTables(word);
 
               // Use event delegation on the parent to handle clicks on .verbForms elements
               const loadableTable = document.getElementById('loadableTable');
@@ -1515,6 +1515,7 @@ export const htmlEditing = {
           const td = document.createElement('td');
           td.textContent = 'placeholder';
           td.classList.add('fontable');
+          td.dataset.fontState = false;
           //inner
           for (const [gndr, array] of Object.entries(DICTIONARY[IDS.WORDS.N].SUFFIXES.MAP[mood])) {
             if (gndr === gender) {
@@ -1571,6 +1572,7 @@ export const htmlEditing = {
           const td = document.createElement('td');
           td.textContent = 'placeholder';
           td.classList.add('fontable');
+          td.dataset.fontState = false;
           //inner
           for (const [gndr, array] of Object.entries(DICTIONARY[IDS.WORDS.ADJ].SUFFIXES.MAP[mood])) {
             if (gndr === gender) {
@@ -1608,31 +1610,31 @@ export const htmlEditing = {
                 <tbody>
                     <tr>
                         <th>Exalted</th>
-                        <td class="fontable">${map.Exalted}</td>
+                        <td class="fontable" data-font-state="false">${map.Exalted}</td>
                     </tr>
                     <tr>
                         <th>Rational</th>
-                        <td class="fontable">${map.Rational}</td>
+                        <td class="fontable" data-font-state="false">${map.Rational}</td>
                     </tr>
                     <tr>
                         <th>Monstrous</th>
-                        <td class="fontable">${map.Monstrous}</td>
+                        <td class="fontable" data-font-state="false">${map.Monstrous}</td>
                     </tr>
                     <tr>
                         <th>Irrational</th>
-                        <td class="fontable" style="border-bottom: black solid 1px">${map.Irrational}</td>
+                        <td class="fontable" data-font-state="false" style="border-bottom: black solid 1px">${map.Irrational}</td>
                     </tr>
                     <tr>
                         <th>Magical</th>
-                        <td class="fontable">${map.Magical}</td>
+                        <td class="fontable" data-font-state="false">${map.Magical}</td>
                     </tr>
                     <tr>
                         <th>Mundane</th>
-                        <td class="fontable">${map.Mundane}</td>
+                        <td class="fontable" data-font-state="false">${map.Mundane}</td>
                     </tr>
                     <tr>
                         <th>Abstract</th>
-                        <td class="fontable">${map.Abstract}</td>
+                        <td class="fontable" data-font-state="false">${map.Abstract}</td>
                     </tr>
                 </tbody>
             </table>
@@ -1647,7 +1649,7 @@ export const htmlEditing = {
       <table>
         <thead>
           <tr>
-            <th></th>
+            <th style="width: 150px;"></th>
             <th>${IDS.TENSE.NP}</th>
             <th>${IDS.TENSE.P}</th>
           </tr>
@@ -1655,13 +1657,13 @@ export const htmlEditing = {
         <tbody>
           <tr>
             <th>${IDS.ASPECT.E}</th>
-            <td style="cursor: pointer; user-select:none" class="verbForms">${formArr[0]}</td>
-            <td style="cursor: pointer; user-select:none" class="verbForms">${formArr[1]}</td>
+            <td style="cursor: pointer; user-select:none" class="verbForms fontable" data-font-state="false">${formArr[0]}</td>
+            <td style="cursor: pointer; user-select:none" class="verbForms fontable" data-font-state="false">${formArr[1]}</td>
           </tr>
           <tr>
             <th>${IDS.ASPECT.G}</th>
-            <td style="cursor: pointer; user-select:none" class="verbForms">${formArr[2]}</td>
-            <td style="cursor: pointer; user-select:none" class="verbForms">${formArr[3]}</td>
+            <td style="cursor: pointer; user-select:none" class="verbForms fontable" data-font-state="false">${formArr[2]}</td>
+            <td style="cursor: pointer; user-select:none" class="verbForms fontable" data-font-state="false">${formArr[3]}</td>
           </tr>
         </tbody>
       </table>`;
@@ -1675,14 +1677,14 @@ export const htmlEditing = {
       <table style="margin-bottom:5px;">
         <thead>
           <tr>
-            <th>${IDS.FORMS.R}</th>
+            <th style="width: 150px;">${IDS.FORMS.R}</th>
             <th>${IDS.FORMS.E}</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="cursor: pointer; user-select:none" class="adjForms">${formArr[0]}</td>
-            <td style="cursor: pointer; user-select:none" class="adjForms">${formArr[1]}</td>
+            <td style="cursor: pointer; user-select:none" class="adjForms fontable" data-font-state="false">${formArr[0]}</td>
+            <td style="cursor: pointer; user-select:none" class="adjForms fontable" data-font-state="false">${formArr[1]}</td>
           </tr>
         </tbody>
       </table>`;
