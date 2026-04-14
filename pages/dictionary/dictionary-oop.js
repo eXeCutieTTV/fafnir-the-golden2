@@ -1936,22 +1936,33 @@ export const searching = {
     },
     matchtype3: () => { }
   },
-  setup: (input, button) => {
-    button.addEventListener('click', () => {
-      searching.search({ input })
-    });
+  setup: (input, button, select) => {
+
+    function event(isDraconic, isEnglish) {
+      if (isDraconic) searching.search({ input });
+      else if (isEnglish) {
+        sessionStorage.setItem('initObj', JSON.stringify({
+          searched: input.value
+        }));
+        window.location.href = "/pages/dictionary/results/matchtype-4.html";
+      } else console.warn('err');
+    }
+
+
+    button.addEventListener('click', () => event(!select || select.value === 'Draconic', select?.value === 'English'));
     input.addEventListener('keydown', (ev) => {
       if (ev.key === 'Enter') {
-        ev.preventDefault(); // prevent form submission
-        searching.search({ input })
+        ev.preventDefault();
+        event(!select || select.value === 'Draconic', select?.value === 'English');
       }
     });
+
+    //for ribbon
     const transcribeBtn = document.getElementById('transcribeBtn');
     if (!transcribeBtn) return;
     transcribeBtn.addEventListener('click', () => {
-      const current = localStorage.getItem('fontState') === "true";
+      const current = localStorage.getItem('fontState') === 'true';
       localStorage.setItem('fontState', (!current).toString());
-
       htmlEditing.transcribe(document);
     });
   },
