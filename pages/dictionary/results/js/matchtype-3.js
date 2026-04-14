@@ -15,7 +15,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     oop.htmlEditing.insertTr(
       document.getElementById('tableTbody'),
       `
-      <td>${pronoun.word}</td>
+      <td class="fontable" data-font-state="false">${pronoun.word}</td>
       <td style="cursor: help; user-select: none;" title="${(Object.entries(pronoun.path).join('\n')).replace(/,/g, ": ")}">${Object.values(pronoun.path).join(', ')}
       <td>${pronoun.type} pronoun</td>`,
       false
@@ -26,7 +26,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     oop.htmlEditing.insertTr(
       document.getElementById('tableTbody'),
       `
-      <td>${correlative.word}</td>
+      <td class="fontable" data-font-state="false">${correlative.word}</td>
       <td style="cursor: help; user-select: none;" title="${(Object.entries(correlative.path).join('\n')).replace(/,/g, ": ")}">${Object.values(correlative.path).join(', ')}
       <td>${correlative.type}</td>`,
       false
@@ -37,7 +37,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     oop.htmlEditing.insertTr(
       document.getElementById('tableTbody'),
       `
-      <td>${determiner.word.text}</td>
+      <td class="fontable" data-font-state="false">${determiner.word.text}</td>
       <td style="cursor: help; user-select: none;" title="${(Object.entries(determiner.path).join('\n')).replace(/,/g, ": ")}">${Object.values(determiner.path).join(', ')}
       <td>${determiner.type}</td>`,
       false
@@ -49,7 +49,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     oop.htmlEditing.insertTr(
       document.getElementById('tableTbody'),
       `
-      <td>${lur.word}</td>
+      <td class="fontable" data-font-state="false">${lur.word}</td>
       <td style="cursor: help; user-select: none;" title="${(Object.entries(path).join('\n')).replace(/,/g, ": ")}">${Object.values(path).join(', ')}
       <td>${'to be (copula)'}</td>`,
       false
@@ -57,4 +57,5 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
   }
   if (Object.values(results.lur).length > 0) document.getElementById('loadableTable').style.display = 'block';
   oop.searching.manualNavigationSetup(initObj, 3);
+  oop.htmlEditing.transcribe(document.getElementById("resultTable"));
 });

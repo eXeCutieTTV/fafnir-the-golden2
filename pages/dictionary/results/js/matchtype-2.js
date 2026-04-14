@@ -237,4 +237,5 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
     }
   }
   oop.searching.manualNavigationSetup(initObj, 2);
+  oop.htmlEditing.transcribe(document.getElementById("resultTable"));
 });
