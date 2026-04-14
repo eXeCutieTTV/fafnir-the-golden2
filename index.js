@@ -31,7 +31,8 @@ const defaultStyle = [
   '/css/main.css',
   '/css/mixed.css',
   '/css/tables.css',
-  '/css/text.css'
+  '/css/text.css',
+  '/css/customFont.css'
 ];
 function loadCSS(href) {
   const link = document.createElement("link");

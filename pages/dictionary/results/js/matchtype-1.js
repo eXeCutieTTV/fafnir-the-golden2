@@ -52,18 +52,19 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
   for (const result of initObj.results.matchtype1) {
     const normalizedResult = result?.form?.length > 0 ? result : { result, form: [] };
     const entry = normalizedResult.result;
+    //console.log(normalizedResult)
 
     const isADJorADV = [IDS.WORDS.ADJ, IDS.WORDS.ADV].includes(entry.type);
     displayMorphCol(isADJorADV || entry.type === IDS.WORDS.N);
 
     function renderRow(result) {
-      //console.log({ result })
+      console.log({ result })
 
       const id = `${initObj.keyword}_${result.type}_${result?.declension}`.trim();
 
       oop.htmlEditing.insertTr(
         document.getElementById('tableTbody'), `
-      <td>${initObj.keyword} (${(result.type + ' ' + (result?.declension || '')).trim()})</td>
+      <td class="fontable" data-font-state="false">${initObj.keyword} (${(result.type + ' ' + (result?.declension || '')).trim()})</td>
       <td>${result.type === IDS.WORDS.N
         ? Object.entries(result.genders)
           .map(([k, v]) => `${k}: ${v}`)
@@ -81,7 +82,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
           data-wordclass="${result.type}"
           data-colindex="${state.colIndex++}"
           id="${id}"
-          style="user-select:none; cursor: pointer;">temp</td>`
+          style="user-select:none; cursor: pointer;">load</td>`
       );
       //console.log(normalizedResult,normalizedResult.result.type === IDS.WORDS.N,hasVerbFormsColumn)
       oop.htmlEditing.tables.pressableLoadTableButtons({
@@ -89,11 +90,13 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
         word: initObj.keyword,
         ...(result?.declension && { declension: result.declension }),
         ...(oop.searching.isMD(result.text) && { MDEntry: result }),
-        adjForms: oop.searching.isElative(normalizedResult.result.text)?.form?.length > 0 ? [normalizedResult.result.text, normalizedResult.result.forms] : []
+        adjForms: oop.searching.isElative(normalizedResult.result.text)?.form?.length > 0 ? [normalizedResult.result.text, normalizedResult.result.forms] : [],
+        verbForms: normalizedResult.form.length > 0 ? [result.text].concat(result.forms.split(', ')) : []
       });
     }
 
     renderRow(entry);
   }
   oop.searching.manualNavigationSetup(initObj, 1);
+  oop.htmlEditing.transcribe(document.getElementById("resultTable"));
 });

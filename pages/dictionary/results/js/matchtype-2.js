@@ -120,7 +120,7 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                 temp.first = false;
 
                 const html = `
-                  <td class="${id}" style="${border}">${dicEntry.text} (${(dicEntry.type + ' ' + dicEntry?.declension || '').trim()}):</td>
+                  <td class="${id}" style="${border}">${dicEntry.text} (${(dicEntry.type + ' ' + (dicEntry?.declension ? dicEntry.declension : '')).trim()}):</td>
                   <td style="${border} text-align:left;">${dicEntry.type === IDS.WORDS.N
                     ? Object.entries(dicEntry.genders)
                       .map(([k, v]) => `${k}: ${v}`)
@@ -141,11 +141,12 @@ globalThis.dictionaryReady = DIALECTS.load("dr_dr").then(DR => {
                   false
                 );
 
+                //console.log(innerReferenceMap.verbForms)
                 oop.htmlEditing.tables.pressableLoadTableButtons({
                   el: document.getElementsByClassName(id)[1],
                   word: entry.stemReal,
                   ...(dicEntry?.declension && { declension: dicEntry.declension }),
-                  verbForms: innerReferenceMap.verbForms.length > 0 ? innerReferenceMap.dicEntry.splitForms() : [], //shouldnt it just be dicEntry.splitForms()? without innerreferencemap i mean
+                  verbForms: innerReferenceMap.verbForms?.form?.length > 0 ? innerReferenceMap.dicEntry.splitForms() : [], //shouldnt it just be dicEntry.splitForms()? without innerreferencemap i mean
                   ...(innerReferenceMap.MD.length > 0 && { MDEntry }),
                   adjForms: innerReferenceMap.adjForms?.form?.length > 0 ? innerReferenceMap.dicEntry.splitForms() : []
                 });

@@ -1195,6 +1195,11 @@ export const dictionaryBased = {
       case IDS.WORDS.V: return 'VERBS'
       case IDS.WORDS.N: return 'NOUNS'
     }
+  },
+  transcribe: (word, state) => {
+    return !state
+      ? CHARACTERS.entriesToGlyphs(CHARACTERS.textToEntriesByText(word))
+      : CHARACTERS.entriesToText(CHARACTERS.textToEntriesByGlyph(word))
   }
 }
 export const htmlEditing = {
@@ -1255,15 +1260,18 @@ export const htmlEditing = {
             [IDS.WORDS.N]: () => {
               htmlEditing.tables.noun({ declension, mood: 'Directive', wrapper: wrapperWrapper[0], keyword: word, stem, dicEntry: MDEntry });
               htmlEditing.tables.noun({ declension, mood: 'Recessive', wrapper: wrapperWrapper[1], keyword: word, stem, dicEntry: MDEntry });
+              [...wrapperWrapper].forEach(el => htmlEditing.transcribe(el));
             },
             [IDS.WORDS.V]: (word, hasPrefix = true, hasSuffix = true) => {
               function loadTables(word, hasPrefix, hasSuffix) {
                 hasPrefix ? htmlEditing.tables.verb(true, word, wrapperWrapper[1]) : null;
                 hasSuffix ? htmlEditing.tables.verb(false, word, wrapperWrapper[2]) : null;
+                [...wrapperWrapper].forEach(el => htmlEditing.transcribe(el));
               }
 
               loadTables(word, hasPrefix, hasSuffix);
               htmlEditing.tables.verbForms(verbForms, wrapperWrapper[0]);
+              console.log(verbForms)
 
               // Use event delegation on the parent to handle clicks on .verbForms elements
               const loadableTable = document.getElementById('loadableTable');
@@ -1277,11 +1285,13 @@ export const htmlEditing = {
             },
             [IDS.WORDS.DET]: () => {
               htmlEditing.tables.determiner(wrapperWrapper[0], word);
+              [...wrapperWrapper].forEach(el => htmlEditing.transcribe(el));
             },
             [IDS.WORDS.ADJ]: () => {
               function loadTables(word) {
                 htmlEditing.tables.adjective(declension, 'Directive', wrapperWrapper[1], word, stem);
                 htmlEditing.tables.adjective(declension, 'Recessive', wrapperWrapper[2], word, stem);
+                [...wrapperWrapper].forEach(el => htmlEditing.transcribe(el));
               }
 
               loadTables(word);
@@ -1388,6 +1398,7 @@ export const htmlEditing = {
             el.textContent = 'tables unavailable';
         }
       }
+
     },
     verb: (isPrefix, word, wrapper) => {
       const affixStateMap = {
@@ -1398,7 +1409,7 @@ export const htmlEditing = {
       function affixHandlerGenders(isPrefix, word, person, number, hasBorder = false) {
         let string = "";
         for (const gender of Object.values(IDS.GENDERS)) {
-          string += `<td${hasBorder ? " style = 'border-bottom: 1px solid var(--border)' " : ''}>${affixHandler(isPrefix, word, person, number, gender)}</td>\n`;
+          string += `<td${hasBorder ? " style = 'border-bottom: 1px solid var(--border)' " : ''} class="fontable" data-font-state="false">${affixHandler(isPrefix, word, person, number, gender)}</td>\n`;
         }
         return string;
       }
@@ -1503,6 +1514,7 @@ export const htmlEditing = {
         for (let i = 0; i < (headers.length - 1); i++) {
           const td = document.createElement('td');
           td.textContent = 'placeholder';
+          td.classList.add('fontable');
           //inner
           for (const [gndr, array] of Object.entries(DICTIONARY[IDS.WORDS.N].SUFFIXES.MAP[mood])) {
             if (gndr === gender) {
@@ -1558,6 +1570,7 @@ export const htmlEditing = {
         for (let i = 0; i < (headers.length - 1); i++) {
           const td = document.createElement('td');
           td.textContent = 'placeholder';
+          td.classList.add('fontable');
           //inner
           for (const [gndr, array] of Object.entries(DICTIONARY[IDS.WORDS.ADJ].SUFFIXES.MAP[mood])) {
             if (gndr === gender) {
@@ -1595,31 +1608,31 @@ export const htmlEditing = {
                 <tbody>
                     <tr>
                         <th>Exalted</th>
-                        <td>${map.Exalted}</td>
+                        <td class="fontable">${map.Exalted}</td>
                     </tr>
                     <tr>
                         <th>Rational</th>
-                        <td>${map.Rational}</td>
+                        <td class="fontable">${map.Rational}</td>
                     </tr>
                     <tr>
                         <th>Monstrous</th>
-                        <td>${map.Monstrous}</td>
+                        <td class="fontable">${map.Monstrous}</td>
                     </tr>
                     <tr>
                         <th>Irrational</th>
-                        <td style="border-bottom: black solid 1px">${map.Irrational}</td>
+                        <td class="fontable" style="border-bottom: black solid 1px">${map.Irrational}</td>
                     </tr>
                     <tr>
                         <th>Magical</th>
-                        <td>${map.Magical}</td>
+                        <td class="fontable">${map.Magical}</td>
                     </tr>
                     <tr>
                         <th>Mundane</th>
-                        <td>${map.Mundane}</td>
+                        <td class="fontable">${map.Mundane}</td>
                     </tr>
                     <tr>
                         <th>Abstract</th>
-                        <td>${map.Abstract}</td>
+                        <td class="fontable">${map.Abstract}</td>
                     </tr>
                 </tbody>
             </table>
@@ -1772,6 +1785,42 @@ export const htmlEditing = {
       }
     }
     return tempMap.results;
+  },
+  transcribe: (table) => {
+    if (!table) return;
+    Boolean(localStorage.getItem('fontState')) ? null : localStorage.setItem('fontState', false);
+    const els = table.getElementsByClassName('fontable');
+
+    function flip(el) {
+      const prevText = el.textContent.split(' ');
+      const state = prevText.some(entry => CHARACTERS.textToEntriesByGlyph(entry).length > 0);
+      //const state = localStorage.getItem('fontState') === "true";
+      const divs = [document.createElement('div'), document.createElement('div')];
+      //console.log({ state, prevText })
+
+      divs[0].textContent = dictionaryBased.transcribe(prevText[0], state);
+      divs[1].textContent = ' ' + prevText.slice(1).join(' ');
+
+      divs.forEach(div => {
+        Object.assign(div.style, { display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' });
+      });
+
+      el.innerHTML = '';
+      el.append(...divs);
+
+      if (!state) {
+        el.style.textAlign = 'center';
+        Object.assign(divs[0].style, { fontFamily: 'Draconic', fontSize: '35px' });
+      }
+    }
+    for (const el of els) {
+      const state = el.dataset.fontState;
+      const willFlip = state === localStorage.getItem('fontState')
+      if (willFlip) {
+        flip(el);
+        el.dataset.fontState = String(el.dataset.fontState !== 'true');
+      }
+    }
   }
 }
 
@@ -1848,7 +1897,7 @@ export const searching = {
         initObj.results.matchtype1.push(searching.isElative(initObj.keyword));
       }
       for (const entry of searching.isMD(initObj.keyword)) initObj.results.matchtype1.push(entry);
-      if (DICTIONARY[IDS.WORDS.N].MAP[initObj.keyword].type === IDS.OTHER.MD) {
+      if (DICTIONARY[IDS.WORDS.N].MAP[initObj.keyword]?.type === IDS.OTHER.MD) {
         for (const value of Object.values(DICTIONARY[IDS.WORDS.N].MAP[initObj.keyword].values)) {
           initObj.results.matchtype1.push(value);
         }
@@ -1895,6 +1944,13 @@ export const searching = {
         searching.search({ input })
       }
     });
+    document.getElementById('transcribeBtn').addEventListener('click', () => {
+      const current = localStorage.getItem('fontState') === "true";
+      localStorage.setItem('fontState', (!current).toString());
+
+      htmlEditing.transcribe(document);
+    });
+
   },
   redirect: (initObj) => {
     initObj.results.matchtype1.length > 0
