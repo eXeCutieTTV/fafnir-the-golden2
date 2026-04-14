@@ -49,25 +49,27 @@
       style=" width: max-content; table-layout: fixed; border-collapse: collapse; border-collapse: separate; border-spacing: 0;">
       <tbody>
         <tr>
-          <td class="tab-td"><a href="/index.html" class="tab-a">Welcome</a></td>
-          <td class="tab-td"><a href="/pages/dictionary/html.html" class="tab-a">Dictionary</a></td>
-          <td class="tab-td"><a href="#" class="tab-a">a</a></td>
-          <td class="tab-td"><a href="#" class="tab-a">a</a></td>
-          <td class="tab-td"><a href="#" class="tab-a">a</a></td>
-          <td class="tab-td"><a href="#" class="tab-a">a</a></td>
-          <td class="tab-td"><a href="#" class="tab-a">a</a></td>
-          <td class="tab-td"><a href="#" class="tab-a">a</a></td>
-          <td class="tab-td"><a href="#" class="tab-a">a</a></td>
-          <td class="tab-td"><a href="#" class="tab-a">a</a></td>
-          <td class="tab-td"><a href="#" class="tab-a">a</a></td>
-          <td class="tab-td"><a href="#" class="tab-a">a</a></td>
-          <td class="tab-td"><a href="#" class="tab-a">a</a></td>
+          <td class="tab-td"><a href="/index.html" class="tab-a"
+              onclick="sessionStorage.setItem('active-tab',0)">Welcome</a></td>
+          <td class="tab-td"><a href="/pages/dictionary/html.html" class="tab-a"
+              onclick="sessionStorage.setItem('active-tab',1)">Dictionary</a></td>
+          <td class="tab-td"><a href="#" class="tab-a" onclick="sessionStorage.setItem('active-tab',2)">a</a></td>
+          <td class="tab-td"><a href="#" class="tab-a" onclick="sessionStorage.setItem('active-tab',3)">a</a></td>
+          <td class="tab-td"><a href="#" class="tab-a" onclick="sessionStorage.setItem('active-tab',4)">a</a></td>
+          <td class="tab-td"><a href="#" class="tab-a" onclick="sessionStorage.setItem('active-tab',5)">a</a></td>
+          <td class="tab-td"><a href="#" class="tab-a" onclick="sessionStorage.setItem('active-tab',6)">a</a></td>
+          <td class="tab-td"><a href="#" class="tab-a" onclick="sessionStorage.setItem('active-tab',7)">a</a></td>
+          <td class="tab-td"><a href="#" class="tab-a" onclick="sessionStorage.setItem('active-tab',8)">a</a></td>
+          <td class="tab-td"><a href="#" class="tab-a" onclick="sessionStorage.setItem('active-tab',9)">a</a></td>
+          <td class="tab-td"><a href="#" class="tab-a" onclick="sessionStorage.setItem('active-tab',10)">a</a></td>
+          <td class="tab-td"><a href="#" class="tab-a" onclick="sessionStorage.setItem('active-tab',11)">a</a></td>
+          <td class="tab-td"><a href="#" class="tab-a" onclick="sessionStorage.setItem('active-tab',12)">a</a></td>
         </tr>
       </tbody>
     </table>
   </div>
 </div>
 <script>
-  const tabId = localStorage.getItem('active-tab');
+  const tabId = sessionStorage.getItem('active-tab');
   document.querySelectorAll('.tab-td')[Number(tabId)].classList.add('active-tab');
 </script>
