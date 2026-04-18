@@ -5,10 +5,9 @@ blockquote {
   border-color: var(--border);
   background-color: var(--table0);
 
-  margin-top: 10vh;
-  margin-bottom: 10px;
-  margin-left: 2px;
-  margin-right: 2px;
+  margin: 20px 2px;
 
   padding: 10px;
+
+  font-size: 18px;
 }
