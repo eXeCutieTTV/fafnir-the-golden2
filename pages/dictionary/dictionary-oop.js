@@ -1916,6 +1916,72 @@ export const htmlEditing = {
         wrapper.appendChild(div);
       }
 
+    },
+    detTable: (wrappers) => {
+
+      const value = DICTIONARY[IDS.WORDS.DET].IRREGULARS.MAP;
+      console.log(value)
+      htmlEditing.insertTr(wrappers[0], `
+        <th colspan="2">${IDS.DET_TYPES.NA}</th>
+        <td style="border-bottom:solid 1px black" colspan="7">${value[IDS.DET_TYPES.NA].text}</td>  
+      `);
+
+      const GENDERS = [
+        IDS.GENDERS.E,
+        IDS.GENDERS.R,
+        IDS.GENDERS.MON,
+        IDS.GENDERS.I,
+        IDS.GENDERS.MAG,
+        IDS.GENDERS.MUN,
+        IDS.GENDERS.A
+      ];
+
+      const TYPES = [
+        IDS.DET_TYPES.DA,
+        IDS.DET_TYPES.PDEM,
+        IDS.DET_TYPES.DDEM
+      ];
+
+      function tdsLogic(type) {
+        return [
+          GENDERS.map(g => `<td>${value[g][type][IDS.NUMBERS.S].text}</td>`).join(""),
+          GENDERS.map(g => `<td style="border-bottom:solid 1px black">${value[g][type][IDS.NUMBERS.P].text}</td>`).join("")
+        ];
+      }
+      function insertBlock(type) {
+        const tdsArr = tdsLogic(type);
+        return `
+          <tr>
+            <th rowspan="2">${type}</th>
+            <th>${IDS.NUMBERS.S}</th>
+            ${tdsArr[0]}
+          </tr>
+          <tr>
+            <th>${IDS.NUMBERS.P}</th>
+            ${tdsArr[1]}
+          </tr>
+        `;
+      }
+
+      // Append parsed <tr> nodes
+      function appendBlock(tbody, html) {
+        const temp = document.createElement("tbody");
+        temp.innerHTML = html.trim();
+        for (const tr of temp.querySelectorAll("tr")) {
+          tbody.appendChild(tr);
+        }
+      }
+      for (const type of TYPES) {
+        appendBlock(wrappers[0], insertBlock(type))
+      }
+
+      function regularTds() {
+        return Object.values(DICTIONARY[IDS.WORDS.DET].SUFFIXES.MAP).map(v => `<td>${v}</td>`).join("");
+      }
+      htmlEditing.insertTr(wrappers[1], `
+    <th colspan="2">Regular Suffixes</th>
+    ${regularTds()} 
+  `);
     }
   },
   affixesStr: (affixesObject) => {
