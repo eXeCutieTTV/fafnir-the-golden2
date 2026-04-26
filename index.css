@@ -63,3 +63,12 @@ italic {
   margin-top: 20px;
   margin-bottom: 10px;
 }
+
+.subhead3 {
+  font-weight: bold;
+  font-size: 20px;
+  font-style: italic;
+  margin-left: 0;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
