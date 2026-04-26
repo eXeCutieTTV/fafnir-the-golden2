@@ -1728,7 +1728,7 @@ export const htmlEditing = {
         let border = isOblique ? `style="border-bottom:black solid 1px"` : "";
 
         return `
-          <th>${caseId}</th>
+          <th style="background-color:var(--table5)">${caseId}</th>
           ${GENDERS.map((g, index) => {
           // RULE:
           // First 2 genders (ANIM, INANIM) do NOT have values
@@ -1828,9 +1828,9 @@ export const htmlEditing = {
 
         if (nums.length === 2) {
           return `
-      <th>${nums[0]}</th>
-      <th colspan="2">${nums[1]}</th>
-    `;
+          <th>${nums[0]}</th>
+          <th colspan="2">${nums[1]}</th>
+        `;
         }
 
         return nums.map(n => `<th>${n}</th>`).join("");
@@ -1843,14 +1843,14 @@ export const htmlEditing = {
         const border =
           Case === IDS.CASE.O && person !== 3
             ? `style="border-bottom: 1px solid black;"`
-            : "";
+            : ``;
 
         if (nums.length === 2) {
           // S, P (P spans 2)
           return `
-      <td ${border}>${value[gender][nums[0]][person][Case]}</td>
-      <td ${border} colspan="2">${value[gender][nums[1]][person][Case]}</td>
-    `;
+          <td ${border}>${value[gender][nums[0]][person][Case]}</td>
+          <td ${border} colspan="2">${value[gender][nums[1]][person][Case]}</td>
+        `;
         }
 
         // S, D, P
@@ -1862,16 +1862,16 @@ export const htmlEditing = {
       // Build the 2-row block for each person
       function constructBlock(person, gender) {
         return `
-    <tr>
-      <th rowspan="2">${person}. Person</th>
-      <th>${CASES[0]}</th>
-      ${rowCells(IDS.CASE.S, person, gender)}
-    </tr>
-    <tr>
-      <th>${CASES[1]}</th>
-      ${rowCells(IDS.CASE.O, person, gender)}
-    </tr>
-  `;
+          <tr>
+            <th rowspan="2">${person}. Person</th>
+            <th style="background-color:var(--table5)">${CASES[0]}</th>
+            ${rowCells(IDS.CASE.S, person, gender)}
+          </tr>
+          <tr>
+            <th style="background-color:var(--table5)">${CASES[1]}</th>
+            ${rowCells(IDS.CASE.O, person, gender)}
+          </tr>
+        `;
       }
 
       // Append parsed <tr> nodes
@@ -1953,11 +1953,11 @@ export const htmlEditing = {
         return `
           <tr>
             <th rowspan="2">${type}</th>
-            <th>${IDS.NUMBERS.S}</th>
+            <th style="background-color:var(--table5)">${IDS.NUMBERS.S}</th>
             ${tdsArr[0]}
           </tr>
           <tr>
-            <th>${IDS.NUMBERS.P}</th>
+            <th style="background-color:var(--table5)">${IDS.NUMBERS.P}</th>
             ${tdsArr[1]}
           </tr>
         `;
