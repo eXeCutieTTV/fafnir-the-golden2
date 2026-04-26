@@ -32,7 +32,8 @@ const defaultStyle = [
   '/css/mixed.css',
   '/css/tables.css',
   '/css/text.css',
-  '/css/customFont.css'
+  '/css/customFont.css',
+  '/tabbar/tabbar.css'
 ];
 function loadCSS(href) {
   const link = document.createElement("link");

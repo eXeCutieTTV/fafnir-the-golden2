@@ -1691,6 +1691,231 @@ export const htmlEditing = {
       const div = document.createElement('div');
       div.innerHTML = html;
       wrapper.appendChild(div);
+    },
+    corTable: (wrapper) => {
+      const value = CORRELATIVES.MAP
+
+      // Order of genders as they appear in your table
+      const GENDERS = [
+        IDS.GENDER_GROUPS.ANIM,
+        IDS.GENDER_GROUPS.INANIM,
+        IDS.GENDERS.E,
+        IDS.GENDERS.R,
+        IDS.GENDERS.MON,
+        IDS.GENDERS.I,
+        IDS.GENDERS.MAG,
+        IDS.GENDERS.MUN,
+        IDS.GENDERS.A
+      ];
+
+      // Correlative types in order
+      const TYPES = [
+        IDS.COR_TYPES.INT,
+        IDS.COR_TYPES.R,
+        IDS.COR_TYPES.COR,
+        IDS.COR_TYPES.PDEM,
+        IDS.COR_TYPES.DDEM
+      ];
+
+      // Cases in order
+      const CASES = [
+        IDS.CASE.S,
+        IDS.CASE.O
+      ];
+
+      function generateCaseRow(type, caseId) {
+        const isOblique = caseId === IDS.CASE.O;
+        let border = isOblique ? `style="border-bottom:black solid 1px"` : "";
+
+        return `
+          <th>${caseId}</th>
+          ${GENDERS.map((g, index) => {
+          // RULE:
+          // First 2 genders (ANIM, INANIM) do NOT have values
+          // for the last 3 correlative types (COR, PDEM, DDEM)
+          const isFirstTwoGenders = index < 2;
+          const isUnavailableType =
+            type === IDS.COR_TYPES.PDEM ||
+            type === IDS.COR_TYPES.DDEM;
+
+          const content =
+            isFirstTwoGenders && isUnavailableType
+              ? "..."
+              : value[g]?.[type]?.[caseId] ?? "...";
+
+          if (type === IDS.COR_TYPES.DDEM) border = ""; // no border on last row
+          return `<td ${border}>${content}</td>`;
+        }).join("")}
+        `;
+      }
+
+      // Helper: generate the 2-row block for each correlative type
+      function generateTypeBlock(type) {
+        return `
+          <tr>
+            <th rowspan="2" style="width:calc(2 * (100% / 12))">${type}</th>
+            ${generateCaseRow(type, CASES[0])}
+          </tr>
+          <tr>
+            ${generateCaseRow(type, CASES[1])}
+          </tr>
+        `;
+      }
+      // Final render
+      wrapper.innerHTML = `
+        <table class="exampleTable">
+          <thead>
+            <tr>
+              <th colspan="2">Correlatives</th>
+              <th style="width: calc(100% / 12)">animates</th>
+              <th style="width: calc(100% / 12)">inanimates</th>
+              <th style="width: calc(100% / 12)">e.</th>
+              <th style="width: calc(100% / 12)">r.</th>
+              <th style="width: calc(100% / 12)">mon.</th>
+              <th style="width: calc(100% / 12)">i.</th>
+              <th style="width: calc(100% / 12)">mag.</th>
+              <th style="width: calc(100% / 12)">mun.</th>
+              <th style="width: calc(100% / 12)">a.</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${TYPES.map(type => generateTypeBlock(type)).join("")}
+          </tbody>
+        </table>
+      `;
+    },
+    proNTable: (wrapper) => {
+
+      const value = PRONOUNS.MAP;
+
+      // Ordered genders
+      const GENDERS = [
+        IDS.GENDERS.E,
+        IDS.GENDERS.R,
+        IDS.GENDERS.MON,
+        IDS.GENDERS.I,
+        IDS.GENDERS.MAG,
+        IDS.GENDERS.MUN,
+        IDS.GENDERS.A
+      ];
+
+      // Cases
+      const CASES = [IDS.CASE.S, IDS.CASE.O];
+
+      // Numbers
+      const NUMBERS = [IDS.NUMBERS.S, IDS.NUMBERS.D, IDS.NUMBERS.P];
+
+      // Persons
+      const PERSON = [1, 2, 3];
+
+      // Genders that DO NOT have dual (D)
+      const GENDERS_WITHOUT_D = new Set([
+        IDS.GENDERS.MAG,
+        IDS.GENDERS.MUN,
+        IDS.GENDERS.A
+      ]);
+
+      // Return correct number list per gender
+      function numbersForGender(gender) {
+        return GENDERS_WITHOUT_D.has(gender)
+          ? [IDS.NUMBERS.S, IDS.NUMBERS.P] // no D
+          : [IDS.NUMBERS.S, IDS.NUMBERS.D, IDS.NUMBERS.P];
+      }
+
+      // Build header cells
+      function headerCells(gender) {
+        const nums = numbersForGender(gender);
+
+        if (nums.length === 2) {
+          return `
+      <th>${nums[0]}</th>
+      <th colspan="2">${nums[1]}</th>
+    `;
+        }
+
+        return nums.map(n => `<th>${n}</th>`).join("");
+      }
+
+      // Build row cells for S/O cases
+      function rowCells(Case, person, gender) {
+        const nums = numbersForGender(gender);
+
+        const border =
+          Case === IDS.CASE.O && person !== 3
+            ? `style="border-bottom: 1px solid black;"`
+            : "";
+
+        if (nums.length === 2) {
+          // S, P (P spans 2)
+          return `
+      <td ${border}>${value[gender][nums[0]][person][Case]}</td>
+      <td ${border} colspan="2">${value[gender][nums[1]][person][Case]}</td>
+    `;
+        }
+
+        // S, D, P
+        return nums
+          .map(n => `<td ${border}>${value[gender][n][person][Case]}</td>`)
+          .join("");
+      }
+
+      // Build the 2-row block for each person
+      function constructBlock(person, gender) {
+        return `
+    <tr>
+      <th rowspan="2">${person}. Person</th>
+      <th>${CASES[0]}</th>
+      ${rowCells(IDS.CASE.S, person, gender)}
+    </tr>
+    <tr>
+      <th>${CASES[1]}</th>
+      ${rowCells(IDS.CASE.O, person, gender)}
+    </tr>
+  `;
+      }
+
+      // Append parsed <tr> nodes
+      function appendBlock(tbody, html) {
+        const temp = document.createElement("tbody");
+        temp.innerHTML = html.trim();
+        for (const tr of temp.querySelectorAll("tr")) {
+          tbody.appendChild(tr);
+        }
+      }
+
+      // MAIN RENDER LOOP
+      for (const gender of GENDERS) {
+        const div = document.createElement("div");
+        div.style.flex = "0 0 calc(50% - 1rem)";
+
+        div.innerHTML = `
+    <table class="exampleTable">
+    <colgroup>
+      <col style="width:20%">
+      <col style="width:20%">
+      <col style="width:20%">
+      <col style="width:20%">
+      <col style="width:20%">
+    </colgroup>
+      <thead>
+        <tr>
+          <th colspan="2">${gender}</th>
+          ${headerCells(gender)}
+        </tr>
+      </thead>
+      <tbody id="PersonalPronoun${gender}"></tbody>
+    </table>
+  `;
+
+        const tbody = div.querySelector(`#PersonalPronoun${gender}`);
+
+        for (const person of PERSON) {
+          appendBlock(tbody, constructBlock(person, gender));
+        }
+
+        wrapper.appendChild(div);
+      }
+
     }
   },
   affixesStr: (affixesObject) => {

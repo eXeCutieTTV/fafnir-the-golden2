@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fafnir the Golden</title>
+  <link rel="icon" href='/assets/icon/favicon.ico'><!--icon by 'rhy' on discord-->
+</head>
+
+<script src="/index.js"></script>
+
+<body style="height:100%;">
+  <div class="bodyHtmlOuter">
+    <div class="bodyHtmlInner">
+      <h2>Auxilaries</h2>
+      <div class="subhead" id=conjugation>Conjugation</div>
+      <p>Verbs can take a number of different auxiliaries to encode optional
+        extra information about the action, typically modal or aspectual.
+        When a phrase contains an auxiliary structure,
+        the auxiliary verb takes the subject prefix,
+        and the lexical verb takes the object suffix if applicable. <br>Additionally, the lexical
+        verb is always placed in
+        the simple form. If possible, the auxiliary verb takes any tensual or
+        aspectual inflection. <br>However, many
+        so-called “defective auxiliaries” cannot inflect for tense or aspect.
+        <br>Some auxiliaries are indistinguishable in
+        form from verbs, but can be differentiated through syntax (see more <a href="#">here</a>).
+      </p>
+      <div class="subhead" id="auxiliaryisation">Auxiliaryisation</div>
+      <p>Many verbs can themselves become auxiliaries. This is done when
+        serializing two
+        different verbs that
+        share a subject. <br>So a sentence like “the human tries to cook” could be translated as
+        <italic>tolliseχħû tyf kālôŋlef foxeχ</italic>,
+        literally “tries the human cook.” <br>Verbs can only be made auxiliaries in this way if
+        they are transitive
+        and could otherwise take the noun form of the following verb as a direct object.
+        <br>For more information on verbal
+        subordinate clauses, see more <a href="#">here</a>.
+      </p>
+      <p>Below is a dictionary of all the auxiliaries currently available in Draconic, the
+        "Forms" collum includes in said order the episodic past, gnomic non-past and the gnomic past, unless defective:
+      </p>
+      <table class="exampleTable">
+        <thead>
+          <tr>
+            <th>Auxiliary</th>
+            <th>Definition</th>
+            <th>Elative</th>
+            <th>Usage Notes</th>
+          </tr>
+        </thead>
+        <tbody id="auxiliariesTableTbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <script src="./auxiliaries.js" type="module"></script>
+  <script>getLocalHtml('/tabbar/html.html');</script>
+</body>
+<!--write something along the lines of "for any wordclass whose amount of defined words is sufficiently small, a table is included showcasing every single given word from said wordclass" on the welcome page?-->
