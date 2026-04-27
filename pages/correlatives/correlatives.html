@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fafnir the Golden</title>
+  <link rel="icon" href='/assets/icon/favicon.ico'><!--icon by 'rhy' on discord-->
+  <link rel="stylesheet" href="./css/verb.css">
+</head>
+
+<script src="/index.js"></script>
+
+<body style="height:100%;">
+  <div class="bodyHtmlOuter">
+    <div class="bodyHtmlInner">
+      <h1>6. Correlatives</h1>
+      <p>
+        “Correlatives” refer to a series of pronouns that correspond to each other. They are used in more complex
+        sentence structure, such as in questions and subordinate clauses, where the referent must be tracked and kept a
+        consistent gender. The full table of correlatives is in the Dictionary (linked in Preface).
+      </p>
+      <div class="subhead">6.1 Questions</div>
+      <p>
+        Yes or no questions are formed by simply putting the particle <italic>syr</italic> at the beginning of
+        indicative sentences, with
+        no other changes, not even triggering a word order switch. However, all other questions have more difficult
+        formation strategies. Henceforth, “all questions” refer to all questions except yes or no questions.
+      </p>
+      <p>
+        All questions must be expressed through a noun of some sort. English questions like “how many do you want,” “why
+        are you sad,” “when are we arriving,” and “how quickly can you run” must all be rephrased as something like
+        “what number do you want,” “for what reason are you sad,” “what time are we arriving,” and “with how much
+        quickness can you run.” Note that interrogative pronouns like “what, who, whom” and “which” all qualify as
+        nouns.
+      </p>
+      <p>
+        Draconic has two types of interrogative pronouns which all questions use: gendered, and plain. Gendered
+        interrogative pronouns work in the same way as a sole “who” or “what” in English: “who wants to eat,” “what is
+        that,” etc. These pronouns inflect for all seven genders, so note that “who” referring to dragons and “who”
+        referring to humans are different words. Gendered interrogatives simply substitute for the noun in a sentence,
+        but always come before the verb. Thus, the sentence order will be SVO or OVS depending on whether the pronoun is
+        the subject or object. Different forms are used for the subject and the object (the same difference as
+        who/whom), and the agency hierarchy does not apply to interrogatives.
+      </p>
+      <p>
+        Plain interrogative pronouns work more like adjectives which describe the noun through which the question is
+        expressed. Compare “what did you prepare” with “what meal did you prepare.” The first sentence would use a
+        gendered interrogative, but the second sentence would use a plain interrogative. Plain interrogatives do not
+        inflect for all 7 genders and only differentiate between animate and inanimate. Just like gendered
+        interrogatives, plain interrogatives (and the noun they describe) will come before the verb and place the
+        sentence in SVO or OVS. They also have different forms for the subject and the object.
+      </p>
+      <div class="subhead">6.2 Demonstrative Pronouns</div>
+      <p>
+        The proximal and distal demonstratives (mentioned in section 3.4) double as demonstrative pronouns, just like
+        English “this” and “that.” In addition to frequent deictic use, they also function as conjunctions for verbs
+        that take subordinate clauses. In Draconic, verbs with different subjects cannot serialize, so all such
+        sequences of multiple verbs are nested within subordinate clauses separated by demonstrative pronouns. For
+        example, English “I wish you’d realize he knows she’s smart” would be something like “I wish that you’d realize
+        that he knows that she’s smart.” The singular of the demonstrative is always used.
+      </p>
+      <p>
+        Both the proximal and distal can be used largely interchangeably, though there are some connotation differences.
+        The proximal is more often used for words closer or more related to the subject, and the distal is preferred in
+        situations that are not as concrete/not yet realized (a kind of optional subjunctive). The distal can also
+        indicate obviation in instances of two referents with the same gender.
+      </p>
+      <p>
+        The gender of the demonstrative pronoun must match the subject of the following subordinate clause. Likewise,
+        the verb in the subordinate clause takes the subject prefix agreeing with the demonstrative pronoun, at least in
+        theory. However, if the verb is directly adjacent to the demonstrative pronoun, the prefix is optional, usually
+        dropped. Moreover, no object suffix is usually placed in the head clause, unless this would cause ambiguity.
+        Thus, gender tracking is done largely through the demonstratives rather than verbal affixes when there are
+        subordinate clauses.
+      </p>
+      <div class="subhead">6.3 Relative Clauses</div>
+      <p>
+        Relative noun clauses in Draconic are formed using correlative structures, similar to Hindi, which means you
+        need both a relative pronoun and a correlative pronoun. The sentence “I love men <strong>who</strong> cook”
+        would be structured
+        something like “I love <strong>which</strong> men <strong>
+          <italic>who</italic>
+        </strong> cook.” Instead of just using a relative pronoun (who) to introduce the
+        relative clause, we use a correlative pronoun (which) to mark the noun we are describing, and then use a
+        relative pronoun (who) to introduce the relative clause. The pronouns must match in gender, though not
+        necessarily case, as the object of the head clause may be the subject of the relative clause, and vice versa.
+        Relative clauses typically follow head clauses, but can be shuffled around, especially to resolve animacy
+        hierarchy issues. Correlative pronouns can sometimes be dropped in standalone phrases.
+      </p>
+      <p>
+        The aforementioned structure is mandatory for restrictive relative clauses in Draconic, but optional for
+        non-restrictive relative clauses. In such clauses, the correlative pronoun can be omitted altogether, and the
+        relative pronoun then takes either the animate or inanimate plain form. Fused relatives can also be constructed
+        in Draconic. Instead of using a gendered correlative before a noun, in fused relatives, an animate/inanimate
+        plain correlative takes the position of the noun in the head clause. The relative pronoun functions as in
+        non-restrictive relative clauses.
+      </p>
+      <div class="subhead">6.4 Tables</div>
+      <div class="subhead2">6.4.1 Correlatives Table</div>
+      <div id="corPronounsTable"></div>
+      <div class="subhead2">6.4.2 Personal Pronouns Table</div>
+      <div id="personalPronounsTables" style="display: flex; flex-wrap: wrap; gap: 1rem;"></div>
+    </div>
+  </div>
+  <script src="./js/pronouns.js" type="module"></script>
+  <script>getLocalHtml('/tabbar/html.html');</script>
+</body>
