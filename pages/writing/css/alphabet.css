@@ -1,0 +1,29 @@
+#alphabetTable {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+#alphabetTable th,
+#alphabetTable td {
+  border: 1px solid black;
+  text-align: center;
+  vertical-align: middle;
+  padding: 0.25rem;
+}
+
+#alphabetTable th {
+  height: 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+#alphabetTable td {
+  height: 3rem;
+  font-size: 1.1rem;
+}
+
+#alphabetTable .alphabetSection + .alphabetSection th,
+#alphabetTable .alphabetSection + .alphabetSection td {
+  border-top: 0;
+}

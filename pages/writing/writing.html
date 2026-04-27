@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fafnir the Golden</title>
   <link rel="icon" href='/assets/icon/favicon.ico'><!--icon by 'rhy' on discord-->
-  <link rel="stylesheet" href="./css/verb.css">
+  <link rel="stylesheet" href="./css/alphabet.css">
 </head>
 
 <script src="/index.js"></script>
@@ -14,8 +14,54 @@
 <body style="height:100%;">
   <div class="bodyHtmlOuter">
     <div class="bodyHtmlInner">
-
+      <h1>2. Writting</h1>
+      <div class="subhead">2.1 Phonology & Romanization</div>
+      <p>
+        The sounds of Draconic, as they are spoken by dragons in Universe, are given in the table below. The standard
+        romanization of each sound is listed alongside each character. If the romanization is not present, the sound is
+        written with the same letter as the phonetic symbol. The “pyric” (aka “emphatic”) sounds are highlighted in red.
+      </p>
+      <script>getLocalHtml('./html/consonantsTable.html');</script>
+      <script>getLocalHtml('./html/vowelsTable.html');</script>
+      <p>
+        This is the standard Romanization, and is what I will use in all documentation. Since &ltq̇&gt is hard to type
+        on many keyboards, you can use any other modified &ltq&gt (e.g. &ltꝗ&gt, &ltQ&gt, etc). However, because
+        Draconic contains a number of special characters, there is a “simplified” romanization for general use so that
+        you don't have to get a special keyboard, which will also be used for typing in the Draconic script once it is
+        complete. The changes in the simplified romanization are as follows:
+      </p>
+      <script>getLocalHtml('./html/generalRomanization.html');</script>
+      <p>
+        “Pyric” sounds are pronounced by humans with pharyngealization, as well as with aspiration for the consonants.
+        Dragons, however, pronounce these differently. I call these sounds “pyric” because, canonically, I intended this
+        language for fire breathing dragons, who would couple these sounds with a slight exhale of flame. However, if
+        you would like to use this language for a personal project for a dragon species that does not breathe fire, you
+        can simply replace any “pyric” sound with any other aspect of dragon physiology that is not replicable by
+        humans. Maybe your dragons have ice breath, and so pronounce them with chilled air. Maybe your dragons pronounce
+        them with a bit of smoke expelling from their noses. Or maybe you invent some new organ in your dragons' throats
+        that resonates in a weird way to produce unique sounds. You're at liberty to create any new idea for sound that
+        humans cannot produce. As such, the term “pyric” only really applies to fire breathing dragons, so I also use
+        the term “emphatic” to more generally represent any sort of uniquely emphatic, draconic sound represented by
+        these letters (ħ, χħ, qħ, q̇ħ, á, â, ó, ô, ú, and û). For more details on the phonology and allophones, see the
+        dictionary (link in Preface).
+      </p>
+      <p>
+        A few features of the romanization are not strictly transliterations. The romanization may sometimes include
+        hyphens to clarify morpheme boundaries, or English-style punctuation for clarity. Additionally, all words in
+        Draconic must start with a consonant, but words that begin with the glottal stop &lt'&gt do not write it in. So,
+        a word pronounced as &lt'oq&gt is written &ltoq&gt. This is the only part of the Romanization that is not
+        strictly phonetic.
+      </p>
+      <div class="subhead2">2.1.1 Consonantal Allophony</div>
+      <script>getLocalHtml('./html/consonantalAllophony.html');</script>
+      <div class="subhead2">2.1.2 Vocalic Allophony</div>
+      <script>getLocalHtml('./html/vocalicAllophony.html');</script>
+      <div class="subhead2">2.1.3 Stress</div>
+      <script>getLocalHtml('./html/stress.html');</script>
+      <div class="subhead">2.2 Orthography</div>
+      <div id="alphabet" style="width:67%;"></div>
     </div>
   </div>
+  <script src="./js/alphabet.js" type="module"></script>
   <script>getLocalHtml('/tabbar/html.html');</script>
 </body>
