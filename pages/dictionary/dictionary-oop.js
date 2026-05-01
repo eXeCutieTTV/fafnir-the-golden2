@@ -1982,6 +1982,130 @@ export const htmlEditing = {
     <th colspan="2">Regular Suffixes</th>
     ${regularTds()} 
   `);
+    },
+    glyphTable: (wrapper) => {
+      const value = CHARACTERS.MAP;
+      const rows = [
+        ["toru", "cáll", "kû", "qath", "q̇os", "ax"],
+        ["trō", "sēl", "kxæŋ", "qχē", "qħán", "q̇ħón"],
+        ["od", "ēz", "āg", "fe", "thyn", "llī"],
+        ["xæ", "χy", "har", "χħáth", "ħâ", "rox"],
+        ["lel", "eχ", "æfu", "y´", "a´", "o´"],
+        ["u´", "i´", "ē´", "ā´", "ō´", "ū´"],
+        ["ī´", "má", "naχ", "yŋ", "q̇ħóll", "seleŋ"],
+        ["q̇em", "", "", "", "", ""]
+      ];
+
+      // --- Modal setup ---
+      const overlay = document.createElement('div');
+      overlay.id = 'modalOverlay';
+      Object.assign(overlay.style, {
+        display: 'none',
+        position: 'fixed',
+        inset: '0',
+        background: 'rgba(0,0,0,0.5)',
+        zIndex: '1000',
+        alignItems: 'center',
+        justifyContent: 'center',
+      });
+
+      const modal = document.createElement('div');
+      modal.id = 'letterModal';
+      Object.assign(modal.style, {
+        background: '#fff',
+        borderRadius: '12px',
+        padding: '32px 40px',
+        minWidth: '260px',
+        textAlign: 'center',
+        position: 'relative',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+      });
+
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+
+      function closeModal() {
+        overlay.style.display = 'none';
+      }
+
+      overlay.addEventListener('click', e => {
+        if (e.target === overlay) closeModal();
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+      });
+
+      // --- Open modal ---
+      function openModal(key) {
+        const entry = value[key];
+
+        modal.innerHTML = `
+      <button id="modalClose" style="position:absolute; top:10px; right:14px; background:none; border:none; font-size:24px; cursor:pointer; line-height:1;">×</button>
+      <div>
+        <div style="font-family: Draconic1; font-size: 56px; margin-bottom: 12px;">${entry.letter_glyph}</div>
+        <div title="Name of glyph; IPA of name of glyph." style="margin-bottom: 12px;"><b>Name:</b> ${entry.name}; ${entry.name_ipa}</div>
+        <div style="margin-bottom: 12px;"><b>Type:</b> ${entry.prop.join(", ")}</div>
+        <div style="margin-bottom: 12px;"><b>Romanized:</b> ${entry.letter}${entry.letter === entry.letter_rom.join() ? '' : ` (${entry.letter_rom.join(", ")})`}</div>
+        <div style="margin-bottom: 12px;"><b>Pronounciation (IPA):</b> ${entry.letter_ipa}</div>
+        <div style="margin-bottom: 12px;">
+          <b>Allophones:</b>
+          <ul style="margin: 4px 0 0 0;">
+            ${Object.entries(entry.allophones).map(el => `<li style="margin-bottom: 5px;">${el[0]}: if ${el[1]}</li>`).join("")}
+          </ul>
+        </div>
+        <div style="margin-top: 15px; user-select: none; font-size: 25px; cursor: pointer; text-align: center;" onclick='document.getElementById("audio${entry.name}").play()'>I></div>
+        <audio id="audio${entry.name}" src="${entry.sound}"></audio>
+      </div>
+    `;
+        modal.style.backgroundColor = "var(--table0)";
+        modal.style.textAlign = "left";
+
+        document.getElementById('modalClose').addEventListener('click', closeModal);
+        overlay.style.display = 'flex';
+      }
+
+      // --- Table ---
+      function createCell(key) {
+        const td = document.createElement('td');
+        if (!key) return td;
+
+        td.style.fontFamily = 'Draconic1';
+        td.style.fontSize = '45px';
+        td.style.paddingBottom = '10px';
+        td.style.cursor = 'pointer';
+        td.style.userSelect = 'none';
+        td.textContent = value[key].letter_glyph;
+        td.addEventListener('click', () => openModal(key));
+        return td;
+      }
+
+      function createHeader(key) {
+        const th = document.createElement('th');
+        if (key) th.textContent = value[key].name;
+        return th;
+      }
+
+      const table = document.createElement('table');
+      table.id = 'alphabetTable';
+
+      rows.forEach(row => {
+        const tbody = document.createElement('tbody');
+        tbody.className = 'alphabetSection';
+
+        const labelRow = document.createElement('tr');
+        labelRow.className = 'alphabetLabels';
+        row.forEach(key => labelRow.appendChild(createHeader(key)));
+
+        const glyphRow = document.createElement('tr');
+        glyphRow.className = 'alphabetGlyphs';
+        row.forEach(key => glyphRow.appendChild(createCell(key)));
+
+        tbody.appendChild(labelRow);
+        tbody.appendChild(glyphRow);
+        table.appendChild(tbody);
+      });
+
+      wrapper.appendChild(table);
     }
   },
   affixesStr: (affixesObject) => {
