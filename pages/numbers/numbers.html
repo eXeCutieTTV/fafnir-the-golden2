@@ -13,7 +13,92 @@
 <body style="height:100%;">
   <div class="bodyHtmlOuter">
     <div class="bodyHtmlInner">
+      <h1>7. Numbers</h1>
+      <div class="subhead">7.1 The Number System</div>
 
+      <p>Draconic uses a base-8 number system. Bellow a table that includes the first 16 numbers can be seen.</p>
+
+      <script>getLocalHtml('./html/numbersTable.html')</script>
+
+      <hr>
+
+      <p>
+        To form any number from 17-63 that is not a multiple of eight, the largest multiple of 8 that is smaller than
+        the desired number is used as a base and then suffixed with whatever number would need to be added to reach the
+        desired number. That implies that from 17-63, <a href="#">Multiples</a> and <a href="#">Suffixes</a> will be in
+        use.
+      </p>
+
+      <script>getLocalHtml('./html/smolNrs.html')</script>
+
+      <p>
+        A few exception arise within the afforementioned rule:
+      </p>
+
+      <script>getLocalHtml('./html/exceptions.html');</script>
+
+      <p>
+        Numbers larger than 64 are split up into a multiple of 64 and the remainder separated by <italic>si</italic>
+        (and). In this context, that once again implies the use of <a href="#">Multiples</a> and <a
+          href="#">Suffixes.</a>
+      </p>
+
+      <script>getLocalHtml('./html/multiples.html')</script>
+
+      <p>
+        Numbers above 512 will include Powers:
+        The afforementioned strategy will work only up to 511, after which words are additionally broken up into
+        multiples of 512. This will then continue for all powers of 8 up to 262.144.
+      </p>
+
+      <script>getLocalHtml('./html/powers.html');</script>
+
+      <p>
+        If you feel confused, you can use this (may be inaccurate on large numbers):
+      </p>
+      <input type="number" id="numInput" max="2097151" min="0" placeholder="Write your number!"
+        style="accent-color: var(--accent); width: 10%; color: var(--accent);"
+        oninput="document.getElementById('result').textContent = NUMBERS.numberToText(this.value)">
+      </p>
+      <div id="result">result</div>
+      <div class="subhead">7.2 Numbers as Noun Descriptors</div>
+      <p>
+        When using numbers to describe nouns, numbers will be treated as either determiners or adjectives depending on
+        whether they’re being used as cardinals or ordinals, respectively. When used as cardinals (one book, two books,
+        etc.), they work the same as all other determiners. The number will directly precede the noun, agree with the
+        noun in gender, and the last number of the sequence will take the demonstrative suffix. For example, “eighty
+        five dragons” would be lān si sēhaqhyn træχonē’yn. When used as ordinals (first book, second book, etc.),
+        numbers are treated as adjectives. They will directly follow the noun, but only some numbers will agree in
+        gender and case: only the portion of the number smaller than 64 as well as powers of 8 take agreement. All
+        numbers are treated as first declension, and the described noun must be singular and definite. For example, “the
+        one thousand four hundred fiftieth dragon” would be tyn træχonēn eχ lāranēn, qah lānēn, si qāzeχēn.
+      </p>
+      <div class="subhead">7.3 In Writting</div>
+      <p>
+        In the writing system, the characters can stand in for numbers to form an alphabetic numeral system. The numbers
+        1-7 are represented by the first seven characters in the writing system:
+      </p>
+
+      <script>getLocalHtml('./html/writting1.html');</script>
+
+      <p>
+        The letter s alone represents 8, and can be followed by one of the numbers 1-7 to additively form 9-15.
+        Similarly, every multiple of 8 up to and including 56 has a unique letter:
+      </p>
+
+      <script>getLocalHtml('./html/writting2.html');</script>
+
+      <p>
+        Numbers 64 and larger are written in a parallel as they are spoken:
+      </p>
+
+      <script>getLocalHtml('./html/writting3.html');</script>
+
+      <p>
+        A unique symbol <italic>q̇em</italic> is used to stand in for zero. It is also often used before a string of
+        numbers to indicate
+        that the following characters are in fact numbers, similar in principle to the hashtag(#).
+      </p>
     </div>
   </div>
   <script>getLocalHtml('/tabbar/html.html');</script>
